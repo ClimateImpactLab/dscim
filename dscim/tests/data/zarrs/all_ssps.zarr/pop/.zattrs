@@ -1,0 +1,12 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "ssp",
+        "region",
+        "model",
+        "year"
+    ],
+    "description": "Population count for selected regions consistent with \"Basic Elements\" of the Shared Socioeconomic Pathways (Riahi et al, 2016)",
+    "long_name": "Population",
+    "source": "KC and Lutz (2017); see file global attributes",
+    "units": "count"
+}

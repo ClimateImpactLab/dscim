@@ -1,0 +1,301 @@
+{
+    "metadata": {
+        ".zattrs": {},
+        ".zgroup": {
+            "zarr_format": 2
+        },
+        "batch/.zarray": {
+            "chunks": [
+                15
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U7",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                15
+            ],
+            "zarr_format": 2
+        },
+        "batch/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "batch"
+            ]
+        },
+        "delta/.zarray": {
+            "chunks": [
+                1,
+                15,
+                1,
+                1,
+                1,
+                10,
+                9
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                33,
+                15,
+                5,
+                2,
+                2,
+                90,
+                9
+            ],
+            "zarr_format": 2
+        },
+        "delta/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "gcm",
+                "batch",
+                "ssp",
+                "rcp",
+                "model",
+                "year",
+                "region"
+            ],
+            "long_title": "monetized mortality damages (monetized deaths + costs) using vsl scaled-income mortality valuation methodology, vsl based on IR-year income for costs and on country-year income for deaths",
+            "source": "montecarlo simulation of impacts, VSL, pop and life expectancy data",
+            "units": "2019 USD per capita"
+        },
+        "gcm/.zarray": {
+            "chunks": [
+                33
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U23",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                33
+            ],
+            "zarr_format": 2
+        },
+        "gcm/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "gcm"
+            ]
+        },
+        "histclim/.zarray": {
+            "chunks": [
+                1,
+                15,
+                1,
+                1,
+                1,
+                10,
+                9
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                33,
+                15,
+                5,
+                2,
+                2,
+                90,
+                9
+            ],
+            "zarr_format": 2
+        },
+        "histclim/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "gcm",
+                "batch",
+                "ssp",
+                "rcp",
+                "model",
+                "year",
+                "region"
+            ],
+            "long_title": "monetized mortality deaths using value of statistical life and country-year-scaled-income mortality valuation methodology",
+            "source": "montecarlo simulation of impacts, VSL and life expectancy data",
+            "units": "2019 USD"
+        },
+        "model/.zarray": {
+            "chunks": [
+                2
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "model/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "model"
+            ],
+            "long_title": "economic model (OECD or IIASA)"
+        },
+        "rcp/.zarray": {
+            "chunks": [
+                2
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "rcp/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "rcp"
+            ],
+            "long_title": "representative concentration pathway (rcp) scenario"
+        },
+        "region/.zarray": {
+            "chunks": [
+                9
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                9
+            ],
+            "zarr_format": 2
+        },
+        "region/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "region"
+            ],
+            "long_title": "Region ID, regions",
+            "source": "From the hierarchy file.",
+            "units": "None"
+        },
+        "ssp/.zarray": {
+            "chunks": [
+                5
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                5
+            ],
+            "zarr_format": 2
+        },
+        "ssp/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ssp"
+            ],
+            "long_title": "socio-economic pathway scenario "
+        },
+        "year/.zarray": {
+            "chunks": [
+                90
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i4",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                90
+            ],
+            "zarr_format": 2
+        },
+        "year/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "year"
+            ],
+            "long_title": "Impact year (Gregorian calendar)",
+            "source": "From the weather file.",
+            "units": "Years"
+        }
+    },
+    "zarr_consolidated_format": 1
+}

@@ -1,0 +1,76 @@
+---
+global_parameters:
+  course: scc
+  menu_type:
+    - adding_up
+    - risk_aversion
+  discounting_type:
+    - constant
+    - constant_model_collapsed
+    - naive_ramsey
+    - naive_gwr
+    - euler_ramsey
+    - euler_gwr
+    - gwr_gwr
+  discrete_discounting: True
+  ext_subset_start_year: 2085
+  ext_subset_end_year: 2099
+  ext_end_year: 2300
+  ext_method: global_c_ratio
+  fit_type: ols
+  formula: damages ~ -1 + anomaly + np.power(anomaly, 2)
+  extrap_formula: null
+  fair_aggregation:
+    - median_params
+    - ce
+    - mean
+  save_files:
+    - damage_function_points
+    - global_consumption
+    - damage_function_coefficients
+    - damage_function_fit
+    - marginal_damages
+    - discount_factors
+    - uncollapsed_sccs
+    - scc
+
+econvars:
+  path_econ: dscim/tests/data/zarrs/all_ssps.zarr
+
+climate:
+  gmst_path: dscim/tests/data/climate/gmst.csv
+  gmsl_path: dscim/tests/data/climate/gmsl.csv
+  gmst_fair_path: dscim/tests/data/climate/fair_temps_sims.nc4
+  gmsl_fair_path: dscim/tests/data/climate/fair_slr_sims.zarr
+  damages_pulse_conversion_path: dscim/tests/data/climate/scenario_rcp45-rcp85-ssp245-ssp460-ssp370_CO2_Fossil-CH4-N2O_conversion_pulseyears_2020-2100_5yrincrements_v3.0_newformat.nc
+  pulse_year: 2020
+  emission_scenarios:
+    - ssp370
+  gases:
+    - CO2_Fossil
+    - CH4
+    - N2O
+
+sectors:
+  dummy_sector:
+    sector: dummy_sector
+    histclim: histclim
+    delta: delta    
+    sector_path: dscim/tests/data/damages/test_subset_damages.zarr
+    ce_path: dscim/tests/data/CEs/
+    save_path: dscim/tests/data/menu_results
+    subset_dict:
+      ssp:
+        - SSP2
+        - SSP3
+        - SSP4
+      region:
+        - IND.21.317.1249
+        - CAN.2.33.913
+        - USA.14.608
+        - EGY.11
+        - SDN.4.11.50.164
+        - NGA.25.510
+        - SAU.7
+        - RUS.16.430.430
+        - SOM.2.5

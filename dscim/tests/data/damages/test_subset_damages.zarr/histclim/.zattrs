@@ -1,0 +1,14 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "gcm",
+        "batch",
+        "ssp",
+        "rcp",
+        "model",
+        "year",
+        "region"
+    ],
+    "long_title": "monetized mortality deaths using value of statistical life and country-year-scaled-income mortality valuation methodology",
+    "source": "montecarlo simulation of impacts, VSL and life expectancy data",
+    "units": "2019 USD"
+}

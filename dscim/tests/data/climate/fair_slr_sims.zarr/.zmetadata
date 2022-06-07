@@ -1,0 +1,292 @@
+{
+    "metadata": {
+        ".zattrs": {
+            "author": "Ian Bolliger",
+            "contact": "ibolliger@rhg.com",
+            "description": "Simulations of GMSL relative to the 1991-2009 mean, from 2020 to 2500, consistent with FAIR GMST simulations",
+            "history": "version 3.0: Initial model. Version starts at 3.0 to align with current version of FAIR GMST outputs.",
+            "method": "A Semi-Empirical Sea Level (SESL) model (github.com/bobkopp/SESL) probabilistically converts a GMST time-series to a GMSL time series. This is applied to both control and pulse scenarios and the difference is taken. This \"pulse delta\" is then added to a baseline trajectory taken from GMSL simulations used in IPCC AR6 (provided via personal correspondance from Bob Kopp). Draws of SESL/FAIR model \"pulse delta\" and draws of AR6 \"possibilistic\" projections are aligned before summing by quantile-matching the 2300 GMSL projected under the control FAIR scenario with that of the AR6 projections. This is done _after_ first masking the FAIR GMST draws based on unrealistic ECS paramter sets (using the 99.5 mask). The parameter distribution used for the SESL model was provided via personal correspondance from Bob Kopp. All other SESL input data is taken from the github repo. The AR6 projections end in 2300. To project 2300-2500, we align the SESL control scenarios to the AR6 projections (using the previously defined quantile-matching pairs) and allow SLR to evolve based on the SESL control runs from 2300-2500. Finally, to convert from the AR6 reference period (1996-2014) to the reference period used in the rest of the coastal impacts work (1991-2009), we use a reconstruction of historical sea levels from Dangendorf et al. 2019 (https://www.nature.com/articles/s41558-019-0531-8#MOESM2). We take the means of these two periods and use that offset to adjust the GMSL projections. For the \"median\" runs, we use a temperature simulation from median FAIR parameters. For SESL, we take the median parameters from the two temperature reconstruction datasets (Marcott and Mann), calculate the resulting sea level values, and then take the mean of these two outputs.",
+            "reference_period": "1996-2014",
+            "units": "cm",
+            "updated": "Thu Jul 29 14:42:07 2021",
+            "version": "v3.0"
+        },
+        ".zgroup": {
+            "zarr_format": 2
+        },
+        "confidence/.zarray": {
+            "chunks": [],
+            "compressor": null,
+            "dtype": "<U9",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [],
+            "zarr_format": 2
+        },
+        "confidence/.zattrs": {
+            "_ARRAY_DIMENSIONS": []
+        },
+        "gmsl/.zarray": {
+            "chunks": [
+                1,
+                1,
+                61,
+                735,
+                5
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                2,
+                3,
+                481,
+                2,
+                2
+            ],
+            "zarr_format": 2
+        },
+        "gmsl/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "runtype",
+                "rcp",
+                "year",
+                "simulation",
+                "pulse_year"
+            ],
+            "coordinates": "locations kind confidence workflow_src",
+            "description": "Simulations of 19-year centered mean of Global Mean Sea Level anomaly under SSP scenarios",
+            "long_name": "GMSL sims rel. 1996-2014",
+            "reference_period": "1996-2014",
+            "units": "cm"
+        },
+        "gmsl_median/.zarray": {
+            "chunks": [
+                1,
+                3,
+                481,
+                17
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                2,
+                3,
+                481,
+                2
+            ],
+            "zarr_format": 2
+        },
+        "gmsl_median/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "runtype",
+                "rcp",
+                "year",
+                "pulse_year"
+            ],
+            "coordinates": "locations kind confidence",
+            "description": "Simulation of 19-year centered mean of Global Mean Sea Level anomaly under SSP scenarios, using median SESL and FAIR parameters",
+            "long_name": "GMSL med. rel. 1996-2014",
+            "reference_period": "1996-2014",
+            "units": "cm"
+        },
+        "kind/.zarray": {
+            "chunks": [],
+            "compressor": null,
+            "dtype": "<U3",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [],
+            "zarr_format": 2
+        },
+        "kind/.zattrs": {
+            "_ARRAY_DIMENSIONS": []
+        },
+        "locations/.zarray": {
+            "chunks": [],
+            "compressor": null,
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [],
+            "zarr_format": 2
+        },
+        "locations/.zattrs": {
+            "_ARRAY_DIMENSIONS": []
+        },
+        "pulse_year/.zarray": {
+            "chunks": [
+                17
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "pulse_year/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "pulse_year"
+            ]
+        },
+        "rcp/.zarray": {
+            "chunks": [
+                3
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U6",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3
+            ],
+            "zarr_format": 2
+        },
+        "rcp/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "rcp"
+            ]
+        },
+        "runtype/.zarray": {
+            "chunks": [
+                2
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U7",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "runtype/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "runtype"
+            ]
+        },
+        "simulation/.zarray": {
+            "chunks": [
+                2940
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "simulation/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "simulation"
+            ]
+        },
+        "workflow_src/.zarray": {
+            "chunks": [
+                2,
+                2
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U4",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                3,
+                2
+            ],
+            "zarr_format": 2
+        },
+        "workflow_src/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "rcp",
+                "simulation"
+            ]
+        },
+        "year/.zarray": {
+            "chunks": [
+                481
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                481
+            ],
+            "zarr_format": 2
+        },
+        "year/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "year"
+            ]
+        }
+    },
+    "zarr_consolidated_format": 1
+}

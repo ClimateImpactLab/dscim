@@ -1,0 +1,8 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "year"
+    ],
+    "long_title": "Impact year (Gregorian calendar)",
+    "source": "From the weather file.",
+    "units": "Years"
+}

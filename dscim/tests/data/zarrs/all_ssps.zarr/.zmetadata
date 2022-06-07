@@ -1,0 +1,197 @@
+{
+    "metadata": {
+        ".zattrs": {
+            "authors": "Climate Impact Lab",
+            "sources": "Keywan Riahi, Detlef P. van Vuuren, Elmar Kriegler, Jae Edmonds, Brian C. O\u2019Neill, Shinichiro Fujimori, Nico Bauer, Katherine Calvin, Rob Dellink, Oliver Fricko, Wolfgang Lutz, Alexander Popp, Jesus Crespo Cuaresma, Samir KC, Marian Leimbach, Leiwen Jiang, Tom Kram, Shilpa Rao, Johannes Emmerling, Kristie Ebi, Tomoko Hasegawa, Petr Havl\u00edk, Florian Humpen\u00f6der, Lara Aleluia Da Silva, Steve Smith, Elke Stehfest, Valentina Bosetti, Jiyong Eom, David Gernaat, Toshihiko Masui, Joeri Rogelj, Jessica Strefler, Laurent Drouet, Volker Krey, Gunnar Luderer, Mathijs Harmsen, Kiyoshi Takahashi, Lavinia Baumstark, Jonathan C. Doelman, Mikiko Kainuma, Zbigniew Klimont, Giacomo Marangoni, Hermann Lotze-Campen, Michael Obersteiner, Andrzej Tabeau, Massimo Tavoni.\nThe Shared Socioeconomic Pathways and their energy, land use, and greenhouse gas emissions implications: An overview, Global Environmental Change, Volume 42, Pages 153-168, 2017,\nISSN 0959-3780, DOI:110.1016/j.gloenvcha.2016.05.009\nPopulation: Samir KC, Wolfgang Lutz, The human core of the shared socioeconomic pathways: Population scenarios by age, sex and level of education for all countries to 2100, Global Environmental Change, Volume 42, 2017, Pages 181-192, ISSN 0959-3780, DOI:10.1016/j.gloenvcha.2014.06.004\nGDP marker projections by the OECD: Rob Dellink, Jean Chateau, Elisa Lanzi, Bertrand Magn\u00e9, Long-term economic growth projections in the Shared Socioeconomic Pathways, Global Environmental Change, Volume 42, 2017, Pages 200-214, ISSN 0959-3780, DOI:10.1016/j.gloenvcha.2015.06.004\nGDP projections by IIASA: Jes\u00fas Crespo Cuaresma, Income projections for climate change research: A framework based on human capital dynamics, Global Environmental Change, Volume 42, 2017, Pages 226-236, ISSN 0959-3780, DOI:10.1016/j.gloenvcha.2015.02.012\n",
+            "updated": "Fri Sep 24 12:18:47 2021"
+        },
+        ".zgroup": {
+            "zarr_format": 2
+        },
+        "gdp/.zarray": {
+            "chunks": [
+                5,
+                9,
+                2,
+                91
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                5,
+                9,
+                2,
+                91
+            ],
+            "zarr_format": 2
+        },
+        "gdp/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ssp",
+                "region",
+                "model",
+                "year"
+            ],
+            "description": "Purchasing Power Parity GDP projection for selected regions in constant 2019 USD, consistent with \"Basic Elements\" of the Shared Socioeconomic Pathways (Riahi et al, 2016)",
+            "long_name": "GDP",
+            "source": "OECD - Dellink et al (2017); IIASA - Cuaresma (2017); see file global attributes",
+            "units": "constant 2019 PPP USD"
+        },
+        "model/.zarray": {
+            "chunks": [
+                2
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                2
+            ],
+            "zarr_format": 2
+        },
+        "model/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "model"
+            ]
+        },
+        "pop/.zarray": {
+            "chunks": [
+                5,
+                9,
+                2,
+                91
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<f8",
+            "fill_value": "NaN",
+            "filters": null,
+            "order": "C",
+            "shape": [
+                5,
+                9,
+                2,
+                91
+            ],
+            "zarr_format": 2
+        },
+        "pop/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ssp",
+                "region",
+                "model",
+                "year"
+            ],
+            "description": "Population count for selected regions consistent with \"Basic Elements\" of the Shared Socioeconomic Pathways (Riahi et al, 2016)",
+            "long_name": "Population",
+            "source": "KC and Lutz (2017); see file global attributes",
+            "units": "count"
+        },
+        "region/.zarray": {
+            "chunks": [
+                9
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "|O",
+            "fill_value": null,
+            "filters": [
+                {
+                    "id": "vlen-utf8"
+                }
+            ],
+            "order": "C",
+            "shape": [
+                9
+            ],
+            "zarr_format": 2
+        },
+        "region/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "region"
+            ]
+        },
+        "ssp/.zarray": {
+            "chunks": [
+                5
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<U4",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                5
+            ],
+            "zarr_format": 2
+        },
+        "ssp/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "ssp"
+            ]
+        },
+        "year/.zarray": {
+            "chunks": [
+                91
+            ],
+            "compressor": {
+                "blocksize": 0,
+                "clevel": 5,
+                "cname": "lz4",
+                "id": "blosc",
+                "shuffle": 1
+            },
+            "dtype": "<i8",
+            "fill_value": null,
+            "filters": null,
+            "order": "C",
+            "shape": [
+                91
+            ],
+            "zarr_format": 2
+        },
+        "year/.zattrs": {
+            "_ARRAY_DIMENSIONS": [
+                "year"
+            ]
+        }
+    },
+    "zarr_consolidated_format": 1
+}

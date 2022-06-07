@@ -1,0 +1,14 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "gcm",
+        "batch",
+        "ssp",
+        "rcp",
+        "model",
+        "year",
+        "region"
+    ],
+    "long_title": "monetized mortality damages (monetized deaths + costs) using vsl scaled-income mortality valuation methodology, vsl based on IR-year income for costs and on country-year income for deaths",
+    "source": "montecarlo simulation of impacts, VSL, pop and life expectancy data",
+    "units": "2019 USD per capita"
+}

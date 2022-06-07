@@ -1,0 +1,14 @@
+{
+    "_ARRAY_DIMENSIONS": [
+        "runtype",
+        "rcp",
+        "year",
+        "simulation",
+        "pulse_year"
+    ],
+    "coordinates": "locations kind confidence workflow_src",
+    "description": "Simulations of 19-year centered mean of Global Mean Sea Level anomaly under SSP scenarios",
+    "long_name": "GMSL sims rel. 1996-2014",
+    "reference_period": "1996-2014",
+    "units": "cm"
+}
