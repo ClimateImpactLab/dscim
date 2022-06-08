@@ -70,7 +70,7 @@ delta_in = "monetized_damages_vsl_epa_scaled"
 delta_out = "monetized_damages_vsl_epa_scaled"
 histclim_in = "monetized_deaths_vsl_epa_scaled"
 histclim_out = "monetized_deaths_vsl_epa_scaled"
-outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-vsl-ir-valuation-histclim-delta.zarr"
+outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v2.zarr"
 
 ##########################
 # mortality paper, integration paper
@@ -94,7 +94,7 @@ outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/im
 # delta_out = 'delta_monetized_damages_vly_epa_scaled'
 # histclim_in = 'monetized_deaths_vly_epa_scaled'
 # histclim_out = 'histclim_monetized_deaths_vly_epa_scaled'
-# outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-vly-ir-valuation-histclim-delta.zarr"
+# outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v0.zarr"
 
 ##########################
 # EPA deliverables
@@ -111,7 +111,7 @@ outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/im
 # delta_out = 'delta_hybrid_damages_vsl_epa_scaled'
 # histclim_in = 'monetized_deaths_vsl_epa_scaled'
 # histclim_out = 'histclim_deaths_vsl_epa_scaled'
-# outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-hybrid-histclim-delta.zarr"
+# outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v1.zarr"
 
 ##########################
 # global average VSL
@@ -137,7 +137,7 @@ outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/im
 # delta_out = "monetized_damages_vsl_epa_popavg"
 # histclim_in = "monetized_deaths_vsl_epa_popavg"
 # histclim_out = "monetized_deaths_vsl_epa_popavg"
-# outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-vsl_popavg-histclim-delta.zarr"
+# outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v3.zarr"
 
 ##########################
 # running the function

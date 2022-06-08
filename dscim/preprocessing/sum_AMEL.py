@@ -11,29 +11,27 @@ dask.config.set(**{"array.slicing.split_large_chunks": False})
 
 # set parameters of script
 root_dir = "/shares/gcp/integration/float32/input_data_histclim"
-clip = ""
 integration = False
-date = "2022_04_15"
 global_average_vsl = True
 
 # updating paths depending on whether it's integration_AMEL or just AMEL (for EPA)
 if integration == True:
-    sectors = ["agriculture", "mortality_vly", "energy", "labor"]
+    sectors = ["agriculture", "mortality_v0", "energy", "labor"]
     config = f"/home/{USER}/repos/integration/configs/integration_config_AR6.yaml"
-    output = f"{root_dir}/AMEL_epa_vsl/{date}_integration_AMEL{clip}.zarr"
+    output = f"{root_dir}/AMEL_data/AMEL_m0.zarr"
 else:
     if global_average_vsl == True:
-        sectors = ["agriculture", "mortality_vsl_popavg", "energy", "labor"]
+        sectors = ["agriculture", "mortality_v3", "energy", "labor"]
         config = (
             f"/home/{USER}/repos/integration/configs/epa_tool_config-histclim_AR6.yaml"
         )
-        output = f"{root_dir}/AMEL_epa_vsl/{date}_vsl_popavg_AMEL{clip}.zarr"
+        output = f"{root_dir}/AMEL_data/AMEL_m3.zarr"
     else:
-        sectors = ["agriculture", "mortality", "energy", "labor"]
+        sectors = ["agriculture", "mortality_v1", "energy", "labor"]
         config = (
             f"/home/{USER}/repos/integration/configs/epa_tool_config-histclim_AR6.yaml"
         )
-        output = f"{root_dir}/AMEL_epa_vsl/{date}_AMEL{clip}.zarr"
+        output = f"{root_dir}/AMEL_data/AMEL_m1.zarr"
 
 # load config
 with open(config, "r") as stream:
