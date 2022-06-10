@@ -7,8 +7,9 @@ from p_tqdm import p_map
 import seaborn as sns
 import matplotlib.pyplot as plt
 from dscim.menu.simple_storage import EconVars
+from functools import reduce
 
-## NOTE: currently, mortality damages are per capita but individual components (deaths, costs) are NOT per capita. This will change soon. Confirm with Stefan/Emile whether it's been changed. Date: 15/09/2021
+## NOTE: currently, mortality damages are per capita but individual components (deaths, costs) are NOT per capita.
 
 gcm = [
     "ACCESS1-0",
@@ -51,26 +52,27 @@ gcm.reverse()
 ##########################
 # IR-level VSL
 ##########################
-delta_paths = list(
-    Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
-        "mortality_damages_IR_batch[0-9].nc4"
-    )
-) + list(
-    Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
-        "mortality_damages_IR_batch[0-9][0-9].nc4"
-    )
-)
-histclim_paths = list(
-    Path(
-        f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/nosubtract/"
-    ).glob("mortality_damages_IR_batch*_histclim.nc4")
-)
 
-delta_in = "monetized_damages_vsl_epa_scaled"
-delta_out = "monetized_damages_vsl_epa_scaled"
-histclim_in = "monetized_deaths_vsl_epa_scaled"
-histclim_out = "monetized_deaths_vsl_epa_scaled"
-outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v2.zarr"
+# delta_paths = list(
+#     Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
+#         "mortality_damages_IR_batch[0-9].nc4"
+#     )
+# ) + list(
+#     Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
+#         "mortality_damages_IR_batch[0-9][0-9].nc4"
+#     )
+# )
+# histclim_paths = list(
+#     Path(
+#         f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/nosubtract/"
+#     ).glob("mortality_damages_IR_batch*_histclim.nc4")
+# )
+
+# delta_in = "monetized_damages_vsl_epa_scaled"
+# delta_out = "monetized_damages_vsl_epa_scaled"
+# histclim_in = "monetized_deaths_vsl_epa_scaled"
+# histclim_out = "monetized_deaths_vsl_epa_scaled"
+# outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v2.zarr"
 
 ##########################
 # mortality paper, integration paper
@@ -139,6 +141,46 @@ outpath = "/shares/gcp/integration/float32/input_data_histclim/mortality_data/im
 # histclim_out = "monetized_deaths_vsl_epa_popavg"
 # outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v3.zarr"
 
+
+############################################
+# global average VSL deaths + IR level costs
+############################################
+
+delta_paths = (
+    list(
+        Path(
+            "/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/vsl_popavg/"
+        ).glob("mortality_damages_IR_batch[0-9].nc4")
+    )
+    + list(
+        Path(
+            "/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/vsl_popavg/"
+        ).glob("mortality_damages_IR_batch[0-9][0-9].nc4")
+    )
+    + list(
+        Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
+            "mortality_damages_IR_batch[0-9].nc4"
+        )
+    )
+    + list(
+        Path(f"/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/").glob(
+            "mortality_damages_IR_batch[0-9][0-9].nc4"
+        )
+    )
+)
+
+histclim_paths = list(
+    Path(
+        "/shares/gcp/outputs/mortality/impacts-darwin-montecarlo-damages/vsl_popavg/"
+    ).glob("mortality_damages_IR_batch*_histclim.nc4")
+)
+
+delta_in = ["monetized_deaths_vsl_epa_popavg", "monetized_costs_vsl_epa_scaled"]
+delta_out = "monetized_damages_vsl_epa_hybrid"
+histclim_in = "monetized_deaths_vsl_epa_popavg"
+histclim_out = "monetized_deaths_vsl_epa_popavg"
+outpath = f"/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v4.zarr"
+
 ##########################
 # running the function
 ##########################
@@ -159,13 +201,24 @@ def resave_mortality_histclim(i):
 
     histclim = xr.open_mfdataset(histclim_paths, preprocess=prep, parallel=True)
 
-    damages = xr.Dataset(
-        {
-            delta_out: delta[delta_in],
-            # making histclim per capita because deaths are currently *NOT* per capita, whereas damages are
-            histclim_out: histclim[histclim_in] / ec.econ_vars.pop.load(),
-        }
-    ).expand_dims({"gcm": [str(i)]})
+    var_dict = {
+        # making histclim per capita because deaths and costs are currently *NOT* per capita, whereas damages are
+        histclim_out: histclim[histclim_in]
+        / ec.econ_vars.pop.load()
+    }
+
+    if type(delta_in) == str:
+        # if one var (damages) it's already per capita, no need to divide
+        var_dict[delta_out] = delta[delta_in]
+    elif (type(delta_in) == list) and (len(delta_in) == 2):
+        # if not damages, needs to be per capita.
+        var_dict[delta_out] = (
+            reduce(np.add, [delta[j] for j in delta_in]) / ec.econ_vars.pop.load()
+        )
+    else:
+        print("Unexpected delta input.")
+
+    damages = xr.Dataset(var_dict).expand_dims({"gcm": [str(i)]})
 
     damages = damages.chunk(
         {"batch": 15, "ssp": 1, "model": 1, "rcp": 1, "gcm": 1, "year": 10}
