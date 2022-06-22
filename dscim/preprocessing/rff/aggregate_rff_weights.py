@@ -33,6 +33,7 @@ def clean_simulation(draw):
 datasets = p_map(clean_simulation, range(1, 10001, 1))
 
 # ask James
+# @TODO: check the interpolation on these weights
 concatenated = xr.concat(datasets, "rff_sp").interp(
     {"year": range(2010, 2101, 1)}, method="linear"
 )

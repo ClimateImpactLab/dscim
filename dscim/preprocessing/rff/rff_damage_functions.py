@@ -17,35 +17,20 @@ eta_rhos = {
 
 USA = False
 
-if USA == False:
-    in_library = (
-        "/mnt/CIL_integration/damage_function_library/damage_function_library_epa"
-    )
-    out_library = (
-        "/mnt/CIL_integration/damage_function_library/damage_function_library_rff2"
-    )
-    sectors = [
-        "CAMEL",
-        "AMEL",
-        "mortality",
-        "energy",
-        "labor",
-        "agriculture",
-    ]
-else:
-    in_library = (
-        "/mnt/CIL_integration/damage_function_library/damage_function_library_USA_SCC"
-    )
-    out_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_USA_SCC_rff2"
-    sectors = [
-        # "AMEL_USA",
-        # "coastal_USA",
-        # "CAMEL_USA",
-        "agriculture_USA",
-        "mortality_USA",
-        "energy_USA",
-        "labor_USA",
-    ]
+in_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_ssp"
+out_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_rff"
+sectors = [
+    "CAMEL_m4_c0.21.4",
+    "AMEL_m4",
+    "coastal_v0.21.4",
+    # "mortality",
+    # "energy",
+    # "labor",
+    # "agriculture",
+]
+
+if USA == True:
+    sectors = [f"{i}_USA" for i in sectors]
 
 if USA == False:
 
@@ -117,6 +102,11 @@ def weight_df(args):
 
     # pre-2100 weighted fractional damage functions
     rff = (df * weights).sum(["ssp", "model"])
+
+    # save fractional damage function
+    # rff.sel(year=slice(2020, 2099)).to_netcdf(
+    #     f"{out_library}/{sector}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
+    # )
 
     # recover damage function as dollars instead of fraction
     rff = (rff * rff_gdp).sel(year=slice(2020, 2099))

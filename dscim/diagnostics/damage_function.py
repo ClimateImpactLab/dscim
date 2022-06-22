@@ -272,13 +272,13 @@ def damage_function_w_consumption(
     years=[2050, 2099],
     recipes=["equity"],
     disc="constant",
-    model=["IIASA GDP"],
-    ssp=["SSP3"],
+    model="IIASA GDP",
+    ssp="SSP3",
 ):
 
     if "gwr" in disc:
-        ssp = ["['SSP2', 'SSP3', 'SSP4']"]
-        model = ["['IIASA GDP', 'OECD Env-Growth']"]
+        ssp = "['SSP2', 'SSP3', 'SSP4']"
+        model = "['IIASA GDP', 'OECD Env-Growth']"
 
     s_list, g_list = [], []
     for recipe in recipes:
@@ -361,7 +361,7 @@ def damage_function_w_consumption(
     plt.subplots_adjust(wspace=0, hspace=0)
     os.makedirs(output, exist_ok=True)
     plt.savefig(
-        f"{output}/{'-'.join(recipes)}_{disc}_{'-'.join([str(i) for i in years])}_eta{eta}_rho{rho}_damage_function.png",
+        f"{output}/{'-'.join(recipes)}_{disc}_{'-'.join([str(i) for i in years])}_{ssp}_{model}_eta{eta}_rho{rho}_damage_function.png",
         dpi=300,
         bbox_inches="tight",
     )
