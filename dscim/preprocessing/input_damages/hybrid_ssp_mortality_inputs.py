@@ -7,9 +7,13 @@ import time
 from pathlib import Path
 import xarray as xr
 
-if __name__ == "__main__":
+print("testing message: version jun 25")
 
-    hybrids = "/project2/mgreenst/mortality_data/hybrid_damages"
+
+def hybrid_ssp_mortality_inputs(input_path = "/project2/mgreenst/mortality_data/hybrid_damages"):
+# if __name__ == "__main__":
+
+    hybrids = input_path
     files = [
         f"{hybrids}/monetized_damages_complete_batch{i}_hybridssp.nc4" for i in [4, 7]
     ]

@@ -13,20 +13,25 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 from dask_jobqueue import SLURMCluster
 from dask.distributed import Client, progress
 
+print("testing message: version jun 25")
 # DO NOT USE A DASK CLIENT FOR THIS SCRIPT. IT'LL MESS UP P_MAP.
 
-versions = [""]
-# ["all_topcodes", 'v0.0_topcodes', 'v0.0_elasticities', 'v0.0_globe_market', 'v0.0_iso_market', 'v0.0_no_CO2']
+def agriculture_inputs(input_root = "/shares/gcp/outputs/agriculture/impacts-mealy/gdp_weights_delta", 
+                       output_root = "/shares/gcp/integration/float32/input_data_histclim/ag_data/gdp_weights_delta/test", 
+                       path_econ = "/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr", 
+                       versions = [""]):
+    # versions = [""]
+    # ["all_topcodes", 'v0.0_topcodes', 'v0.0_elasticities', 'v0.0_globe_market', 'v0.0_iso_market', 'v0.0_no_CO2']
 
-paths = {
-    f"/shares/gcp/outputs/agriculture/impacts-mealy/gdp_weights_delta/{k}": f"/shares/gcp/integration/float32/input_data_histclim/ag_data/gdp_weights_delta/"
-    for k in versions
-}
+    paths = {
+        f"{input_root}/{k}": f"{output_root}"
+        for k in versions
+    }
 
-if __name__ == "__main__":
+    # if __name__ == "__main__":
 
     ec = EconVars(
-        path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr"
+        path_econ=path_econ
     )
 
     scalar = float(1 - 0.55)

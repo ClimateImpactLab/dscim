@@ -8,6 +8,7 @@ from functools import partial
 from p_tqdm import p_umap
 from dscim.utils.calculate_damages import concatenate_energy_damages
 from dscim.menu.simple_storage import EconVars
+print("testing message: version jun 25")
 
 
 def calculate_batch_damages(batch, ec):
@@ -28,24 +29,29 @@ def calculate_batch_damages(batch, ec):
     print(f"Saved!")
 
 
-if __name__ == "__main__":
+def energy_inputs(re_calculate = False,
+                 path_econ = f"/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
+                  input_path = "/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
+                  output_path = "/shares/gcp/integration/float32/input_data_histclim/energy_data/",
+                 ):
+    # if __name__ == "__main__":
 
-    re_calculate = False
+    # re_calculate = False
     ec = EconVars(
-        path_econ=f"/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs"
+        path_econ
     )
 
     if re_calculate:
         read_energy_files_parallel(
-            input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
-            save_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/",
+            input_path= input_path,
+            save_path= output_path,
             ec_cls=ec,
             seed="TINV_clim_integration_total_energy_delta",
         )
 
         read_energy_files_parallel(
-            input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
-            save_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/",
+            input_path= input_path,
+            save_path= output_path,
             ec_cls=ec,
             seed="TINV_clim_integration_total_energy_histclim",
         )
