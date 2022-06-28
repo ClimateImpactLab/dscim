@@ -365,12 +365,16 @@ def ssp_timeseries(
     )
 
     # discount factors
-    df = (
-        xr.open_zarr(
-            f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_discount_factors.zarr"
-        )
-        .sel(weitzman_parameter="0.5", gas=gas, drop=True)
-        .discount_factor.rename("discount_factors")
+    df = xr.open_zarr(
+        f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_discount_factors.zarr"
+    )
+
+    if "coastal" not in sector:
+        # coastal is missing the gas dimension for EPA results
+        df = df.sel(gas=gas, drop=True)
+
+    df = df.sel(weitzman_parameter="0.5", drop=True).discount_factor.rename(
+        "discount_factors"
     )
 
     # discounted damages
@@ -389,11 +393,12 @@ def ssp_timeseries(
     with open(config) as config_file:
         params = yaml.full_load(config_file)
 
-    gmst = (
-        Climate(**params["climate"])
-        .fair_pulse.temperature.sel(gas=gas, drop=True)
-        .rename("gmst")
-    )
+    anom_var = "gmsl" if "coastal" in sector else "temperature"
+
+    anomaly = Climate(**params["climate"]).fair_pulse[anom_var]
+
+    if "coastal" not in sector:
+        anomaly = anomaly.sel(gas=gas, drop=True)
 
     data = xr.combine_by_coords(
         [
@@ -405,7 +410,7 @@ def ssp_timeseries(
                 discounted_damages,
                 emissions,
                 c_emissions,
-                gmst,
+                anomaly,
             ]
         ]
     )
@@ -424,7 +429,7 @@ def ssp_timeseries(
         [
             "cumulative_emissions",
             "emissions",
-            "gmst",
+            anom_var,
             "marginal_damages",
             "discount_factors",
             "discounted_damages",
