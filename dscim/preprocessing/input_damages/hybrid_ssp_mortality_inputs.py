@@ -10,8 +10,10 @@ import xarray as xr
 print("testing message: version jun 25")
 
 
-def hybrid_ssp_mortality_inputs(input_path = "/project2/mgreenst/mortality_data/hybrid_damages"):
-# if __name__ == "__main__":
+def hybrid_ssp_mortality_inputs(
+    input_path="/project2/mgreenst/mortality_data/hybrid_damages",
+):
+    # if __name__ == "__main__":
 
     hybrids = input_path
     files = [
