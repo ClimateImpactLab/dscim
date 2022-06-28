@@ -20,10 +20,10 @@ USA = False
 in_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_ssp"
 out_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_rff"
 sectors = [
-    "CAMEL_m4_c0.21.4",
-    "AMEL_m4",
-    "coastal_v0.21.4",
-    # "mortality",
+    # "CAMEL_m4_c0.21.4",
+    # "AMEL_m4",
+    "coastal_v0.21.5",
+    # "mortality_v4",
     # "energy",
     # "labor",
     # "agriculture",
@@ -79,9 +79,8 @@ factors = rff_gdp.sel(year=slice(2100, 2300)) / rff_gdp.sel(year=2099)
 # get RFF emulator weights
 run_id = xr.open_dataset("/shares/gcp/integration/rff2/rffsp_fair_sequence.nc")
 weights = (
-    xr.open_zarr(
-        f"/shares/gcp/integration/rff/damage_function_weights/damage_function_weights3.zarr",
-        consolidated=True,
+    xr.open_dataset(
+        f"/shares/gcp/integration/rff/damage_function_weights/damage_function_weights3.nc4",
     )
     .sel(rff_sp=run_id.rff_sp, drop=True)
     .value
