@@ -14,7 +14,7 @@ eta_rhos = {
 ces = ["ce_cc", "ce_no_cc"]
 recipes = ["adding_up", "risk_aversion"]
 CE_folder = ["/shares/gcp/integration/CE_library_epa_vsl_bc39"]
-sectors = ["agriculture", "mortality", "energy", "labor"]
+sectors = ["coastal_v0.21.4", "AMEL_m4"]
 subset_zarr = False
 
 
