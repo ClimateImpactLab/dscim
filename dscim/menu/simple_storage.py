@@ -401,7 +401,7 @@ class StackedDamages:
             ).sum("region")
         else:
             raise NotImplementedError(
-                "Adding up aggregated damages not found. Please run CE_calculation.ipynb for `adding_up`."
+                f"Adding up reduced damages not found: {mean_no_cc}, {mean_cc}. Please reduce damages for for `adding_up`."
             )
         return self.cut(damages)
 
