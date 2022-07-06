@@ -13,6 +13,7 @@ from pathlib import Path
 from itertools import product
 from functools import partial
 from p_tqdm import p_map
+from dscim.menu.simple_storage import EconVars
 
 logger = logging.getLogger(__name__)
 
@@ -543,3 +544,64 @@ def concatenate_energy_damages(
             concat_ds.to_netcdf(f"{path_to_file}.nc4")
 
     return concat_ds
+
+
+def prep_mortality_damages(
+    gcms,
+    paths,
+    vars,
+    outpath,
+    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+):
+
+    ec = EconVars(path_econ=path_econ)
+
+    # longest-string gcm has to be processed first so the coordinate is the right str length
+    gcms = sorted(gcms, key=len, reverse=True)
+
+    for i, gcm in enumerate(gcms):
+        print(gcm, i, "/", len(gcms))
+
+        def prep(ds, gcm=gcm):
+            return ds.sel(gcm=gcm).drop("gcm")
+
+        data = {}
+        for var, name in vars.items():
+            data[var] = xr.open_mfdataset(paths[var], preprocess=prep, parallel=True)[
+                name
+            ]
+
+        damages = xr.Dataset(
+            {
+                "delta": (
+                    data["delta_deaths"] - data["histclim_deaths"] + data["delta_costs"]
+                )
+                / ec.econ_vars.pop.load(),
+                "histclim": data["histclim_deaths"] / ec.econ_vars.pop.load(),
+            }
+        ).expand_dims({"gcm": [gcm]})
+
+        damages = damages.chunk(
+            {"batch": 15, "ssp": 1, "model": 1, "rcp": 1, "gcm": 1, "year": 10}
+        )
+        damages.coords.update({"batch": [f"batch{i}" for i in damages.batch.values]})
+
+        # convert to EPA VSL
+        damages = damages * 0.90681089
+
+        if i == 0:
+            damages.to_zarr(
+                outpath,
+                consolidated=True,
+                mode="w",
+            )
+        else:
+            damages.to_zarr(
+                outpath,
+                consolidated=True,
+                append_dim="gcm",
+            )
+
+        for v in data.values():
+            v.close()
+        damages.close()
