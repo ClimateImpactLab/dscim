@@ -5,9 +5,6 @@ from dscim.menu.simple_storage import Climate, EconVars
 from dscim.menu.baseline import Baseline
 from dscim.menu.risk_aversion import RiskAversionRecipe
 
-# @MIKE: CHANGE ME
-data_dir = "."
-
 
 @pytest.fixture(scope="module")
 def climate():
