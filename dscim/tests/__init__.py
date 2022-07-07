@@ -44,4 +44,3 @@ def open_zipped_results(name, *args, **kwargs):
             ds = pd.read_csv(file, *args, **kwargs)
 
     return ds
-
