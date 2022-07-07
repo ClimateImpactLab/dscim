@@ -15,5 +15,7 @@ seaborn
 geopandas
 black
 flake8
+netcdf4
+h5netcdf
 impactlab-tools
 p_tqdm
