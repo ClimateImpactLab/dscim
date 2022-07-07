@@ -15,15 +15,16 @@ eta_rhos = {
     "1.567899395": "0.00770271076",
 }
 
-USA = False
+USA = True
 
 in_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_ssp"
 out_library = "/mnt/CIL_integration/damage_function_library/damage_function_library_rff"
 sectors = [
-    # "CAMEL_m4_c0.21.4",
-    # "AMEL_m4",
-    "coastal_v0.21.5",
-    # "mortality_v4",
+    # "CAMEL_m5_c0.21.5",
+    # "AMEL_m5",
+    # "coastal_v0.21.5",
+    "mortality_v4",
+    "mortality_v5",
     # "energy",
     # "labor",
     # "agriculture",
@@ -127,8 +128,22 @@ p_map(
         product(
             sectors,
             eta_rhos.items(),
-            ["adding_up", "risk_aversion"],
-            ["constant", "euler_ramsey"],
+            ["adding_up"],
+            ["constant"],
+            ["damage_function_coefficients"],
+        )
+    ),
+    num_cpus=20,
+)
+
+p_map(
+    weight_df,
+    list(
+        product(
+            sectors,
+            eta_rhos.items(),
+            ["risk_aversion"],
+            ["euler_ramsey"],
             ["damage_function_coefficients"],
         )
     ),
