@@ -75,7 +75,6 @@ def reduce_damages(
     eta,
     sector,
     config,
-    outpath,
     bottom_coding_gdppc=39.39265060424805,
     zero=False,
 ):
@@ -83,12 +82,13 @@ def reduce_damages(
     # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
     with open(config, "r") as stream:
-        loaded_config = yaml.safe_load(stream)
-        params = loaded_config["sectors"][sector]
+        c = yaml.safe_load(stream)
+        params = c["sectors"][sector]
 
     damages = Path(params["sector_path"])
     histclim = params["histclim"]
     delta = params["delta"]
+    outpath = f"{c['paths']['reduced_damages_library']}/{sector}"
 
     socioec = Path(
         "/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr"
@@ -185,7 +185,7 @@ def reformat_climate_files():
 def sum_AMEL(
     sectors,
     config,
-    output,
+    AMEL,
 ):
 
     # load config
@@ -193,8 +193,10 @@ def sum_AMEL(
         loaded_config = yaml.safe_load(stream)
         params = loaded_config["sectors"]
 
+    output = params[AMEL]["sector_path"]
+
     # save summed variables to zarr one by one
-    for var in ["delta", "histclim"]:
+    for i, var in enumerate(["delta", "histclim"]):
 
         datasets = []
 
@@ -228,10 +230,13 @@ def sum_AMEL(
         summed.attrs["delta"] = str({s: params[s]["delta"] for s in sectors})
         summed.attrs["histclim"] = str({s: params[s]["histclim"] for s in sectors})
 
-        for var in summed.variables:
-            summed[var].encoding.clear()
+        for v in summed.variables:
+            summed[v].encoding.clear()
 
-        summed.to_zarr(output, consolidated=True, mode="a")
+        if i == 0:
+            summed.to_zarr(output, consolidated=True, mode="w")
+        else:
+            summed.to_zarr(output, consolidated=True, mode="a")
 
 
 def subset_USA_reduced_damages(

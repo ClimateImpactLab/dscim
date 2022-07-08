@@ -7,9 +7,12 @@ from functools import partial
 import os, sys
 
 
-def clean_simulation(draw):
+def clean_simulation(
+    draw,
+    root,
+):
     ds = pd.read_csv(
-        f"/shares/gcp/social/rff/fivebeans3/emulate-fivebean-{draw}.csv",
+        f"{root}/emulate-fivebean-{draw}.csv",
         skiprows=9,
     )
 
@@ -31,10 +34,13 @@ def clean_simulation(draw):
     return ds
 
 
-def clean_error(draw):
+def clean_error(
+    draw,
+    root,
+):
 
     ds = pd.read_csv(
-        f"/shares/gcp/social/rff/fivebeans3/emulate-fivebean-{draw}.csv",
+        f"{root}/emulate-fivebean-{draw}.csv",
         skiprows=9,
     )
 
@@ -144,3 +150,100 @@ def rff_damage_functions(
             [j for i, j in product(sectors, eta_rhos.items())],
             num_cpus=20,
         )
+
+
+def prep_rff_socioeconomics(
+    inflation_path,
+    rff_path,
+    runid_path,
+    out_path,
+    USA,
+):
+
+    # Load Fed GDP deflator
+    fed_gdpdef = pd.read_csv(inflation_path).set_index("year")["gdpdef"].to_dict()
+
+    # transform 2011 USD to 2019 USD
+    inflation_adj = fed_gdpdef[2019] / fed_gdpdef[2011]
+
+    # read in RFF data
+    socioec = xr.open_dataset(rff_path)
+
+    if USA == False:
+        print("Summing to globe.")
+        socioec = socioec.sum("Country")
+    else:
+        print("USA output.")
+        socioec = socioec.sel(Country="USA", drop=True)
+
+    # interpolate with log -> linear interpolation -> exponentiate
+    socioec = np.exp(
+        np.log(socioec).interp({"Year": range(2020, 2301, 1)}, method="linear")
+    ).rename({"runid": "rff_sp", "Year": "year", "Pop": "pop", "GDP": "gdp"})
+
+    socioec["pop"] = socioec["pop"] * 1000
+    socioec["gdp"] = socioec["gdp"] * 1e6 * inflation_adj
+
+    # read in RFF runids and update coordinates with them
+    run_id = xr.open_dataset(runid_path)
+    socioec = socioec.sel(rff_sp=run_id.rff_sp, drop=True)
+
+    if USA == False:
+        socioec.expand_dims({"region": ["world"]}).to_netcdf(
+            f"{out_path}/rff_global_socioeconomics.nc4"
+        )
+    else:
+        socioec.expand_dims({"region": ["USA"]}).to_netcdf(
+            f"{out_path}/rff_USA_socioeconomics.nc4"
+        )
+
+
+def aggregate_rff_weights(
+    root,
+    output,
+):
+
+    # clean simulation files
+    datasets = p_map(partial(clean_simulation, root=root), range(1, 10001, 1))
+
+    # concatenate and interpolate
+    concatenated = xr.concat(datasets, "rff_sp").interp(
+        {"year": range(2010, 2101, 1)}, method="linear"
+    )
+
+    # reweight
+    reweighted = concatenated / concatenated.sum(["model", "ssp"])
+
+    # make sure weights sum to 1
+    assert_allclose(reweighted.sum(["model", "ssp"]).values, 1)
+
+    # describe and save file
+    reweighted = reweighted.to_dataset()
+    reweighted.attrs["version"] = 3
+    reweighted.attrs[
+        "description"
+    ] = """
+    This set of emulator weights is generated using this script:
+    dscim/dscim/utils/rff.py -> aggregate_rff_weights
+    It cleans and aggregates the emulator weights csvs, linearly interpolates them between 5 year intervals, reweights them to sum to 1, and converts to ncdf4 format.
+    """
+
+    reweighted.to_netcdf(f"{output}/damage_function_weights.nc4")
+
+    # save out error files
+
+    error_datasets = p_map(partial(clean_error, root=root), range(1, 10001, 1))
+    error_concatenated = xr.concat(error_datasets, "rff_sp")
+
+    # describe and save file
+    error_concatenated = error_concatenated.to_dataset()
+    error_concatenated.attrs["version"] = 3
+    error_concatenated.attrs[
+        "description"
+    ] = """
+    This set of emulator weight errors is generated using this script:
+    dscim/dscim/preprocessing/rff/aggregate_rff_weights.py
+    It cleans and aggregates the emulator weights csvs for error rows only, and converts to ncdf4 format.
+    """
+
+    error_concatenated.to_netcdf(f"{output}/weights_errors.nc4")

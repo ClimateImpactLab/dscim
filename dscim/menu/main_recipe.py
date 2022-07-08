@@ -72,11 +72,11 @@ class MainRecipe(StackedDamages, ABC):
     def __init__(
         self,
         sector_path,
-        save_path,
         econ_vars,
         climate_vars,
         sector,
         formula,
+        save_path=None,
         rho=0.00461878399,
         eta=1.421158116,
         fit_type="ols",

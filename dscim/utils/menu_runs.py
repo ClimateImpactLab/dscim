@@ -12,25 +12,19 @@ from itertools import product
 
 
 def run_AR6_epa_ssps(
-    USA,
     sectors,
     pulse_years,
     menu_discs,
     eta_rhos,
-    weitzman_values=[x / 10.0 for x in range(1, 11, 1)] + [0.25, 0.01, 0.001, 0.0001],
+    config,
+    results_root,
+    reduced_damages_library,
+    ssp_damage_function_library,
     global_cons=True,
     factors=True,
     marginal_damages=True,
     order="scc",
 ):
-
-    if USA == True:
-        config = f"/home/{USER}/repos/dscim-cil/configs/USA_SCC_ssps.yaml"
-        sectors = [i + "_USA" for i in sectors]
-    else:
-        config = (
-            f"/home/{USER}/repos/dscim-cil/configs/epa_tool_config-histclim_AR6.yaml"
-        )
 
     w = ProWaiter(path_to_config=config)
 
@@ -41,14 +35,12 @@ def run_AR6_epa_ssps(
         menu_option = menu_disc[0]
         discount_type = menu_disc[1]
 
-        save_path = (
-            f"/mnt/CIL_integration/menu_results_AR6_epa/{sector}/{pulse_year}/unmasked/"
-        )
+        save_path = f"{results_root}/{sector}/{pulse_year}/"
 
         kwargs = {
             "discounting_type": discount_type,
             "sector": sector,
-            "ce_path": f"/shares/gcp/integration/CE_library_epa_vsl_bc39/{sector}/",
+            "ce_path": f"{reduced_damages_library}/{sector}/",
             "save_path": save_path,
             "weitzman_parameter": weitzman_values,
             "pulse_year": pulse_year,
@@ -59,7 +51,7 @@ def run_AR6_epa_ssps(
         if "CAMEL" in sector:
             kwargs.update(
                 {
-                    "damage_function_path": f"/mnt/CIL_integration/damage_function_library/damage_function_library_ssp/{sector}/",
+                    "damage_function_path": f"{ssp_damage_function_library}/{sector}/",
                 }
             )
 
@@ -130,23 +122,18 @@ def run_AR6_epa_ssps(
 
 
 def run_epa_rff(
-    USA,
     sectors,
     pulse_years,
     menu_discs,
     eta_rhos,
-    weitzman_values=[x / 10.0 for x in range(1, 11, 1)] + [0.25, 0.01, 0.001, 0.0001],
+    config,
+    results_root,
+    rff_damage_function_library,
     global_cons=True,
     factors=True,
     marginal_damages=True,
     order="scc",
 ):
-
-    if USA == True:
-        config = f"/home/{USER}/repos/dscim-cil/configs/USA_SCC_rff.yaml"
-        sectors = [i + "_USA" for i in sectors]
-    else:
-        config = f"/home/{USER}/repos/dscim-cil/configs/rff2_config_all_gases.yaml"
 
     w = ProWaiter(path_to_config=config)
 
@@ -157,13 +144,13 @@ def run_epa_rff(
         menu_option = menu_disc[0]
         discount_type = menu_disc[1]
 
-        save_path = f"/mnt/CIL_integration/menu_results_rff_epa_test/{sector}/{pulse_year}/unmasked_None"
+        save_path = f"{results_root}/{sector}/{pulse_year}/"
         os.makedirs(save_path, exist_ok=True)
 
         kwargs = {
             "discounting_type": discount_type,
             "sector": sector,
-            "damage_function_path": f"/mnt/CIL_integration/damage_function_library/damage_function_library_rff/{sector}",
+            "damage_function_path": f"{rff_damage_function_library}/{sector}",
             "save_path": save_path,
             "save_files": ["uncollapsed_sccs"],
             "weitzman_parameter": weitzman_values,
@@ -238,4 +225,4 @@ def run_epa_rff(
             )
             print("done saving discount factor")
 
-        menu_item.order_plate("scc")
+        menu_item.order_plate(order)
