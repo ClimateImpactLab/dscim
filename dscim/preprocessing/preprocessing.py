@@ -232,3 +232,147 @@ def sum_AMEL(
             summed[var].encoding.clear()
 
         summed.to_zarr(output, consolidated=True, mode="a")
+
+
+def subset_USA_reduced_damages(
+    sector,
+    reduction,
+    recipe,
+    eta,
+    input_path,
+):
+
+    ds = xr.open_zarr(f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr")
+
+    subset = ds.sel(region=[i for i in ds.region.values if "USA" in i])
+
+    for var in subset.variables:
+        subset[var].encoding.clear()
+
+    subset.to_zarr(
+        f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
+        consolidated=True,
+        mode="w",
+    )
+
+
+def subset_USA_ssp_econ(
+    in_path,
+    out_path,
+):
+
+    zarr = xr.open_zarr(
+        in_path,
+        consolidated=True,
+    )
+
+    zarr = zarr.sel(region=[i for i in zarr.region.values if "USA" in i])
+
+    for var in zarr.variables:
+        zarr[var].encoding.clear()
+
+    zarr.to_zarr(
+        out_path,
+        consolidated=True,
+        mode="w",
+    )
+
+
+def clip_damages(
+    config,
+    sector,
+    econ_path="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+):
+    """This function is no longer in use.
+    To operationalize, make sure to get a Dask client running with the following code:
+
+    # set up dask
+    dask.config.set(
+        {
+            "distributed.worker.memory.target": 0.7,
+            "distributed.worker.memory.spill": 0.8,
+            "distributed.worker.memory.pause": 0.9,
+        }
+    )
+
+    client = Client(n_workers=40, memory_limit="9G", threads_per_worker=1)
+    """
+
+    # load config
+    with open(config, "r") as stream:
+        loaded_config = yaml.safe_load(stream)
+        params = loaded_config["sectors"][sector]
+
+    # get sector paths and variable names
+    path = Path(params["sector_path"])
+    histclim = params["histclim"]
+    delta = params["delta"]
+
+    with xr.open_zarr(path, chunks=None)[delta] as ds:
+        with xr.open_zarr(econ_path, chunks=None) as gdppc:
+
+            ce_batch_dims = [i for i in ds.dims]
+            ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
+            ce_batch_coords["region"] = [
+                i for i in ds.region.values if i in gdppc.region.values
+            ]
+            ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
+            ce_chunks = [xr.open_zarr(path).chunks[c][0] for c in ce_batch_dims]
+            print(ce_chunks)
+
+    template = xr.DataArray(
+        da.empty(ce_shapes, chunks=ce_chunks),
+        dims=ce_batch_dims,
+        coords=ce_batch_coords,
+    )
+
+    def chunk_func(
+        damages,
+    ):
+
+        year = damages.year.values
+        ssp = damages.ssp.values
+        model = damages.model.values
+        region = damages.region.values
+
+        gdppc = (
+            xr.open_zarr(econ_path, chunks=None)
+            .sel(year=year, ssp=ssp, model=model, region=region, drop=True)
+            .gdppc
+        )
+
+        # get damages as % of GDPpc
+        shares = damages / gdppc
+
+        # find the 1st/99th percentile of damage share
+        # across batches and regions
+        quantile = shares.quantile([0.01, 0.99], ["batch", "region"])
+
+        # find the equivalent damages
+        # if damage share is capped to 1st/99th percentile
+        quantdams = quantile * gdppc
+
+        # keep damages that are within cutoff,
+        # otherwise replace with capped damages
+        damages = xr.where(
+            (shares <= quantile.sel(quantile=0.99, drop=True)),
+            damages,
+            quantdams.sel(quantile=0.99, drop=True),
+        )
+
+        damages = xr.where(
+            (shares >= quantile.sel(quantile=0.01, drop=True)),
+            damages,
+            quantdams.sel(quantile=0.01, drop=True),
+        )
+
+        return damages
+
+    data = xr.open_zarr(path)
+
+    for var in [delta, histclim]:
+        out = (
+            data[var].map_blocks(chunk_func, template=template).rename(var).to_dataset()
+        )
+        outpath = path.replace(".zarr", "_clipped.zarr")
+        out.to_zarr(outpath, mode="a", consolidated=True)
