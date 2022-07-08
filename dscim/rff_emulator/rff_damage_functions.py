@@ -24,24 +24,3 @@ sectors = [
 ]
 
 USA = True
-
-if USA == True:
-    sectors = [f"{i}_USA" for i in sectors]
-    ssp_gdp = "/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39_USA.zarr"
-    rff_gdp = f"/shares/gcp/integration/rff/socioeconomics/rff_USA_socioeconomics.nc4"
-else:
-    ssp_gdp = "/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr"
-    rff_gdp = "/shares/gcp/integration/rff/socioeconomics/rff_global_socioeconomics.nc4"
-
-rff_damage_functions(
-    sectors=sectors,
-    eta_rhos=eta_rhos,
-    USA=USA,
-    ssp_gdp=ssp_gdp,
-    rff_gdp=rff_gdp,
-    recipes_discs=[("adding_up", "constant"), ("risk_aversion", "euler_ramsey")],
-    in_library="/mnt/CIL_integration/damage_function_library/damage_function_library_ssp",
-    out_library="/mnt/CIL_integration/damage_function_library/damage_function_library_rff_test",
-    runid_path="/shares/gcp/integration/rff2/rffsp_fair_sequence.nc",
-    weights_path="/shares/gcp/integration/rff/damage_function_weights/damage_function_weights3.nc4",
-)

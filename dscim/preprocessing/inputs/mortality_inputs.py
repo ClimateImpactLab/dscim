@@ -1,7 +1,7 @@
 import xarray as xr
 from dscim.utils.functions import gcms
 from pathlib import Path
-from dscim.utils.calculate_damages import prep_mortality_damages
+from dscim.preprocessing.input_damages import prep_mortality_damages
 
 #########################
 # MORTALITY V4

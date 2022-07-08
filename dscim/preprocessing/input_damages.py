@@ -14,6 +14,7 @@ from itertools import product
 from functools import partial
 from p_tqdm import p_map
 from dscim.menu.simple_storage import EconVars
+from zarr.errors import GroupNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -605,3 +606,25 @@ def prep_mortality_damages(
         for v in data.values():
             v.close()
         damages.close()
+
+
+def coastal_inputs(
+    version,
+    adapt_type,
+    vsl_valuation,
+    path,
+):
+
+    try:
+        d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
+    except GroupNotFoundError:
+        print(f"Zarr not found: {path}/coastal_damages_{version}.zarr")
+        exit()
+
+    d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
+
+    d.to_zarr(
+        f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
+        consolidated=True,
+        mode="w",
+    )

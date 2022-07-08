@@ -71,21 +71,16 @@ def ce_from_chunk(
 
 def reduce_damages(
     recipe,
-    eta,
-    rho,
-    sector,
     reduction,
+    eta,
+    sector,
     config,
     outpath,
+    bottom_coding_gdppc=39.39265060424805,
     zero=False,
 ):
 
-    bottom_coding_gdppc = 39.39265060424805
-
-    if __name__ == "__reduce_damages__":
-        print("Starting client...")
-
-        client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
+    # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
     with open(config, "r") as stream:
         loaded_config = yaml.safe_load(stream)
@@ -101,6 +96,10 @@ def reduce_damages(
 
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
+
+            assert (
+                xr.open_zarr(damages).chunks["batch"][0] == 15
+            ), "'batch' dim on damages does not have chunksize of 15. Please rechunk."
 
             ce_batch_dims = [i for i in gdppc.dims] + [
                 i for i in ds.dims if i not in gdppc.dims and i != "batch"
@@ -181,3 +180,55 @@ def reformat_climate_files():
     # convert RFF files
     gases = {"CO2_Fossil": "Feb072022", "CH4": "Feb072022", "N2O": "Feb072022"}
     stack_gases(gas_dict=gases)
+
+
+def sum_AMEL(
+    sectors,
+    config,
+    output,
+):
+
+    # load config
+    with open(config, "r") as stream:
+        loaded_config = yaml.safe_load(stream)
+        params = loaded_config["sectors"]
+
+    # save summed variables to zarr one by one
+    for var in ["delta", "histclim"]:
+
+        datasets = []
+
+        for sector in sectors:
+            print(f"Opening {sector},{params[sector]['sector_path']}")
+            ds = xr.open_zarr(params[sector]["sector_path"], consolidated=True)
+            ds = ds[params[sector][var]].rename(var)
+            ds = xr.where(np.isinf(ds), np.nan, ds)
+            datasets.append(ds)
+
+        summed = (
+            xr.concat(datasets, dim="variable")
+            .sum("variable")
+            .rename(f"summed_{var}")
+            .astype(np.float32)
+            .chunk(
+                {
+                    "batch": 15,
+                    "ssp": 1,
+                    "model": 1,
+                    "rcp": 1,
+                    "gcm": 1,
+                    "year": 10,
+                    "region": 24378,
+                }
+            )
+            .to_dataset()
+        )
+
+        summed.attrs["paths"] = str({s: params[s]["sector_path"] for s in sectors})
+        summed.attrs["delta"] = str({s: params[s]["delta"] for s in sectors})
+        summed.attrs["histclim"] = str({s: params[s]["histclim"] for s in sectors})
+
+        for var in summed.variables:
+            summed[var].encoding.clear()
+
+        summed.to_zarr(output, consolidated=True, mode="a")
