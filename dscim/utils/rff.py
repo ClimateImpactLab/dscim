@@ -5,6 +5,8 @@ from p_tqdm import p_map
 from itertools import product
 from functools import partial
 import os, sys
+from numpy.testing import assert_allclose
+from datetime import datetime
 
 
 def clean_simulation(
@@ -70,13 +72,14 @@ def weight_df(
     ssp_gdp,
     weights,
     factors,
+    pulse_year,
     fractional=False,
 ):
 
     # get damage function as share of global GDP
     df = (
         xr.open_dataset(
-            f"{in_library}/{sector}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
+            f"{in_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
         )
         / ssp_gdp
     )
@@ -87,7 +90,7 @@ def weight_df(
     # save fractional damage function
     if fractional == True:
         rff.sel(year=slice(2020, 2099)).to_netcdf(
-            f"{out_library}/{sector}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
+            f"{out_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
         )
 
     # recover damage function as dollars instead of fraction
@@ -98,9 +101,9 @@ def weight_df(
 
     dfs = xr.combine_by_coords([rff, post_2100])
 
-    os.makedirs(f"{out_library}/{sector}", exist_ok=True)
+    os.makedirs(f"{out_library}/{sector}/{pulse_year}/", exist_ok=True)
     dfs.to_netcdf(
-        f"{out_library}/{sector}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
+        f"{out_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
     )
 
 
@@ -115,6 +118,7 @@ def rff_damage_functions(
     out_library,
     runid_path,
     weights_path,
+    pulse_year,
 ):
 
     # ssp GDP for fractionalizing damage functions
@@ -129,26 +133,31 @@ def rff_damage_functions(
 
     # get RFF emulator weights
     run_id = xr.open_dataset(runid_path)
-    weights = xr.open_dataset(weights_path).sel(rff_sp=run_id.rff_sp, drop=True).value
+    weights = (
+        xr.open_dataset(f"{weights_path}/damage_function_weights.nc4")
+        .sel(rff_sp=run_id.rff_sp, drop=True)
+        .value
+    )
 
-    for recipe, disc in recipes_discs:
+    for recipe_disc, sector, eta_rho in product(
+        recipes_discs, sectors, eta_rhos.items()
+    ):
 
-        p_map(
-            partial(
-                weight_df,
-                recipe=recipe,
-                disc=disc,
-                file="damage_function_coefficients",
-                in_library=in_library,
-                out_library=out_library,
-                rff_gdp=rff_gdp,
-                ssp_gdp=ssp_gdp,
-                weights=weights,
-                factors=factors,
-            ),
-            [i for i, j in product(sectors, eta_rhos.items())],
-            [j for i, j in product(sectors, eta_rhos.items())],
-            num_cpus=20,
+        print(f"{datetime.now()} : {recipe_disc} {sector} {eta_rho}")
+
+        weight_df(
+            sector=sector,
+            eta_rho=eta_rho,
+            recipe=recipe_disc[0],
+            disc=recipe_disc[1],
+            file="damage_function_coefficients",
+            in_library=in_library,
+            out_library=out_library,
+            rff_gdp=rff_gdp,
+            ssp_gdp=ssp_gdp,
+            weights=weights,
+            factors=factors,
+            pulse_year=pulse_year,
         )
 
 
@@ -227,7 +236,7 @@ def aggregate_rff_weights(
     dscim/dscim/utils/rff.py -> aggregate_rff_weights
     It cleans and aggregates the emulator weights csvs, linearly interpolates them between 5 year intervals, reweights them to sum to 1, and converts to ncdf4 format.
     """
-
+    os.makedirs(output, exist_ok=True)
     reweighted.to_netcdf(f"{output}/damage_function_weights.nc4")
 
     # save out error files

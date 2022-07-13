@@ -71,11 +71,11 @@ class MainRecipe(StackedDamages, ABC):
 
     def __init__(
         self,
-        sector_path,
         econ_vars,
         climate_vars,
         sector,
         formula,
+        sector_path=None,
         save_path=None,
         rho=0.00461878399,
         eta=1.421158116,
@@ -92,7 +92,7 @@ class MainRecipe(StackedDamages, ABC):
         gdppc_bottom_code=39.39265060424805,
         scc_quantiles=[0.05, 0.17, 0.25, 0.5, 0.75, 0.83, 0.95],
         scenario_dimensions=None,
-        weitzman_parameter=[0.1],
+        weitzman_parameter=[0.1, 0.5],
         fair_aggregation=["ce", "mean", "gwr_mean", "median", "median_params"],
         filename_suffix="",
         discrete_discounting=False,

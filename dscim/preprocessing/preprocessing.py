@@ -75,6 +75,7 @@ def reduce_damages(
     eta,
     sector,
     config,
+    socioec,
     bottom_coding_gdppc=39.39265060424805,
     zero=False,
 ):
@@ -89,10 +90,6 @@ def reduce_damages(
     histclim = params["histclim"]
     delta = params["delta"]
     outpath = f"{c['paths']['reduced_damages_library']}/{sector}"
-
-    socioec = Path(
-        "/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr"
-    )
 
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
