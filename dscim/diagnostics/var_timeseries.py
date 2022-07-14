@@ -24,13 +24,13 @@ def get_rff_id(
 ):
 
     if mask in ["epa_mask", "unmasked"]:
-        results = f"{results_root}/{sector}/{pulse_year}/unmasked_None/"
+        pass
     elif mask == "gdppc_mask":
-        results = f"{results_root}/{sector}/{pulse_year}/gdppc_emissions_q0.01_q0.99"
+        print("gdppc_mask deprecated")
 
     sccs = (
         xr.open_dataset(
-            f"{results}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_sccs.nc4"
+            f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_sccs.nc4"
         )
         .sel(
             weitzman_parameter="0.5",
@@ -143,10 +143,7 @@ def rff_timeseries(
     runid_root,
     discrate=0.02,
     pulse_year=2020,
-    results_mask="unmasked_None",
 ):
-
-    results = f"{results_root}/{sector}/{pulse_year}/{results_mask}"
 
     # index
     rff_ids = (
@@ -163,7 +160,7 @@ def rff_timeseries(
     # sccs
     sccs = (
         xr.open_dataset(
-            f"{results}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_sccs.nc4"
+            f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_sccs.nc4"
         )
         .sel(
             weitzman_parameter="0.5", gas=gas, fair_aggregation="uncollapsed", drop=True
@@ -174,7 +171,7 @@ def rff_timeseries(
     # marginal damages
     damages = (
         xr.open_zarr(
-            f"{results}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_marginal_damages.zarr"
+            f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_marginal_damages.zarr"
         )
         .sel(weitzman_parameter="0.5", gas=gas, drop=True)
         .marginal_damages
@@ -183,7 +180,7 @@ def rff_timeseries(
     # discount factors
     df = (
         xr.open_zarr(
-            f"{results}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_discount_factors.zarr"
+            f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_uncollapsed_discount_factors.zarr"
         )
         .sel(weitzman_parameter="0.5", gas=gas, drop=True)
         .discount_factor.rename("discount_factors")
