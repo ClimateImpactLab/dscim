@@ -388,16 +388,15 @@ class StackedDamages:
     def adding_up_damages(self):
         """This property calls pre-calculated adding-up IR-level 'mean' over batches."""
 
-        mean_cc = f"{self.ce_path}/adding_up_ce_cc_eta{self.eta}.zarr"
-        mean_no_cc = f"{self.ce_path}/adding_up_ce_no_cc_eta{self.eta}.zarr"
+        mean_cc = f"{self.ce_path}/adding_up_cc.zarr"
+        mean_no_cc = f"{self.ce_path}/adding_up_no_cc.zarr"
 
         if os.path.exists(mean_cc) and os.path.exists(mean_no_cc):
             self.logger.info(
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
             damages = (
-                (xr.open_zarr(mean_no_cc).ce_no_cc - xr.open_zarr(mean_cc).ce_cc)
-                * self.pop
+                (xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc) * self.pop
             ).sum("region")
         else:
             raise NotImplementedError(
@@ -410,7 +409,7 @@ class StackedDamages:
 
         Parameters
         ----------
-        ce_type : either `ce_no_cc` or `ce_cc`
+        ce_type : either `no_cc` or `cc`
 
         Returns
         -------

@@ -20,10 +20,10 @@ def run_AR6_epa_ssps(
     results_root,
     reduced_damages_library,
     ssp_damage_function_library,
-    global_cons=True,
-    factors=True,
-    marginal_damages=True,
-    order="scc",
+    global_cons=False,
+    factors=False,
+    marginal_damages=False,
+    order="damage_function",
 ):
 
     w = ProWaiter(path_to_config=config)
@@ -50,7 +50,14 @@ def run_AR6_epa_ssps(
         if "CAMEL" in sector:
             kwargs.update(
                 {
-                    "damage_function_path": f"{ssp_damage_function_library}/{sector}/",
+                    "damage_function_path": f"{ssp_damage_function_library}/{sector}/2020/",
+                    "save_files": [
+                        "damage_function_points",
+                        "marginal_damages",
+                        "discount_factors",
+                        "uncollapsed_sccs",
+                        "scc",
+                    ],
                 }
             )
 

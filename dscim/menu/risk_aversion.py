@@ -17,7 +17,7 @@ class RiskAversionRecipe(MainRecipe):
         -------
              xr.DataArray
         """
-        ce_array = self.risk_aversion_damages("ce_cc").ce_cc
+        ce_array = self.risk_aversion_damages("cc").cc
 
         # for GWR options, take the CE over growth models
         if "gwr" in self.discounting_type:
@@ -32,7 +32,7 @@ class RiskAversionRecipe(MainRecipe):
         -------
             xr.DataArray
         """
-        ce_array = self.risk_aversion_damages("ce_no_cc").ce_no_cc
+        ce_array = self.risk_aversion_damages("no_cc").no_cc
 
         if "gwr" in self.discounting_type:
             ce_array = self.ce(ce_array, dims=["ssp", "model"])

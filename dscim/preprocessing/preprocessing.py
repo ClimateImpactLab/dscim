@@ -16,7 +16,7 @@ import yaml, time, argparse
 def ce_from_chunk(
     chunk,
     filepath,
-    ce_type,
+    reduction,
     bottom_code,
     histclim,
     delta,
@@ -39,14 +39,14 @@ def ce_from_chunk(
         .gdppc
     )
 
-    if ce_type == "ce_no_cc":
+    if reduction == "no_cc":
         if zero == True:
             chunk[histclim] = xr.where(chunk[histclim] == 0, 0, 0)
         calculation = gdppc + chunk[histclim].mean("batch") - chunk[histclim]
-    elif ce_type == "ce_cc":
+    elif reduction == "cc":
         calculation = gdppc - chunk[delta]
     else:
-        raise NotImplementedError("Pass 'ce_cc' or 'ce_no_cc' to ce_type.")
+        raise NotImplementedError("Pass 'cc' or 'no_cc' to reduction.")
 
     if recipe == "adding_up":
         result = mean_func(
@@ -79,7 +79,10 @@ def reduce_damages(
     bottom_coding_gdppc=39.39265060424805,
     zero=False,
 ):
-
+    if recipe == "adding_up":
+        assert (
+            eta == None
+        ), "Adding up does not take an eta argument. Please set to None."
     # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
     with open(config, "r") as stream:
@@ -114,16 +117,13 @@ def reduce_damages(
         coords=ce_batch_coords,
     )
 
-    # convert string eta to float
-    eta = float(eta)
-
     other = xr.open_zarr(damages)
 
     out = other.map_blocks(
         ce_from_chunk,
         kwargs=dict(
             filepath=damages,
-            ce_type=reduction,
+            reduction=reduction,
             bottom_code=bottom_coding_gdppc,
             histclim=histclim,
             delta=delta,
@@ -138,16 +138,23 @@ def reduce_damages(
 
     out = out.astype(np.float32).rename(reduction).to_dataset()
 
-    out.attrs["eta"] = eta
     out.attrs["bottom code"] = bottom_coding_gdppc
     out.attrs["histclim=0"] = zero
     out.attrs["filepath"] = str(damages)
 
-    out.to_zarr(
-        f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr",
-        consolidated=True,
-        mode="w",
-    )
+    if recipe == "adding_up":
+        out.to_zarr(
+            f"{outpath}/{recipe}_{reduction}.zarr",
+            consolidated=True,
+            mode="w",
+        )
+    elif recipe == "risk_aversion":
+        out.attrs["eta"] = eta
+        out.to_zarr(
+            f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr",
+            consolidated=True,
+            mode="w",
+        )
 
 
 def reformat_climate_files():
@@ -244,18 +251,28 @@ def subset_USA_reduced_damages(
     input_path,
 ):
 
-    ds = xr.open_zarr(f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr")
+    if recipe == "adding_up":
+        ds = xr.open_zarr(f"{input_path}/{sector}/{recipe}_{reduction}.zarr")
+    elif recipe == "risk_aversion":
+        ds = xr.open_zarr(f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr")
 
     subset = ds.sel(region=[i for i in ds.region.values if "USA" in i])
 
     for var in subset.variables:
         subset[var].encoding.clear()
 
-    subset.to_zarr(
-        f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
-        consolidated=True,
-        mode="w",
-    )
+    if recipe == "adding_up":
+        subset.to_zarr(
+            f"{input_path}/{sector}_USA/{recipe}_{reduction}.zarr",
+            consolidated=True,
+            mode="w",
+        )
+    elif recipe == "risk_aversion":
+        subset.to_zarr(
+            f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
+            consolidated=True,
+            mode="w",
+        )
 
 
 def subset_USA_ssp_econ(
