@@ -107,4 +107,5 @@ def menu_instance(menu_class, discount_types, econ, climate):
         formula="damages ~ -1 + anomaly + np.power(anomaly, 2)",
         extrap_formula=None,
         fair_aggregation=["median_params", "ce", "mean"],
+        weitzman_parameter=[0.1],
     )
