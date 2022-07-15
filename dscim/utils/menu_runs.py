@@ -1,4 +1,9 @@
-import os, gc, time
+from dscim.menu.simple_storage import Climate, EconVars
+import dscim.menu.baseline
+import dscim.menu.risk_aversion
+import dscim.menu.equity
+
+import os, gc, time, yaml
 
 USER = os.getenv("USER")
 import numpy as np
@@ -10,47 +15,69 @@ dask.config.set(**{"array.slicing.split_large_chunks": False})
 from dscim import ProWaiter
 from itertools import product
 
+MENU_OPTIONS = {
+    "adding_up": dscim.menu.baseline.Baseline,
+    "risk_aversion": dscim.menu.risk_aversion.RiskAversionRecipe,
+    "equity": dscim.menu.equity.EquityRecipe,
+}
 
-def run_AR6_epa_ssps(
+
+def run_ssps(
     sectors,
     pulse_years,
     menu_discs,
     eta_rhos,
     config,
-    results_root,
-    reduced_damages_library,
-    ssp_damage_function_library,
+    USA,
+    AR,
     global_cons=False,
     factors=False,
     marginal_damages=False,
     order="damage_function",
 ):
 
-    w = ProWaiter(path_to_config=config)
+    with open(config, "r") as stream:
+        conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(
         sectors, pulse_years, menu_discs, eta_rhos.items()
     ):
 
-        menu_option = menu_disc[0]
-        discount_type = menu_disc[1]
+        menu_option, discount_type = menu_disc
+        save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
 
-        save_path = f"{results_root}/{sector}/{pulse_year}/"
+        if USA == True:
+            econ = EconVars(path_econ=conf["econdata"]["USA_ssp"])
+        else:
+            econ = EconVars(path_econ=conf["econdata"]["global_ssp"])
 
-        kwargs = {
+        add_kwargs = {
+            "econ_vars": econ,
+            "climate_vars": Climate(
+                **conf[f"AR{AR}_ssp_climate"], pulse_year=pulse_year
+            ),
+            "formula": conf["sectors"][sector if USA == False else sector[:-4]][
+                "formula"
+            ],
             "discounting_type": discount_type,
             "sector": sector,
-            "ce_path": f"{reduced_damages_library}/{sector}/",
+            "ce_path": f"{conf['paths']['reduced_damages_library']}/{sector}/",
             "save_path": save_path,
-            "pulse_year": pulse_year,
             "eta": eta_rho[0],
             "rho": eta_rho[1],
         }
 
+        kwargs = conf["global_parameters"].copy()
+        for k, v in add_kwargs.items():
+            assert (
+                k not in kwargs.keys()
+            ), f"{k} already set in config. Please check `global_parameters`."
+            kwargs.update({k: v})
+
         if "CAMEL" in sector:
             kwargs.update(
                 {
-                    "damage_function_path": f"{ssp_damage_function_library}/{sector}/2020/",
+                    "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/",
                     "save_files": [
                         "damage_function_points",
                         "marginal_damages",
@@ -61,7 +88,8 @@ def run_AR6_epa_ssps(
                 }
             )
 
-        menu_item = w.menu_factory(menu_key=menu_option, sector=sector, kwargs=kwargs)
+        menu_item = MENU_OPTIONS[menu_option](**kwargs)
+        menu_item.order_plate(order)
 
         if global_cons == True:
             menu_item.global_consumption_no_pulse.to_netcdf(
@@ -124,49 +152,65 @@ def run_AR6_epa_ssps(
                 mode="w",
             )
 
-        menu_item.order_plate(order)
 
-
-def run_epa_rff(
+def run_rff(
     sectors,
     pulse_years,
     menu_discs,
     eta_rhos,
     config,
-    results_root,
-    rff_damage_function_library,
     global_cons=True,
     factors=True,
     marginal_damages=True,
     order="scc",
 ):
 
-    w = ProWaiter(path_to_config=config)
+    with open(config, "r") as stream:
+        conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(
         sectors, pulse_years, menu_discs, eta_rhos.items()
     ):
 
-        menu_option = menu_disc[0]
-        discount_type = menu_disc[1]
+        menu_option, discount_type = menu_disc
+        save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/"
 
-        save_path = f"{results_root}/{sector}/{pulse_year}/"
-        os.makedirs(save_path, exist_ok=True)
+        if USA == True:
+            econ = EconVars(
+                path_econ=f"{conf['rffdata']['socioec']}/rff_USA_socioeconomics.nc4"
+            )
+        else:
+            econ = EconVars(
+                path_econ=f"{conf['rffdata']['socioec']}/rff_global_socioeconomics.nc4"
+            )
 
-        kwargs = {
+        add_kwargs = {
+            "econ_vars": econ,
+            "climate_vars": Climate(**conf["rff_climate"], pulse_year=pulse_year),
+            "formula": conf["sectors"][sector if USA == False else sector[:-4]][
+                "formula"
+            ],
             "discounting_type": discount_type,
             "sector": sector,
-            "damage_function_path": f"{rff_damage_function_library}/{sector}/2020",
+            "ce_path": None,
             "save_path": save_path,
-            "save_files": ["uncollapsed_sccs"],
-            "pulse_year": pulse_year,
-            "ecs_mask_path": None,
-            "ecs_mask_name": None,
             "eta": eta_rho[0],
             "rho": eta_rho[1],
+            "damage_function_path": f"{conf['paths']['rff_damage_function_library']}/{sector}/2020",
+            "save_files": ["uncollapsed_sccs"],
+            "ecs_mask_path": None,
+            "ecs_mask_name": None,
         }
 
-        menu_item = w.menu_factory(menu_key=menu_option, sector=sector, kwargs=kwargs)
+        kwargs = conf["global_parameters"].copy()
+        for k, v in add_kwargs.items():
+            assert (
+                k not in kwargs.keys()
+            ), f"{k} already set in config. Please check `global_parameters`."
+            kwargs.update({k: v})
+
+        menu_item = MENU_OPTIONS[menu_option](**kwargs)
+        menu_item.order_plate(order)
 
         if global_cons == True:
             menu_item.global_consumption_no_pulse.to_netcdf(
@@ -228,6 +272,3 @@ def run_epa_rff(
                 consolidated=True,
                 mode="w",
             )
-            print("done saving discount factor")
-
-        menu_item.order_plate(order)
