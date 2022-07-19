@@ -30,6 +30,8 @@ def run_ssps(
     config,
     USA,
     AR,
+    masks=[None],
+    fair_dims_list=[["simulation"]],
     global_cons=False,
     factors=False,
     marginal_damages=False,
@@ -39,12 +41,22 @@ def run_ssps(
     with open(config, "r") as stream:
         conf = yaml.safe_load(stream)
 
-    for sector, pulse_year, menu_disc, eta_rho in product(
-        sectors, pulse_years, menu_discs, eta_rhos.items()
+    for sector, pulse_year, menu_disc, eta_rho, mask, fair_dims in product(
+        sectors, pulse_years, menu_discs, eta_rhos.items(), masks, fair_dims_list
     ):
 
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
+
+        if mask is not None:
+            save_path = save_path + "/" + mask
+
+        if fair_dims != ["simulation"]:
+            save_path = (
+                save_path
+                + "/"
+                + f"fair_collapsed_{'_'.join([i for i in fair_dims if i!='simulation'])}"
+            )
 
         if USA == True:
             econ = EconVars(path_econ=conf["econdata"]["USA_ssp"])
@@ -54,7 +66,9 @@ def run_ssps(
         add_kwargs = {
             "econ_vars": econ,
             "climate_vars": Climate(
-                **conf[f"AR{AR}_ssp_climate"], pulse_year=pulse_year
+                **conf[f"AR{AR}_ssp_climate"],
+                pulse_year=pulse_year,
+                ecs_mask_name=mask,
             ),
             "formula": conf["sectors"][sector if USA == False else sector[:-4]][
                 "formula"
@@ -65,6 +79,7 @@ def run_ssps(
             "save_path": save_path,
             "eta": eta_rho[0],
             "rho": eta_rho[1],
+            "fair_dims": fair_dims,
         }
 
         kwargs = conf["global_parameters"].copy()
