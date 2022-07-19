@@ -17,7 +17,7 @@ class EquityRecipe(MainRecipe):
         else:
             dims = ["region"]
 
-        ce_cc = self.risk_aversion_damages("ce_cc").ce_cc
+        ce_cc = self.risk_aversion_damages("cc").cc
 
         # reindex to make sure all regions are being calculated
         if len(ce_cc.region.values) < len(self.gdppc.region.values):
@@ -32,7 +32,7 @@ class EquityRecipe(MainRecipe):
             eta=self.eta,
         )
 
-        return ce_array.rename("ce_cc")
+        return ce_array.rename("cc")
 
     def ce_no_cc_calculation(self) -> xr.DataArray:
         if "gwr" in self.discounting_type:
@@ -40,7 +40,7 @@ class EquityRecipe(MainRecipe):
         else:
             dims = ["region"]
 
-        ce_no_cc = self.risk_aversion_damages("ce_no_cc").ce_no_cc
+        ce_no_cc = self.risk_aversion_damages("no_cc").no_cc
         # reindex to make sure all regions are being calculated
         if len(ce_no_cc.region.values) < len(self.gdppc.region.values):
             ce_no_cc = ce_no_cc.reindex({"region": self.gdppc.region.values})
@@ -54,7 +54,7 @@ class EquityRecipe(MainRecipe):
             eta=self.eta,
         )
 
-        return ce_no_cc_array.rename("ce_no_cc")
+        return ce_no_cc_array.rename("no_cc")
 
     @property
     def calculated_damages(self) -> xr.DataArray:

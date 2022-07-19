@@ -253,3 +253,22 @@ def gcms():
         "surrogate_MRI-CGCM3_06",
         "surrogate_GFDL-ESM2G_06",
     ]
+
+
+def US_territories():
+    return [
+        "USA",
+        "XBK",
+        "GUM",
+        "XHO",
+        "XJV",
+        "XJA",
+        "XKR",
+        "XMW",
+        "XNV",
+        "MNP",
+        "XPL",
+        "PRI",
+        "VIR",
+        "XWK",
+    ]
