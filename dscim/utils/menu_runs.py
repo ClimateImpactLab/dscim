@@ -159,6 +159,7 @@ def run_rff(
     menu_discs,
     eta_rhos,
     config,
+    USA,
     global_cons=True,
     factors=True,
     marginal_damages=True,
@@ -177,11 +178,11 @@ def run_rff(
 
         if USA == True:
             econ = EconVars(
-                path_econ=f"{conf['rffdata']['socioec']}/rff_USA_socioeconomics.nc4"
+                path_econ=f"{conf['rffdata']['socioec_output']}/rff_USA_socioeconomics.nc4"
             )
         else:
             econ = EconVars(
-                path_econ=f"{conf['rffdata']['socioec']}/rff_global_socioeconomics.nc4"
+                path_econ=f"{conf['rffdata']['socioec_output']}/rff_global_socioeconomics.nc4"
             )
 
         add_kwargs = {
