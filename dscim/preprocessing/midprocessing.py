@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import shutil
 
 USER = os.getenv("USER")
@@ -21,7 +22,7 @@ def update_damage_function_library(
         output,
     )
 
-    if fit == True:
+    if fit:
         shutil.copy2(
             f"{input}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4", output
         )
@@ -61,7 +62,7 @@ def combine_CAMEL_coefs(
         f"{input_dir}/{CAMEL}/{pulse_year}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
     )
 
-    if fit == True:
+    if fit:
 
         for sector in [coastal, AMEL]:
             fit[

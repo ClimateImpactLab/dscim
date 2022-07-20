@@ -2,7 +2,9 @@
 Calculate damages from the projection system using VSL
 """
 
-import os, glob, re
+import os
+import glob
+import re
 import logging
 import warnings
 import multiprocessing
@@ -258,7 +260,7 @@ def compute_ag_damages(
         Path where files should be saved
     """
 
-    if integration == True:
+    if integration:
         assert (
             topcode is not None
         ), "Data is being processed for integration. Please pass a topcode."
@@ -291,7 +293,7 @@ def compute_ag_damages(
 
             # squeeze ag-specific dimensions out so that
             # it can be stacked with other sectors
-            if integration == True:
+            if integration:
                 ds = ds.sel(demand_topcode=topcode)
                 print(f"Selecting topcode {topcode}.")
                 for var in [
@@ -301,9 +303,9 @@ def compute_ag_damages(
                     "market_level",
                     "demand_topcode",
                 ]:
-                    try:
+                    if var in list(f1.coords):
                         ds = ds.drop(var)
-                    except:
+                    else:
                         pass
 
             # get in per capita 2019 PPP-adjusted USD damages

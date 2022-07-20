@@ -1,7 +1,8 @@
 import xarray as xr
 import pandas as pd
 import numpy as np
-import os, sys
+import os
+import sys
 
 USER = os.getenv("USER")
 from p_tqdm import p_map
@@ -26,7 +27,7 @@ datasets = p_map(
 )
 
 xr.concat(datasets, "simulation").to_netcdf(
-    f"/shares/gcp/integration/rff/climate/ar6_rff_iter1-5_fair162_CO2_Fossil_control_pulse_2020_temp_v5.01_newformat.nc"
+    "/shares/gcp/integration/rff/climate/ar6_rff_iter1-5_fair162_CO2_Fossil_control_pulse_2020_temp_v5.01_newformat.nc"
 )
 
 print("Stacking climate iteration masks...")
@@ -40,5 +41,5 @@ datasets = p_map(
 )
 
 xr.concat(datasets, "simulation").to_netcdf(
-    f"/shares/gcp/integration/rff/climate/masks/ar6_rff_iter1-5_fair162_CO2_Fossil_control_pulse_2020_temp_v5.01_newformat.nc"
+    "/shares/gcp/integration/rff/climate/masks/ar6_rff_iter1-5_fair162_CO2_Fossil_control_pulse_2020_temp_v5.01_newformat.nc"
 )

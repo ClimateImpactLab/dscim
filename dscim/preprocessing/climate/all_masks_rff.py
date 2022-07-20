@@ -2,13 +2,15 @@ import xarray as xr
 import pandas as pd
 import numpy as np
 from dscim.menu.simple_storage import Climate
-import os, sys, yaml
+import os
+import sys
+import yaml
 from p_tqdm import p_map
 
 USER = os.getenv("USER")
 
 # parameters
-out_dir = f"/shares/gcp/integration/rff/climate/masks/CO2_Fossil"
+out_dir = "/shares/gcp/integration/rff/climate/masks/CO2_Fossil"
 config = f"/home/{USER}/repos/integration/configs/rff_config.yaml"
 quantile_list = [
     [0.001, 0.999],
@@ -82,10 +84,11 @@ for mask_type in mask_types:
     # check correct amount of simulations is getting dropped
     a = xr.combine_by_coords(datasets)
     for var in a.data_vars:
-        try:
-            a = a.sel(simulation=5)
-        except:
+        if 'simulation' in list(a.coords) and 5 in list(a.simulation.data):
+            a = a.sel(simulation = 5)
+        else:
             pass
+        
         subset = a[var]
-        falsies = subset.where(subset == False, drop=True)
+        falsies = subset.where(~subset, drop=True)
         print(mask_type, var, (len(falsies.rff_sp) / 10000 * 100))

@@ -1,5 +1,6 @@
 import logging
-import os, sys
+import os
+import sys
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -139,14 +140,14 @@ class Climate:
         )
 
         # rename variables
-        try:
+        if 'pulse_gmsl_median' in list(anomaly.coords) and 'control_gmsl_median' in list(anomaly.coords):
             anomaly = anomaly.rename(
                 {
                     "pulse_gmsl_median": "medianparams_pulse_gmsl",
                     "control_gmsl_median": "medianparams_control_gmsl",
                 }
             )
-        except:
+        else:
             pass
 
         return anomaly
@@ -268,9 +269,9 @@ class EconVars:
     @property
     def econ_vars(self):
         """Economic variables"""
-        try:
+        if self.path[-3:] == "arr":
             raw = xr.open_zarr(self.path, consolidated=True)
-        except:
+        else:
             raw = xr.open_dataset(self.path)
         return raw[["gdp", "pop"]]
 

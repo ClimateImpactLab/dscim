@@ -10,7 +10,9 @@ import numpy as np
 import xarray as xr
 from dask.distributed import Client, progress
 from dscim.utils.functions import ce_func, mean_func
-import yaml, time, argparse
+import yaml
+import time
+import argparse
 
 
 def ce_from_chunk(
@@ -40,7 +42,7 @@ def ce_from_chunk(
     )
 
     if reduction == "no_cc":
-        if zero == True:
+        if zero:
             chunk[histclim] = xr.where(chunk[histclim] == 0, 0, 0)
         calculation = gdppc + chunk[histclim].mean("batch") - chunk[histclim]
     elif reduction == "cc":
@@ -81,7 +83,7 @@ def reduce_damages(
 ):
     if recipe == "adding_up":
         assert (
-            eta == None
+            eta is None
         ), "Adding up does not take an eta argument. Please set to None."
     # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
