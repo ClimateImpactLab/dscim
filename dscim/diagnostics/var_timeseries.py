@@ -42,7 +42,7 @@ def get_rff_id(
     )
 
     try:
-        sccs = sccs.sel(discrate=discrate)
+        sccs = sccs.sel(discrate=discrate, drop=True)
     except:
         pass
 
@@ -104,7 +104,7 @@ def get_ssp_id(
     )
 
     if disc == "constant":
-        sccs = sccs.sel(discrate=discrate)
+        sccs = sccs.sel(discrate=discrate, drop=True)
 
     if kind == "p1":
         cutoff = sccs.quantile(0.01, ["simulation"])
@@ -236,6 +236,16 @@ def rff_timeseries(
     gmst_pulse_minus_control = gmst_pulse_minus_control.rename(
         "gmst_pulse_minus_control"
     )
+    
+    # gdp
+    gdp = (
+        xr.open_dataset(
+            "/shares/gcp/integration_replication/inputs/econ/rff_global_socioeconomics.nc4"
+        )
+        .drop('region')
+        .rename({"runid": "rff_sp"})
+        .gdp.sel(rff_sp=cw.rff_sp)
+    )
 
     data = xr.combine_by_coords(
         [
@@ -249,6 +259,7 @@ def rff_timeseries(
                 c_emissions,
                 gmst,
                 gmst_pulse_minus_control,
+                gdp,
             ]
         ]
     )
@@ -260,7 +271,7 @@ def rff_timeseries(
 
     data = data.sel(runid=rff_ids).to_dataframe().reset_index()
 
-    fig, ax = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
+    fig, ax = plt.subplots(8, 1, figsize=(10, 15), sharex=True)
 
     for i, yvar in enumerate(
         [
@@ -271,6 +282,7 @@ def rff_timeseries(
             "marginal_damages",
             "discount_factors",
             "discounted_damages",
+            "gdp",
         ]
     ):
 
@@ -397,6 +409,7 @@ def ssp_timeseries(
     if "coastal" not in sector:
         anomaly = anomaly.sel(gas=gas, drop=True)
 
+        
     data = xr.combine_by_coords(
         [
             i.to_dataset()
@@ -420,7 +433,7 @@ def ssp_timeseries(
 
     data = data.to_dataframe().reset_index()
 
-    fig, ax = plt.subplots(6, 1, figsize=(10, 15), sharex=True)
+    fig, ax = plt.subplots(7, 1, figsize=(10, 15), sharex=True)
 
     for i, yvar in enumerate(
         [
