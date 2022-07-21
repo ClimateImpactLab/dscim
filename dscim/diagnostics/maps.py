@@ -38,7 +38,7 @@ def make_map(
     # create figure
     fig, ax = plt.subplots(figsize=figsize, facecolor="white")
 
-    if color_max == None:
+    if color_max is None:
         max_val = max(abs(df[colname].max()), abs(df[colname].min()))
         color_min, color_max = -max_val, max_val
 
@@ -61,7 +61,7 @@ def make_map(
     fig.text(0.5, 0.08, title, ha="center", va="center", rotation=0, fontsize=18)
 
     ax.set_axis_off()
-    if maxmin == True:
+    if maxmin:
         plt.annotate(
             text=f"min: {df[colname].min()}, max: {df[colname].max()}",
             xy=location,
@@ -69,7 +69,7 @@ def make_map(
             fontsize=10,
         )
 
-    if save_path != None:
+    if save_path is not None:
         os.makedirs(save_path, exist_ok=True)
         fig.savefig(f"{save_path}/{name_file}", dpi=200, bbox_inches="tight")
 
@@ -154,7 +154,7 @@ def maps(
     merged = xr.merge([damages, gdppc]).to_dataframe().reset_index()
 
     shp_file = gpd.read_file(
-        f"/shares/gcp/climate/_spatial_data/world-combo-new-nytimes/new_shapefile.shp"
+        "/shares/gcp/climate/_spatial_data/world-combo-new-nytimes/new_shapefile.shp"
     )
 
     data = shp_file.merge(merged, left_on=["hierid"], right_on=["region"])
@@ -170,7 +170,7 @@ def maps(
     if "rcp" not in data.columns:
         data["rcp"] = ""
 
-    if plot == False:
+    if not plot:
         return data
     else:
 

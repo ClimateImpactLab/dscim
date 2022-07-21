@@ -2,7 +2,8 @@ import xarray as xr
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os, sys
+import os
+import sys
 
 
 def plot_implicit_rates(

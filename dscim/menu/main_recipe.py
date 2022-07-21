@@ -1,6 +1,7 @@
 import os
 import dask
-import logging, subprocess
+import logging
+import subprocess
 from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
@@ -487,7 +488,7 @@ class MainRecipe(StackedDamages, ABC):
 
         yrs = range(self.climate.pulse_year, self.ext_subset_end_year + 1)
 
-        idx = ["year", "model", "ssp", "discount_type"]
+        # idx = ["year", "model", "ssp", "discount_type"]
 
         params_list, preds_list = [], []
 
@@ -728,7 +729,7 @@ class MainRecipe(StackedDamages, ABC):
         fair_control = self.climate.fair_median_params_control
         fair_pulse = self.climate.fair_median_params_pulse
 
-        if self.clip_gmsl == True:
+        if self.clip_gmsl:
             fair_control["gmsl"] = np.minimum(fair_control["gmsl"], self.gmsl_max)
             fair_pulse["gmsl"] = np.minimum(fair_pulse["gmsl"], self.gmsl_max)
 
@@ -933,7 +934,7 @@ class MainRecipe(StackedDamages, ABC):
 
         fair_control = self.climate.fair_control
 
-        if self.clip_gmsl == True:
+        if self.clip_gmsl:
             fair_control["gmsl"] = np.minimum(fair_control["gmsl"], self.gmsl_max)
 
         damages = compute_damages(
@@ -964,7 +965,7 @@ class MainRecipe(StackedDamages, ABC):
 
         fair_pulse = self.climate.fair_pulse
 
-        if self.clip_gmsl == True:
+        if self.clip_gmsl:
             fair_pulse["gmsl"] = np.minimum(fair_pulse["gmsl"], self.gmsl_max)
 
         damages = compute_damages(

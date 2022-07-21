@@ -37,9 +37,9 @@ def compare_sccs(
         else:
             this = this.quantile(quantiles, "runid")
 
-        try:
+        if "discrate" in list(this.coords) and 0.02 in list(this.discrate.data):
             this = this.sel(discrate=0.02, drop=True)
-        except:
+        else:
             pass
 
         this = this.sel(weitzman_parameter=wp, drop=True)

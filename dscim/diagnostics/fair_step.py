@@ -85,10 +85,10 @@ def marginal_damages(
         f"{sector}: {discounting} discounting \n Marginal damages from an additional pulse of C02"
     )
 
-    ax[0][0].set_ylabel(f"Damages in 2019 USD")
-    ax[1][0].set_ylabel(f"Damages in 2019 USD")
+    ax[0][0].set_ylabel("Damages in 2019 USD")
+    ax[1][0].set_ylabel("Damages in 2019 USD")
 
-    if save_path != None:
+    if save_path is not None:
         plt.savefig(
             f"{save_path}/{sector}_{discounting}_marginal_damages.png",
             dpi=300,
@@ -102,7 +102,7 @@ def global_consumption(
     discounting,
     recipes=["risk_aversion", "equity"],
     save_path=None,
-    scale=10**12,
+    scale=10 ** 12,
 ):
 
     gc = {}
@@ -146,7 +146,7 @@ def global_consumption(
         f"{sector}: {discounting} discounting \n Global consumption, no climate change"
     )
 
-    if save_path != None:
+    if save_path is not None:
         plt.savefig(f"{save_path}/{sector}_{discounting}_global_consumption.pdf")
 
 
@@ -183,9 +183,9 @@ def output_scc(
                 f"{sector_path}/{recipe}_{disc}_eta{eta}_rho{rho}_scc.nc4"
             ).sel(subset_dict)
 
-            try:
+            if "runtype" in list(ds.coords):
                 ds = ds.drop("runtype")
-            except:
+            else:
                 pass
 
             if recipe == "local":
@@ -218,9 +218,9 @@ def output_scc(
 
     final_df = reduce(lambda left, right: left.join(right), final_dfs)
 
-    if save_path != None:
+    if save_path is not None:
         os.makedirs(save_path, exist_ok=True)
-        if file != None:
+        if file is not None:
             final_df.to_csv(f"{save_path}/{file}")
         else:
             final_df.to_csv(f"{save_path}/{sector}_sccs.csv")

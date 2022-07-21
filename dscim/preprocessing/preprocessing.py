@@ -1,6 +1,7 @@
 from math import ceil
 from pathlib import Path
-import os, sys
+import os
+import sys
 
 USER = os.getenv("USER")
 import dask

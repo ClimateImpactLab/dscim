@@ -1,4 +1,6 @@
-import os, sys, yaml
+import os
+import sys
+import yaml
 import dscim
 from dscim import Waiter
 

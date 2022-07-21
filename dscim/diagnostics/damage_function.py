@@ -55,8 +55,8 @@ def get_legacy(sector, filepath, scale):
     coefs = temps.join(coefs).reset_index().rename(columns={"index": "year"})
 
     # Predict y_hat
-    coefs[f"y_hat"] = (
-        coefs.cons + coefs.anomaly * coefs.beta_1 + coefs.anomaly**2 * coefs.beta_2
+    coefs["y_hat"] = (
+        coefs.cons + coefs.anomaly * coefs.beta_1 + coefs.anomaly ** 2 * coefs.beta_2
     )
 
     return coefs[["year", "anomaly", "y_hat"]]
@@ -71,7 +71,7 @@ def damage_function(
     year=2097,
     hue_vars="ssp",
     recipes=["adding_up", "risk_aversion", "equity"],
-    scale=10**12,
+    scale=10 ** 12,
     x_lim=(-np.inf, np.inf),
     y_lim=(-np.inf, np.inf),
     x_var="anomaly",
@@ -136,7 +136,7 @@ def damage_function(
         )
 
         # subset
-        if subset_dict != None:
+        if subset_dict is not None:
             for col, val in subset_dict.items():
                 points_file = points_file.loc[points_file[col].isin(val)]
             fit_file = fit_file.sel(subset_dict)
@@ -174,7 +174,7 @@ def damage_function(
         )
 
     # grab legacy function if passed
-    if legacy != None:
+    if legacy is not None:
         fit["legacy"] = get_legacy(sector, filepath=legacy[0], scale=legacy[1])
         fit["legacy"] = fit["legacy"].loc[fit["legacy"].year == year]
         fit["legacy"]["y_hat_scaled"] = fit["legacy"]["y_hat"].apply(
@@ -195,7 +195,7 @@ def damage_function(
 
         print(f"{recipe} : # of points is {len(points[recipe])}")
 
-        if scatter == True:
+        if scatter:
 
             sns.scatterplot(
                 data=points[recipe]
@@ -207,7 +207,7 @@ def damage_function(
                 ]
                 .sort_values("hue"),
                 x=x_var,
-                y=f"damages_scaled",
+                y="damages_scaled",
                 hue="hue",
                 palette=palette,
                 s=6,
@@ -230,7 +230,7 @@ def damage_function(
             ax=ax[0][i],
         )
 
-        if legacy != None:
+        if legacy is not None:
 
             sns.lineplot(
                 data=fit["legacy"],
@@ -243,19 +243,19 @@ def damage_function(
 
         ax[0][i].set_xlabel(x_var)
         ax[0][i].set_title(f"Recipe: {recipe}")
-        if attributes == True:
+        if attributes:
             ax[0][i].annotate(
                 attrs[recipe], (0.0, -0.1), xycoords="axes fraction", fontsize=6
             )
 
-    ltext = "\n paper damage function = grey dotted" if legacy != None else ""
+    ltext = "\n paper damage function = grey dotted" if legacy is not None else ""
     fig.suptitle(
         f"{sector}: {discounting} discounting \n Damage functions in {year} {ltext}"
     )
 
     ax[0][0].set_ylabel(f'Damages in {"{:.0e}".format(scale)} 2019 USD')
 
-    if save_path != None:
+    if save_path is not None:
 
         os.makedirs(save_path, exist_ok=True)
         plt.savefig(f"{save_path}/{sector}_{discounting}_{year}_damage_function.pdf")

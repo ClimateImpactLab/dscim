@@ -27,12 +27,12 @@ def calculate_batch_damages(batch, ec):
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
     )
-    print(f"Saved!")
+    print("Saved!")
 
 
 def energy_inputs(
     re_calculate=False,
-    path_econ=f"/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
+    path_econ="/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
     input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
     output_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/",
 ):

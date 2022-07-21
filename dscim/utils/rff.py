@@ -4,7 +4,8 @@ import numpy as np
 from p_tqdm import p_map
 from itertools import product
 from functools import partial
-import os, sys
+import os
+import sys
 from numpy.testing import assert_allclose
 from datetime import datetime
 
@@ -88,7 +89,7 @@ def weight_df(
     rff = (df * weights).sum(["ssp", "model"])
 
     # save fractional damage function
-    if fractional == True:
+    if fractional:
         rff.sel(year=slice(2020, 2099)).to_netcdf(
             f"{out_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
         )
@@ -125,7 +126,7 @@ def rff_damage_functions(
     ssp_gdp = xr.open_zarr(ssp_gdp, consolidated=True).sum("region").gdp
 
     # get RFF data
-    region = "USA" if USA == True else "world"
+    region = "USA" if USA else "world"
     rff_gdp = xr.open_dataset(rff_gdp).sel(region=region, drop=True).gdp
 
     # get global consumption factors to extrapolate damage function
@@ -178,7 +179,7 @@ def prep_rff_socioeconomics(
     # read in RFF data
     socioec = xr.open_dataset(rff_path)
 
-    if USA == False:
+    if not USA:
         print("Summing to globe.")
         socioec = socioec.sum("Country")
     else:
@@ -197,7 +198,7 @@ def prep_rff_socioeconomics(
     run_id = xr.open_dataset(runid_path)
     socioec = socioec.sel(rff_sp=run_id.rff_sp, drop=True)
 
-    if USA == False:
+    if not USA:
         socioec.expand_dims({"region": ["world"]}).to_netcdf(
             f"{out_path}/rff_global_socioeconomics.nc4"
         )

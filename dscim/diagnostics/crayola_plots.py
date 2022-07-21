@@ -106,7 +106,7 @@ def crayola_plots(
             ["year", "ssp", "rcp", "model", "temp_bins"], as_index=False
         )[damages_col_name].mean()
     else:
-        raise NotImplemented(f"{var} is not a defined option")
+        raise NotImplementedError(f"{var} is not a defined option")
 
     with sns.plotting_context("paper", font_scale=1.3):
         sns.set_style("white")

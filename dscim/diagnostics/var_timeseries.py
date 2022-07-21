@@ -3,7 +3,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-import os, sys, yaml
+import os
+import sys
+import yaml
 
 USER = os.getenv("USER")
 from dscim.menu.simple_storage import Climate
@@ -41,9 +43,9 @@ def get_rff_id(
         .uncollapsed_sccs
     )
 
-    try:
-        sccs = sccs.sel(discrate=discrate, drop=True)
-    except:
+    if "discrate" in list(scc.coords) and discrate in list(scc.discrate.data):
+        scc = scc.sel(discrate)
+    else:
         pass
 
     # runid rff_sp-simulation crosswalk
@@ -264,9 +266,9 @@ def rff_timeseries(
         ]
     )
 
-    try:
-        data = data.sel(discrate=discrate, drop=True)
-    except:
+    if "discrate" in list(data.coords) and discrate in list(data.discrate.data):
+        data = data.sel(discrate)
+    else:
         pass
 
     data = data.sel(runid=rff_ids).to_dataframe().reset_index()
@@ -299,8 +301,8 @@ def rff_timeseries(
         if i > 0:
             ax[i].get_legend().remove()
         else:
-            h, l = ax[i].get_legend_handles_labels()
-            l = [str(round(float(i), 2)) for i in l]
+            h, lth = ax[i].get_legend_handles_labels()
+            lth = [str(round(float(i), 2)) for i in lth]
             ax[i].legend(
                 h,
                 l,
@@ -458,11 +460,11 @@ def ssp_timeseries(
         if i > 0:
             ax[i].get_legend().remove()
         else:
-            h, l = ax[i].get_legend_handles_labels()
-            l = [str(round(float(i), 2)) for i in l]
+            h, lth = ax[i].get_legend_handles_labels()
+            lth = [str(round(float(i), 2)) for i in lth]
             ax[i].legend(
                 h,
-                l,
+                lth,
                 loc="upper center",
                 bbox_to_anchor=(0.5, 2.1),
                 ncol=6,

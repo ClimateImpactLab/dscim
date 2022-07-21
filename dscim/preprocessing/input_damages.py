@@ -303,7 +303,7 @@ def compute_ag_damages(
                     "market_level",
                     "demand_topcode",
                 ]:
-                    if var in list(f1.coords):
+                    if var in list(ds.coords):
                         ds = ds.drop(var)
                     else:
                         pass

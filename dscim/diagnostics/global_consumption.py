@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os, sys
+import os
+import sys
 from dscim.utils.utils import c_equivalence
 from settings import rcp_dict
 
