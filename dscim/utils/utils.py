@@ -205,7 +205,7 @@ def extrapolate(
         return np.log(exp_interp) * factor
 
     elif method == "squared":
-        sqr_array = (xr_array ** 2).sel(year=slice(start_year, end_year))
+        sqr_array = (xr_array**2).sel(year=slice(start_year, end_year))
         sqr_interp = sqr_array.interp(
             year=np.arange(end_year + 1, interp_year + 1),
             method="linear",

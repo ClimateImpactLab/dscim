@@ -56,7 +56,7 @@ def get_legacy(sector, filepath, scale):
 
     # Predict y_hat
     coefs[f"y_hat"] = (
-        coefs.cons + coefs.anomaly * coefs.beta_1 + coefs.anomaly ** 2 * coefs.beta_2
+        coefs.cons + coefs.anomaly * coefs.beta_1 + coefs.anomaly**2 * coefs.beta_2
     )
 
     return coefs[["year", "anomaly", "y_hat"]]
@@ -71,7 +71,7 @@ def damage_function(
     year=2097,
     hue_vars="ssp",
     recipes=["adding_up", "risk_aversion", "equity"],
-    scale=10 ** 12,
+    scale=10**12,
     x_lim=(-np.inf, np.inf),
     y_lim=(-np.inf, np.inf),
     x_var="anomaly",

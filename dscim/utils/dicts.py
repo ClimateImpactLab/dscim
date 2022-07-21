@@ -8,12 +8,12 @@ legacy_betas_scales = {
     "mortality": (
         f"/project2/mgreenst/mortality_data/4_damage_function/damages/"
         + "mortality_damage_coefficients_quadratic_IGIA_MC_global_poly4_uclip_sharecombo_SSP3.csv",
-        10 ** 9,
+        10**9,
     ),
     "labor": (
         f"/home/{username}/repos/labor-code-release-2020/output/ce/"
         + "damage_function_comparison/smooth_anomalies_df_mean_output_SSP3.csv",
-        10 ** 12,
+        10**12,
     ),
 }
 
