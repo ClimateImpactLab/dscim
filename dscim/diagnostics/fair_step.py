@@ -102,7 +102,7 @@ def global_consumption(
     discounting,
     recipes=["risk_aversion", "equity"],
     save_path=None,
-    scale=10 ** 12,
+    scale=10**12,
 ):
 
     gc = {}

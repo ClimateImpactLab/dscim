@@ -35,7 +35,7 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             exp = np.floor(np.log10(spread))
             rest = spread * 10 ** (-exp)
 
-            stride = 10 ** exp * (
+            stride = 10**exp * (
                 0.25 if rest < 2.0 else 0.5 if rest < 4 else 1.0 if rest < 6 else 2.0
             )
 
