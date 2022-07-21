@@ -43,8 +43,8 @@ def get_rff_id(
         .uncollapsed_sccs
     )
 
-    if "discrate" in list(scc.coords) and discrate in list(scc.discrate.data):
-        scc = scc.sel(discrate)
+    if "discrate" in list(sccs.coords) and discrate in list(sccs.discrate.data):
+        sccs = sccs.sel(discrate)
     else:
         pass
 
@@ -216,7 +216,7 @@ def rff_timeseries(
         params = yaml.full_load(config_file)
         params["climate"].update(
             {
-                "gmst_fair_path": f"/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc"
+                "gmst_fair_path": "/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc"
             }
         )
     gmst = (
@@ -305,7 +305,7 @@ def rff_timeseries(
             lth = [str(round(float(i), 2)) for i in lth]
             ax[i].legend(
                 h,
-                l,
+                lth,
                 loc="upper center",
                 bbox_to_anchor=(0.5, 2.1),
                 ncol=3,
