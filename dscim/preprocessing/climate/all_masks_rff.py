@@ -84,11 +84,11 @@ for mask_type in mask_types:
     # check correct amount of simulations is getting dropped
     a = xr.combine_by_coords(datasets)
     for var in a.data_vars:
-        if 'simulation' in list(a.coords) and 5 in list(a.simulation.data):
-            a = a.sel(simulation = 5)
+        if "simulation" in list(a.coords) and 5 in list(a.simulation.data):
+            a = a.sel(simulation=5)
         else:
             pass
-        
+
         subset = a[var]
         falsies = subset.where(~subset, drop=True)
         print(mask_type, var, (len(falsies.rff_sp) / 10000 * 100))
