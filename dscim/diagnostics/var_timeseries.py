@@ -236,13 +236,13 @@ def rff_timeseries(
     gmst_pulse_minus_control = gmst_pulse_minus_control.rename(
         "gmst_pulse_minus_control"
     )
-    
+
     # gdp
     gdp = (
         xr.open_dataset(
             "/shares/gcp/integration_replication/inputs/econ/rff_global_socioeconomics.nc4"
         )
-        .drop('region')
+        .drop("region")
         .rename({"runid": "rff_sp"})
         .gdp.sel(rff_sp=cw.rff_sp)
     )
@@ -409,7 +409,6 @@ def ssp_timeseries(
     if "coastal" not in sector:
         anomaly = anomaly.sel(gas=gas, drop=True)
 
-        
     data = xr.combine_by_coords(
         [
             i.to_dataset()
