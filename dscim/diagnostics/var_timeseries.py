@@ -44,7 +44,7 @@ def get_rff_id(
     )
 
     if "discrate" in list(sccs.coords) and discrate in list(sccs.discrate.data):
-        sccs = sccs.sel(discrate)
+        sccs = sccs.sel(discrate=discrate, drop=True)
     else:
         pass
 
@@ -267,7 +267,7 @@ def rff_timeseries(
     )
 
     if "discrate" in list(data.coords) and discrate in list(data.discrate.data):
-        data = data.sel(discrate)
+        data = data.sel(discrate=discrate, drop=True)
     else:
         pass
 
