@@ -225,7 +225,7 @@ def extrapolate(
                 growth_rates,
             )
         else:
-            print(f"End-of-century growth rates are not capped.")
+            print("End-of-century growth rates are not capped.")
 
         # hold last year constant for extrapolated array
         growth_rates_ext = growth_rates.reindex(

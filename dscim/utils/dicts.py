@@ -6,7 +6,7 @@ username = os.getenv("USER")
 
 legacy_betas_scales = {
     "mortality": (
-        f"/project2/mgreenst/mortality_data/4_damage_function/damages/"
+        "/project2/mgreenst/mortality_data/4_damage_function/damages/"
         + "mortality_damage_coefficients_quadratic_IGIA_MC_global_poly4_uclip_sharecombo_SSP3.csv",
         10**9,
     ),
