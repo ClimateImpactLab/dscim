@@ -206,7 +206,7 @@ class MainRecipe(StackedDamages, ABC):
 
         self.logger = logging.getLogger(__name__)
 
-        if self.quantreg_quantiles != None:
+        if self.quantreg_quantiles is not None:
             assert len(self.quantreg_quantiles) == len(
                 self.quantreg_weights
             ), "Length of quantreg quantiles does not match length of weights."
@@ -227,7 +227,7 @@ class MainRecipe(StackedDamages, ABC):
             self.stream_discount_factors = None
 
         # assert formulas for which clip_gmsl is implemented
-        if self.clip_gmsl == True:
+        if self.clip_gmsl:
             assert self.formula in [
                 "damages ~ -1 + anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)",
                 "damages ~ -1 + gmsl + np.power(gmsl, 2)",
@@ -269,7 +269,7 @@ class MainRecipe(StackedDamages, ABC):
         self.logger.info(f"\n Executing {self.__repr__()}")
 
         def damage_function():
-            self.logger.info(f"Processing damage functions ...")
+            self.logger.info("Processing damage functions ...")
             if self.damage_function_path is None:
                 self.logger.info(
                     "Existing damage functions not found. Damage points will be loaded."
@@ -284,7 +284,7 @@ class MainRecipe(StackedDamages, ABC):
         def scc():
             damage_function()
             self.global_consumption
-            self.logger.info(f"Processing SCC calculation ...")
+            self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
             else:
@@ -373,13 +373,13 @@ class MainRecipe(StackedDamages, ABC):
         if machine_name is None:
             try:
                 machine_name = os.uname()[1]
-            except:
+            except AttributeError:
                 machine_name = "unknown"
 
         # find git commit hash
         try:
             label = subprocess.check_output(["git", "describe", "--always"]).strip()
-        except:
+        except FileNotFoundError:
             label = "unknown"
 
         meta = {}

@@ -140,7 +140,10 @@ class Climate:
         )
 
         # rename variables
-        if "pulse_gmsl_median" in anomaly.keys() and "control_gmsl_median" in anomaly.keys():
+        if (
+            "pulse_gmsl_median" in anomaly.keys()
+            and "control_gmsl_median" in anomaly.keys()
+        ):
             anomaly = anomaly.rename(
                 {
                     "pulse_gmsl_median": "medianparams_pulse_gmsl",

@@ -8,6 +8,7 @@ from functools import partial
 from p_tqdm import p_umap
 from dscim.utils.calculate_damages import concatenate_energy_damages
 from dscim.menu.simple_storage import EconVars
+from dscim.preprocessing.input_damages import read_energy_files_parallel
 
 print("testing message: version jun 25")
 
