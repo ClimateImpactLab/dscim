@@ -65,7 +65,7 @@ def stack_gases(gas_dict, date=str(date.today()), var="temperature"):
         # open climate data
         this = xr.open_dataset(
             "/shares/gcp/integration/rff2/climate/"
-            + f"ar6_rff_fair162_control_pulse_{gas}_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_{gas_dct[gas]}.nc"
+            + f"ar6_rff_fair162_control_pulse_{gas}_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_{gas_dict[gas]}.nc"
         )
         conversions[gas] = this.attrs["damages_pulse_conversion"]
 
