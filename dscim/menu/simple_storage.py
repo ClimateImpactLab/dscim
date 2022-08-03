@@ -81,7 +81,11 @@ class Climate:
     @property
     def gmsl(self):
         """Cached GMSL anomalies"""
-        gmsl = xr.open_dataset(self.gmsl_path, engine = "zarr").gmsl.to_dataframe().reset_index()
+        gmsl = (
+            xr.open_dataset(self.gmsl_path, engine="zarr")
+            .gmsl.to_dataframe()
+            .reset_index()
+        )
 
         return gmsl
 
@@ -273,7 +277,7 @@ class EconVars:
     def econ_vars(self):
         """Economic variables"""
         if self.path[-3:] == "arr":
-            raw = xr.open_dataset(self.path, engine = "zarr", consolidated=True)
+            raw = xr.open_dataset(self.path, engine="zarr", consolidated=True)
         else:
             raw = xr.open_dataset(self.path)
         return raw[["gdp", "pop"]]
@@ -400,7 +404,11 @@ class StackedDamages:
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
             damages = (
-                (xr.open_dataset(mean_no_cc, engine = "zarr").no_cc - xr.open_dataset(mean_cc, engine = "zarr").cc) * self.pop
+                (
+                    xr.open_dataset(mean_no_cc, engine="zarr").no_cc
+                    - xr.open_dataset(mean_cc, engine="zarr").cc
+                )
+                * self.pop
             ).sum("region")
         else:
             raise NotImplementedError(
@@ -429,4 +437,4 @@ class StackedDamages:
             raise NotImplementedError(
                 "Risk-aversion CEs not found. Please run CE_calculation.ipynb for `risk_aversion`."
             )
-        return self.cut(xr.open_dataset(file, engine = "zarr"))
+        return self.cut(xr.open_dataset(file, engine="zarr"))

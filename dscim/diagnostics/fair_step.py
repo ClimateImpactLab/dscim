@@ -11,7 +11,6 @@ import logging
 logger = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 import seaborn as sns
-from dscim.utils.dicts import *
 from functools import reduce
 
 sns.set_style("darkgrid")
@@ -42,7 +41,6 @@ def marginal_damages(
         marginal_damages[recipe]["ssp-model"] = (
             marginal_damages[recipe].ssp + "-" + marginal_damages[recipe].model
         )
-        len_ssps = len(marginal_damages[recipe].reset_index().ssp.unique())
         marginal_damages[recipe] = marginal_damages[recipe].sort_values(["ssp-model"])
 
         # to avoid errors when plotting by hue and style

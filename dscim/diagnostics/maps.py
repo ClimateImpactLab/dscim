@@ -28,13 +28,6 @@ def make_map(
     maxmin=True,
 ):
 
-    font = {
-        "family": "serif",
-        "color": "black",
-        "weight": "normal",
-        "size": 14,
-    }
-
     # create figure
     fig, ax = plt.subplots(figsize=figsize, facecolor="white")
 
@@ -147,7 +140,7 @@ def maps(
     elif gcm == "mean":
         damages = damages.weighted(weights).mean(dim="gcm")
     elif gcm == "ce":
-        damages = c_equivalence(risk.damages, dims=["gcm"])
+        damages = c_equivalence(damages, dims=["gcm"])
     else:
         damages = damages.sel({"gcm": gcm})
 

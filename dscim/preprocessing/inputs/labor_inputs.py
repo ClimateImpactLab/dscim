@@ -45,4 +45,4 @@ def labor_inputs(
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
-        r = p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))

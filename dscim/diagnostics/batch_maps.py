@@ -119,7 +119,7 @@ def batch_maps(
     if gcm == "mean":
         damages = damages.weighted(weights).mean(dim="gcm")
     elif gcm == "ce":
-        damages = c_equivalence(risk.damages, dims=["gcm"])
+        damages = c_equivalence(damages, dims=["gcm"])
     else:
         damages = damages.sel({"gcm": gcm})
 

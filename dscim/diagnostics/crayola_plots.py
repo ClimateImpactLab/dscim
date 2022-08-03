@@ -180,4 +180,4 @@ def crayola_plots(
                 title = f"{var}_{recipe.discounting_type}_{recipe.NAME}_{recipe.sector}_{ssp}.png"
                 g.savefig(os.path.join(save_plot_path, title))
 
-    return (global_damages, global_consumption)
+    return (global_damages, recipe.global_consumption)

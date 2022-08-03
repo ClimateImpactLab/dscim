@@ -58,7 +58,7 @@ def process_nc4(f):
     try:
         df.to_netcdf(f_save)
         return f"succeeded: {f}"
-    except:
+    except PermissionError:
         print(f"Error saving {f}")
         return f"failed: {f}"
 
@@ -71,7 +71,7 @@ def process_zarr(f):
     try:
         df.to_zarr(f_save, consolidated=True, mode="w")
         return f"succeeded: {f}"
-    except:
+    except PermissionError:
         print(f"Error saving {f}")
         if os.path.exists(f_save):
             shutil.rmtree(f_save)

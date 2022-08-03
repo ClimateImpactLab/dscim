@@ -278,7 +278,7 @@ class MainRecipe(StackedDamages, ABC):
             self.damage_function_coefficients
             try:
                 self.damage_function_fit
-            except:
+            except FileNotFoundError:
                 pass
 
         def scc():

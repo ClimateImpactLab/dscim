@@ -106,7 +106,7 @@ def income_boxplot(
             }
         )
 
-    bxp = ax.bxp(stats, showmeans=True, meanline=False)
+    ax.bxp(stats, showmeans=True, meanline=False)
     ax.set_ylabel(f"{year} damages as a share of present-day GDP")
     ax.set_xlabel("Decile of present-day GDP per capita")
     ax.spines["top"].set_visible(False)
