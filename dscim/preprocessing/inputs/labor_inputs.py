@@ -5,7 +5,7 @@ Combine MC damages for labor
 import os
 import time
 from functools import partial
-from p_tqdm import p_map
+from p_tqdm import p_umap
 from dscim.utils.calculate_damages import concatenate_labor_damages
 from dscim.menu.simple_storage import EconVars
 
@@ -25,7 +25,7 @@ def calculate_batch_damages(batch, ec, input_path, output_path):
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
     )
-    print(f"Saved!")
+    print("Saved!")
 
 
 def labor_inputs(
@@ -45,4 +45,4 @@ def labor_inputs(
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
-        r = p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))

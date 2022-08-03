@@ -35,16 +35,14 @@ def save(name):
                 filename_path = os.path.join(self.save_path, filename)
 
                 if isinstance(save, xr.DataArray):
-                    try:
-                        save = save.to_dataset()
-                    except:
-                        save = save.rename(name).to_dataset()
-                        save.attrs = self.output_attrs
 
-                        # change `None` object to str(None)
-                        for att in save.attrs:
-                            if save.attrs[att] is None:
-                                save.attrs.update({att: "None"})
+                    save = save.rename(name).to_dataset()
+                    save.attrs = self.output_attrs
+
+                    # change `None` object to str(None)
+                    for att in save.attrs:
+                        if save.attrs[att] is None:
+                            save.attrs.update({att: "None"})
 
                     self.logger.info(f"Saving {filename_path}.nc4")
                     save.to_netcdf(f"{filename_path}.nc4")

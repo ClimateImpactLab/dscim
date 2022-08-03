@@ -201,7 +201,6 @@ class Waiter:
             climate_options.update(**climate_kwargs)
 
         # Set up
-        dir_name = os.path.dirname(os.path.abspath(__file__))
         sector_config = self.param_dict["sectors"].get(sector)
         sector_config.update({k: v for k, v in global_options.items()})
         sector_config.update(

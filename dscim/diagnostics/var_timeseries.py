@@ -3,7 +3,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-import os, sys, yaml
+import os
+import sys
+import yaml
 
 USER = os.getenv("USER")
 from dscim.menu.simple_storage import Climate
@@ -40,10 +42,9 @@ def get_rff_id(
         )
         .uncollapsed_sccs
     )
-
-    try:
+    if "discrate" in sccs.dims:
         sccs = sccs.sel(discrate=discrate, drop=True)
-    except:
+    else:
         pass
 
     # runid rff_sp-simulation crosswalk
@@ -214,7 +215,7 @@ def rff_timeseries(
         params = yaml.full_load(config_file)
         params["climate"].update(
             {
-                "gmst_fair_path": f"/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc"
+                "gmst_fair_path": "/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc"
             }
         )
     gmst = (
@@ -264,9 +265,9 @@ def rff_timeseries(
         ]
     )
 
-    try:
+    if "discrate" in data.dims:
         data = data.sel(discrate=discrate, drop=True)
-    except:
+    else:
         pass
 
     data = data.sel(runid=rff_ids).to_dataframe().reset_index()
@@ -299,11 +300,11 @@ def rff_timeseries(
         if i > 0:
             ax[i].get_legend().remove()
         else:
-            h, l = ax[i].get_legend_handles_labels()
-            l = [str(round(float(i), 2)) for i in l]
+            h, lth = ax[i].get_legend_handles_labels()
+            lth = [str(round(float(i), 2)) for i in lth]
             ax[i].legend(
                 h,
-                l,
+                lth,
                 loc="upper center",
                 bbox_to_anchor=(0.5, 2.1),
                 ncol=3,
@@ -458,11 +459,11 @@ def ssp_timeseries(
         if i > 0:
             ax[i].get_legend().remove()
         else:
-            h, l = ax[i].get_legend_handles_labels()
-            l = [str(round(float(i), 2)) for i in l]
+            h, lth = ax[i].get_legend_handles_labels()
+            lth = [str(round(float(i), 2)) for i in lth]
             ax[i].legend(
                 h,
-                l,
+                lth,
                 loc="upper center",
                 bbox_to_anchor=(0.5, 2.1),
                 ncol=6,

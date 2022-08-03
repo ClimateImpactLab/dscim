@@ -8,6 +8,7 @@ from functools import partial
 from p_tqdm import p_umap
 from dscim.utils.calculate_damages import concatenate_energy_damages
 from dscim.menu.simple_storage import EconVars
+from dscim.preprocessing.input_damages import read_energy_files_parallel
 
 print("testing message: version jun 25")
 
@@ -27,12 +28,12 @@ def calculate_batch_damages(batch, ec):
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
     )
-    print(f"Saved!")
+    print("Saved!")
 
 
 def energy_inputs(
     re_calculate=False,
-    path_econ=f"/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
+    path_econ="/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
     input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
     output_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/",
 ):
@@ -61,4 +62,4 @@ def energy_inputs(
         partial_func = partial(calculate_batch_damages, ec=ec)
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
-        r = p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))

@@ -78,6 +78,8 @@ def cli(config_file, menu_order, log_level, local, pro=False):
         path_to_scheduler = os.path.join(os.getenv("SCRATCH"), "scheduler.json")
         client = Client(scheduler_file=path_to_scheduler)
 
+    print(logger, client)
+
     if menu_order == "":
         waiter.execute_order()
     else:
@@ -86,12 +88,9 @@ def cli(config_file, menu_order, log_level, local, pro=False):
 
         menus = global_parameters["menu_type"]
         discounts = global_parameters["discounting_type"]
-        course = global_parameters["course"]
         pulse_year = waiter.param_dict["climate"]["pulse_year"]
 
-        for menu, discount, sector, level in itertools.product(
-            menus, discounts, sectors, levels
-        ):
+        for menu, discount, sector in itertools.product(menus, discounts, sectors):
             obj = waiter.menu_factory(
                 menu_key=menu,
                 sector=sector,

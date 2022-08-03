@@ -1,6 +1,8 @@
 import xarray as xr
 import pandas as pd
-import os, sys, yaml
+import os
+import sys
+import yaml
 
 USER = os.getenv("USER")
 from dscim.utils.functions import get_model_weights, US_territories
@@ -34,7 +36,7 @@ def income_boxplot(
         delta_var
     ]
 
-    if USA == True:
+    if USA:
         # subset US data
         US_IRs = [
             i for i in socioec.region.values if any(j in i for j in US_territories())
@@ -104,7 +106,7 @@ def income_boxplot(
             }
         )
 
-    bxp = ax.bxp(stats, showmeans=True, meanline=False)
+    ax.bxp(stats, showmeans=True, meanline=False)
     ax.set_ylabel(f"{year} damages as a share of present-day GDP")
     ax.set_xlabel("Decile of present-day GDP per capita")
     ax.spines["top"].set_visible(False)

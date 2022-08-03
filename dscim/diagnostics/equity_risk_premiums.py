@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import numpy as np
 import pandas as pd
 import xarray as xr
@@ -169,7 +170,7 @@ def mumbai_plots(
         for ax in g.axes:
             ax.set_ylabel("2019 PPP-adjusted USD")
             ax.set_xlabel("GMST")
-            if (premium == "equity") or (title == False):
+            if (premium == "equity") or (not title):
                 ax.set_title("")
 
         title_items = "_".join([ssp, model, str(year)]).replace(" ", "_")

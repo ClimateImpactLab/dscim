@@ -25,7 +25,7 @@ def compare_sccs(
             this = this.sel(
                 gas="CO2_Fossil", model="IIASA GDP", rcp="ssp370", drop=True
             ).rename({"simulation": "runid"})
-        except:
+        except KeyError:
             # for rff calculations
             if ("simulation" in this.dims) and (len(this.simulation) == 1):
                 this = this.sel(simulation=1, drop=True)
@@ -37,9 +37,9 @@ def compare_sccs(
         else:
             this = this.quantile(quantiles, "runid")
 
-        try:
+        if "discrate" in this.dims:
             this = this.sel(discrate=0.02, drop=True)
-        except:
+        else:
             pass
 
         this = this.sel(weitzman_parameter=wp, drop=True)

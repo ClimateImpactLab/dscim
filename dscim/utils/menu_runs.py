@@ -3,7 +3,10 @@ import dscim.menu.baseline
 import dscim.menu.risk_aversion
 import dscim.menu.equity
 
-import os, gc, time, yaml
+import os
+import gc
+import time
+import yaml
 
 USER = os.getenv("USER")
 import numpy as np
@@ -58,7 +61,7 @@ def run_ssps(
                 + f"fair_collapsed_{'_'.join([i for i in fair_dims if i!='simulation'])}"
             )
 
-        if USA == True:
+        if USA:
             econ = EconVars(path_econ=conf["econdata"]["USA_ssp"])
         else:
             econ = EconVars(path_econ=conf["econdata"]["global_ssp"])
@@ -70,9 +73,7 @@ def run_ssps(
                 pulse_year=pulse_year,
                 ecs_mask_name=mask,
             ),
-            "formula": conf["sectors"][sector if USA == False else sector[:-4]][
-                "formula"
-            ],
+            "formula": conf["sectors"][sector if not USA else sector[:-4]]["formula"],
             "discounting_type": discount_type,
             "sector": sector,
             "ce_path": f"{conf['paths']['reduced_damages_library']}/{sector}/",
@@ -106,7 +107,7 @@ def run_ssps(
         menu_item = MENU_OPTIONS[menu_option](**kwargs)
         menu_item.order_plate(order)
 
-        if global_cons == True:
+        if global_cons:
             menu_item.global_consumption_no_pulse.to_netcdf(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption_no_pulse.nc4"
             )
@@ -114,7 +115,7 @@ def run_ssps(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
 
-        if marginal_damages == True:
+        if marginal_damages:
             md = (
                 menu_item.global_consumption_no_pulse
                 - menu_item.global_consumption_pulse
@@ -137,7 +138,7 @@ def run_ssps(
                 mode="w",
             )
 
-        if factors == True:
+        if factors:
 
             # holding population constant
             # from 2100 to 2300 with 2099 values
@@ -191,7 +192,7 @@ def run_rff(
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/"
 
-        if USA == True:
+        if USA:
             econ = EconVars(
                 path_econ=f"{conf['rffdata']['socioec_output']}/rff_USA_socioeconomics.nc4"
             )
@@ -203,9 +204,7 @@ def run_rff(
         add_kwargs = {
             "econ_vars": econ,
             "climate_vars": Climate(**conf["rff_climate"], pulse_year=pulse_year),
-            "formula": conf["sectors"][sector if USA == False else sector[:-4]][
-                "formula"
-            ],
+            "formula": conf["sectors"][sector if not USA else sector[:-4]]["formula"],
             "discounting_type": discount_type,
             "sector": sector,
             "ce_path": None,
@@ -228,7 +227,7 @@ def run_rff(
         menu_item = MENU_OPTIONS[menu_option](**kwargs)
         menu_item.order_plate(order)
 
-        if global_cons == True:
+        if global_cons:
             menu_item.global_consumption_no_pulse.to_netcdf(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption_no_pulse.nc4"
             )
@@ -236,7 +235,7 @@ def run_rff(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
 
-        if marginal_damages == True:
+        if marginal_damages:
             md = (
                 (
                     (
@@ -265,7 +264,7 @@ def run_rff(
                 consolidated=True,
                 mode="w",
             )
-        if factors == True:
+        if factors:
 
             f = menu_item.calculate_discount_factors(
                 menu_item.global_consumption_no_pulse / menu_item.pop

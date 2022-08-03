@@ -1,5 +1,6 @@
 import logging
-import os, sys
+import os
+import sys
 import xarray as xr
 import numpy as np
 import pandas as pd
@@ -80,7 +81,11 @@ class Climate:
     @property
     def gmsl(self):
         """Cached GMSL anomalies"""
-        gmsl = xr.open_zarr(self.gmsl_path).gmsl.to_dataframe().reset_index()
+        gmsl = (
+            xr.open_dataset(self.gmsl_path, engine="zarr")
+            .gmsl.to_dataframe()
+            .reset_index()
+        )
 
         return gmsl
 
@@ -139,14 +144,17 @@ class Climate:
         )
 
         # rename variables
-        try:
+        if (
+            "pulse_gmsl_median" in anomaly.keys()
+            and "control_gmsl_median" in anomaly.keys()
+        ):
             anomaly = anomaly.rename(
                 {
                     "pulse_gmsl_median": "medianparams_pulse_gmsl",
                     "control_gmsl_median": "medianparams_control_gmsl",
                 }
             )
-        except:
+        else:
             pass
 
         return anomaly
@@ -268,9 +276,9 @@ class EconVars:
     @property
     def econ_vars(self):
         """Economic variables"""
-        try:
-            raw = xr.open_zarr(self.path, consolidated=True)
-        except:
+        if self.path[-3:] == "arr":
+            raw = xr.open_dataset(self.path, engine="zarr", consolidated=True)
+        else:
             raw = xr.open_dataset(self.path)
         return raw[["gdp", "pop"]]
 
@@ -396,7 +404,11 @@ class StackedDamages:
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
             damages = (
-                (xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc) * self.pop
+                (
+                    xr.open_dataset(mean_no_cc, engine="zarr").no_cc
+                    - xr.open_dataset(mean_cc, engine="zarr").cc
+                )
+                * self.pop
             ).sum("region")
         else:
             raise NotImplementedError(
@@ -425,4 +437,4 @@ class StackedDamages:
             raise NotImplementedError(
                 "Risk-aversion CEs not found. Please run CE_calculation.ipynb for `risk_aversion`."
             )
-        return self.cut(xr.open_zarr(file))
+        return self.cut(xr.open_dataset(file, engine="zarr"))

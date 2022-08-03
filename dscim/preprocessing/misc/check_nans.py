@@ -117,7 +117,7 @@ def check_nc4_nans(path):
         out = path + "   " + str(ds.isnull().sum().data_vars)
         ds.close()
         return out
-    except:
+    except FileNotFoundError:
         print(f"Error checking {path}")
         return f"failed: {path}"
 
@@ -130,7 +130,7 @@ def check_zarr_nans(path):
         out = path + "   " + str(ds.isnull().sum().data_vars)
         ds.close()
         return out
-    except:
+    except FileNotFoundError:
         print(f"Error checking {path}")
         return f"failed: {path}"
 
@@ -141,7 +141,7 @@ def check_csv_nans(path):
         ds = pd.read_csv(path)
         output = path + "   " + str(ds.isnull().sum().sum())
         return output
-    except:
+    except FileNotFoundError:
         print(f"Error checking {path}")
         return f"failed: {path}"
 

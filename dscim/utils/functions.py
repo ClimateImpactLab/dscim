@@ -97,7 +97,7 @@ def calculate_constant_equivalent_discount_rate(
 
     """
     # read files
-    if uncollapsed == False:
+    if not uncollapsed:
         sccs = xr.open_dataset(
             f"{folder}/{recipe}_{disc}_eta{eta}_rho{rho}_scc.nc4"
         ).sel(sel_dict)
