@@ -25,7 +25,7 @@ def compare_sccs(
             this = this.sel(
                 gas="CO2_Fossil", model="IIASA GDP", rcp="ssp370", drop=True
             ).rename({"simulation": "runid"})
-        except:
+        except KeyError:
             # for rff calculations
             if ("simulation" in this.dims) and (len(this.simulation) == 1):
                 this = this.sel(simulation=1, drop=True)

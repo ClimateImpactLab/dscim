@@ -2,7 +2,8 @@ import xarray as xr
 import pandas as pd
 import numpy as np
 import seaborn as sns
-import os, sys
+import os
+import sys
 import matplotlib.pyplot as plt
 from dscim.diagnostics.damage_function import damage_function
 

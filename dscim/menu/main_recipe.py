@@ -2,6 +2,7 @@ import os
 import dask
 import logging
 import subprocess
+from subprocess import CalledProcessError
 from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
