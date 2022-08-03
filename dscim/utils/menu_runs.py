@@ -117,58 +117,11 @@ def run_ssps(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
 
-        if marginal_damages:
-            md = (
-                menu_item.global_consumption_no_pulse
-                - menu_item.global_consumption_pulse
-            ) * menu_item.climate.conversion
-            md = md.rename("marginal_damages").to_dataset()
-            for var in md.variables:
-                md[var].encoding.clear()
-            md.chunk(
-                {
-                    "discount_type": 1,
-                    "weitzman_parameter": 1,
-                    "ssp": 1,
-                    "model": 1,
-                    "gas": 1,
-                    "year": 10,
-                }
-            ).to_zarr(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_uncollapsed_marginal_damages.zarr",
-                consolidated=True,
-                mode="w",
-            )
+        if marginal_damages == True:
+            md = menu_item.uncollapsed_marginal_damages
 
-        if factors:
-
-            # holding population constant
-            # from 2100 to 2300 with 2099 values
-            pop = menu_item.collapsed_pop.sum("region")
-            pop = pop.reindex(
-                year=range(pop.year.min().values, menu_item.ext_end_year + 1),
-                method="ffill",
-            )
-
-            df = menu_item.calculate_discount_factors(
-                menu_item.global_consumption_no_pulse / pop
-            ).to_dataset(name="discount_factor")
-            for var in df.variables:
-                df[var].encoding.clear()
-            df.chunk(
-                {
-                    "discount_type": 1,
-                    "weitzman_parameter": 1,
-                    "ssp": 1,
-                    "model": 1,
-                    # "gas":1,
-                    "year": 10,
-                }
-            ).to_zarr(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_uncollapsed_discount_factors.zarr",
-                consolidated=True,
-                mode="w",
-            )
+        if factors == True:
+            df = menu_item.uncollapsed_discount_factors
 
 
 def run_rff(
@@ -237,55 +190,8 @@ def run_rff(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
 
-        if marginal_damages:
-            md = (
-                (
-                    (
-                        menu_item.global_consumption_no_pulse
-                        - menu_item.global_consumption_pulse
-                    )
-                    * menu_item.climate.conversion
-                )
-                .rename("marginal_damages")
-                .to_dataset()
-            )
+        if marginal_damages == True:
+            md = menu_item.uncollapsed_marginal_damages
 
-            for var in md.variables:
-                md[var].encoding.clear()
-
-            md.chunk(
-                {
-                    "discount_type": 1,
-                    "weitzman_parameter": 14,
-                    "runid": 10000,
-                    "gas": 1,
-                    "year": 10,
-                }
-            ).to_zarr(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_uncollapsed_marginal_damages.zarr",
-                consolidated=True,
-                mode="w",
-            )
-        if factors:
-
-            f = menu_item.calculate_discount_factors(
-                menu_item.global_consumption_no_pulse / menu_item.pop
-            ).to_dataset(name="discount_factor")
-
-            for var in f.variables:
-                f[var].encoding.clear()
-
-            f.chunk(
-                {
-                    "discount_type": 1,
-                    "weitzman_parameter": 14,
-                    "runid": 10000,
-                    "gas": 1,
-                    "region": 1,
-                    "year": 10,
-                }
-            ).to_zarr(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_uncollapsed_discount_factors.zarr",
-                consolidated=True,
-                mode="w",
-            )
+        if factors == True:
+            f = menu_item.uncollapsed_discount_factors
