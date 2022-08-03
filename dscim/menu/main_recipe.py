@@ -1311,6 +1311,41 @@ class MainRecipe(StackedDamages, ABC):
             discounting_type=self.discounting_type,
             fair_aggregation=self.fair_aggregation,
         )
+    
+        @cachedproperty
+    @save("uncollapsed_discount_factors")
+    def uncollapsed_discount_factors(self):
+        pop = self.collapsed_pop.sum("region")
+        pop = pop.reindex(
+            year=range(pop.year.min().values, self.ext_end_year + 1),
+            method="ffill",
+        )
+        f = self.calculate_discount_factors(
+            self.global_consumption_no_pulse / pop
+        ).to_dataset(name="discount_factor")
+        for var in f.variables:
+            f[var].encoding.clear()
+
+        return f
+
+    @cachedproperty
+    @save("uncollapsed_marginal_damages")
+    def uncollapsed_marginal_damages(self):
+
+        md = (
+            (
+                (self.global_consumption_no_pulse - self.global_consumption_pulse)
+                * self.climate.conversion
+            )
+            .rename("marginal_damages")
+            .to_dataset()
+        )
+
+        for var in md.variables:
+            md[var].encoding.clear()
+
+        return md
+
 
     @cachedproperty
     @save("uncollapsed_discount_factors")
