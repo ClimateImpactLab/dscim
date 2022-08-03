@@ -379,7 +379,7 @@ class MainRecipe(StackedDamages, ABC):
         # find git commit hash
         try:
             label = subprocess.check_output(["git", "describe", "--always"]).strip()
-        except FileNotFoundError:
+        except CalledProcessError:
             label = "unknown"
 
         meta = {}
@@ -487,8 +487,6 @@ class MainRecipe(StackedDamages, ABC):
         """
 
         yrs = range(self.climate.pulse_year, self.ext_subset_end_year + 1)
-
-        # idx = ["year", "model", "ssp", "discount_type"]
 
         params_list, preds_list = [], []
 

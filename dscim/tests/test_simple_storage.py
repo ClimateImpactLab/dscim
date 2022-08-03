@@ -45,8 +45,8 @@ def test_adding_up_damages(stacked_damages):
         stacked_damages.adding_up_damages,
         (
             (
-                xr.open_zarr(f"{stacked_damages.ce_path}/adding_up_no_cc.zarr").no_cc
-                - xr.open_zarr(f"{stacked_damages.ce_path}/adding_up_cc.zarr").cc
+                xr.open_dataset(f"{stacked_damages.ce_path}/adding_up_no_cc.zarr", engine = "zarr").no_cc
+                - xr.open_dataset(f"{stacked_damages.ce_path}/adding_up_cc.zarr", engine = "zarr").cc
             )
             * stacked_damages.pop
         ).sum("region"),

@@ -84,7 +84,7 @@ for mask_type in mask_types:
     # check correct amount of simulations is getting dropped
     a = xr.combine_by_coords(datasets)
     for var in a.data_vars:
-        if "simulation" in list(a.coords) and 5 in list(a.simulation.data):
+        if "simulation" in a.dims:
             a = a.sel(simulation=5)
         else:
             pass
