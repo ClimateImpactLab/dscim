@@ -53,6 +53,8 @@ def run_ssps(
 
         if mask is not None:
             save_path = save_path + "/" + mask
+        else:
+            save_path = save_path + "/" + "unmasked"
 
         if fair_dims != ["simulation"]:
             save_path = (
@@ -190,7 +192,7 @@ def run_rff(
     ):
 
         menu_option, discount_type = menu_disc
-        save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/"
+        save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/unmasked"
 
         if USA:
             econ = EconVars(
