@@ -35,7 +35,7 @@ def ce_from_chunk(
     model = chunk.model.values
 
     gdppc = (
-        xr.open_dataset(socioec, engine="zarr", chunks=None)
+        xr.open_zarr(socioec, chunks=None)
         .sel(
             year=year, ssp=ssp, model=model, region=ce_batch_coords["region"], drop=True
         )
@@ -97,11 +97,11 @@ def reduce_damages(
     delta = params["delta"]
     outpath = f"{c['paths']['reduced_damages_library']}/{sector}"
 
-    with xr.open_dataset(damages, engine="zarr", chunks=None)[histclim] as ds:
-        with xr.open_dataset(socioec, engine="zarr", chunks=None) as gdppc:
+    with xr.open_zarr(damages, chunks=None)[histclim] as ds:
+        with xr.open_zarr(socioec, chunks=None) as gdppc:
 
             assert (
-                xr.open_dataset(damages, engine="zarr").chunks["batch"][0] == 15
+                xr.open_zarr(damages).chunks["batch"][0] == 15
             ), "'batch' dim on damages does not have chunksize of 15. Please rechunk."
 
             ce_batch_dims = [i for i in gdppc.dims] + [
@@ -112,10 +112,7 @@ def reduce_damages(
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = [
-                xr.open_dataset(damages, engine="zarr").chunks[c][0]
-                for c in ce_batch_dims
-            ]
+            ce_chunks = [xr.open_zarr(damages).chunks[c][0] for c in ce_batch_dims]
 
     template = xr.DataArray(
         da.empty(ce_shapes, chunks=ce_chunks),
@@ -123,7 +120,7 @@ def reduce_damages(
         coords=ce_batch_coords,
     )
 
-    other = xr.open_dataset(damages, engine="zarr")
+    other = xr.open_zarr(damages)
 
     out = other.map_blocks(
         ce_from_chunk,
@@ -212,9 +209,7 @@ def sum_AMEL(
 
         for sector in sectors:
             print(f"Opening {sector},{params[sector]['sector_path']}")
-            ds = xr.open_dataset(
-                params[sector]["sector_path"], engine="zarr", consolidated=True
-            )
+            ds = xr.open_zarr(params[sector]["sector_path"], consolidated=True)
             ds = ds[params[sector][var]].rename(var)
             ds = xr.where(np.isinf(ds), np.nan, ds)
             datasets.append(ds)
@@ -260,12 +255,12 @@ def subset_USA_reduced_damages(
 ):
 
     if recipe == "adding_up":
-        ds = xr.open_dataset(
-            f"{input_path}/{sector}/{recipe}_{reduction}.zarr", engine="zarr"
+        ds = xr.open_zarr(
+            f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
         )
     elif recipe == "risk_aversion":
-        ds = xr.open_dataset(
-            f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr", engine="zarr"
+        ds = xr.open_zarr(
+            f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
         )
 
     subset = ds.sel(region=[i for i in ds.region.values if "USA" in i])
@@ -292,9 +287,8 @@ def subset_USA_ssp_econ(
     out_path,
 ):
 
-    zarr = xr.open_dataset(
+    zarr = xr.open_zarr(
         in_path,
-        engine="zarr",
         consolidated=True,
     )
 
@@ -340,8 +334,8 @@ def clip_damages(
     histclim = params["histclim"]
     delta = params["delta"]
 
-    with xr.open_dataset(path, engine="zarr", chunks=None)[delta] as ds:
-        with xr.open_dataset(econ_path, engine="zarr", chunks=None) as gdppc:
+    with xr.open_zarr(path, chunks=None)[delta] as ds:
+        with xr.open_zarr(econ_path, chunks=None) as gdppc:
 
             ce_batch_dims = [i for i in ds.dims]
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
@@ -349,9 +343,7 @@ def clip_damages(
                 i for i in ds.region.values if i in gdppc.region.values
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = [
-                xr.open_dataset(path, engine="zarr").chunks[c][0] for c in ce_batch_dims
-            ]
+            ce_chunks = [xr.open_zarr(path).chunks[c][0] for c in ce_batch_dims]
             print(ce_chunks)
 
     template = xr.DataArray(
@@ -370,7 +362,7 @@ def clip_damages(
         region = damages.region.values
 
         gdppc = (
-            xr.open_dataset(econ_path, engine="zarr", chunks=None)
+            xr.open_zarr(econ_path, chunks=None)
             .sel(year=year, ssp=ssp, model=model, region=region, drop=True)
             .gdppc
         )
@@ -402,7 +394,7 @@ def clip_damages(
 
         return damages
 
-    data = xr.open_dataset(path, engine="zarr")
+    data = xr.open_zarr(path)
 
     for var in [delta, histclim]:
         out = (

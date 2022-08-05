@@ -81,11 +81,7 @@ class Climate:
     @property
     def gmsl(self):
         """Cached GMSL anomalies"""
-        gmsl = (
-            xr.open_dataset(self.gmsl_path, engine="zarr")
-            .gmsl.to_dataframe()
-            .reset_index()
-        )
+        gmsl = xr.open_zarr(self.gmsl_path).gmsl.to_dataframe().reset_index()
 
         return gmsl
 
@@ -120,7 +116,7 @@ class Climate:
         """This function takes coastal sector's GMSL relative to 1991-2009.
         No rebasing occurs, as coastal damages are rebased to the same period.
         """
-        df = xr.open_mfdataset(self.gmsl_fair_path, engine="zarr")
+        df = xr.open_zarr(self.gmsl_fair_path)
         df = df.chunk(df.dims)
 
         datasets = []
@@ -277,7 +273,7 @@ class EconVars:
     def econ_vars(self):
         """Economic variables"""
         if self.path[-3:] == "arr":
-            raw = xr.open_dataset(self.path, engine="zarr", consolidated=True)
+            raw = xr.open_zarr(self.path, consolidated=True)
         else:
             raw = xr.open_dataset(self.path)
         return raw[["gdp", "pop"]]
@@ -404,11 +400,7 @@ class StackedDamages:
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
             damages = (
-                (
-                    xr.open_dataset(mean_no_cc, engine="zarr").no_cc
-                    - xr.open_dataset(mean_cc, engine="zarr").cc
-                )
-                * self.pop
+                (xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc) * self.pop
             ).sum("region")
         else:
             raise NotImplementedError(
@@ -437,4 +429,4 @@ class StackedDamages:
             raise NotImplementedError(
                 "Risk-aversion CEs not found. Please run CE_calculation.ipynb for `risk_aversion`."
             )
-        return self.cut(xr.open_dataset(file, engine="zarr"))
+        return self.cut(xr.open_zarr(file))
