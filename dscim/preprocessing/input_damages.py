@@ -346,8 +346,8 @@ def compute_ag_damages(
     )
     batches = xr.where(np.isinf(batches), np.nan, batches)
 
-    batches.rename({"wc_reallocation": varname}).to_zarr(
-        save_path, mode="w", consolidated=True
+    batches.rename({"wc_reallocation": varname})[varname].to_zarr(
+        save_path, mode="a", consolidated=True
     )
 
 
