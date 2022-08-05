@@ -928,6 +928,7 @@ class MainRecipe(StackedDamages, ABC):
         return gmsl_max
 
     @cachedproperty
+    @save(name="global_consumption_no_pulse")
     def global_consumption_no_pulse(self):
         """Global consumption under FAIR control scenario."""
 
@@ -959,6 +960,7 @@ class MainRecipe(StackedDamages, ABC):
         return xr.concat(gc_no_pulse, dim="weitzman_parameter")
 
     @cachedproperty
+    @save(name="global_consumption_pulse")
     def global_consumption_pulse(self):
         """Global consumption under FAIR pulse scenario."""
 

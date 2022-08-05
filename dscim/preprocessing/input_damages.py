@@ -231,6 +231,7 @@ def compute_ag_damages(
     input_path,
     save_path,
     pop,
+    varname,
     query="exists==True",
     topcode=None,
     scalar=None,
@@ -238,7 +239,7 @@ def compute_ag_damages(
     batches=range(0, 15),
     num_cpus=15,
     file="/disaggregated_damages.nc4",
-    vars=["wc_no_reallocation", "wc_reallocation"],
+    vars=["wc_no_reallocation"],
     min_year=2010,
     max_year=2099,
 ):
@@ -284,12 +285,13 @@ def compute_ag_damages(
     def process_batch(g):
         i = g.batch.values[0]
         if i in [f"batch{j}" for j in batches]:
+
             print(f"Processing damages in {i}")
             ds = xr.open_mfdataset(g.path, preprocess=prep, parallel=True)[vars]
+            attrs = ds.attrs
             ds = ds.sel({"year": slice(min_year, max_year)})
             # ag has missing 2099 damages so we fill these in with the 2098 damages
             ds = ds.reindex(year=range(min_year, max_year + 1), method="ffill")
-            attrs = ds.attrs
 
             # squeeze ag-specific dimensions out so that
             # it can be stacked with other sectors
@@ -303,10 +305,10 @@ def compute_ag_damages(
                     "market_level",
                     "demand_topcode",
                 ]:
-                    if var in list(ds.coords):
+
+                    if var in ds.coords:
+                        attrs[var] = ds[var].values
                         ds = ds.drop(var)
-                    else:
-                        pass
 
             # get in per capita 2019 PPP-adjusted USD damages
             ds = (ds / pop) * -1 * 1.273526
@@ -319,17 +321,34 @@ def compute_ag_damages(
                 print("Scaling for reallocation.")
                 ds["wc_reallocation"] = ds["wc_no_reallocation"] * scalar
 
-            # save out
             ds.attrs = attrs
-            ds = ds.astype(np.float32)
-            os.makedirs(save_path, exist_ok=True)
-            ds.to_netcdf(f"{save_path}/damages_{i}.nc4")
-            ds.close()
-            print(f"Saved damages in {i}.")
+            return ds
         else:
             print(f"Skipped {i}.")
 
-    p_map(process_batch, [g for i, g in paths.groupby("batch")], num_cpus=num_cpus)
+    batches = p_map(
+        process_batch, [g for i, g in paths.groupby("batch")], num_cpus=num_cpus
+    )
+    chunkies = {
+        "rcp": 1,
+        "region": 24378,
+        "gcm": 1,
+        "year": 10,
+        "model": 1,
+        "ssp": 1,
+        "batch": 15,
+    }
+    batches = (
+        xr.concat(batches, "batch", combine_attrs="override")
+        .chunk(chunkies)
+        .drop("variable")
+        .squeeze()
+    )
+    batches = xr.where(np.isinf(batches), np.nan, batches)
+
+    batches.rename({"wc_reallocation": varname}).to_zarr(
+        save_path, mode="w", consolidated=True
+    )
 
 
 def read_energy_files(df, seed="TINV_clim_price014_total_energy_fulladapt-histclim"):
