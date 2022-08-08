@@ -12,10 +12,10 @@ from p_tqdm import p_uimap
 
 # NOTE: modify paths in this cell
 # NOTE: include the trailing / in the root paths
-input_root = "/shares/gcp/integration/float32/input_data_histclim/mortality_epa_vsl/"
+input_root = "/shares/gcp/integration/float32/sectoral_ir_damages/mortality_epa_vsl/"
 
 filename_stem = ""
-output_root = "/shares/gcp/integration/float32/input_data_histclim/mortality_epa_vsl/"
+output_root = "/shares/gcp/integration/float32/sectoral_ir_damages/mortality_epa_vsl/"
 
 check_csv = False
 check_nc4 = False
@@ -147,7 +147,7 @@ def check_csv_nans(path):
 
 
 check_zarr_nans(
-    "/shares/gcp/integration/float32/input_data_histclim/mortality_epa_vsl/impacts-darwin-montecarlo-damages-vsl_popavg-histclim-delta.zarr"
+    "/shares/gcp/integration/float32/sectoral_ir_damages/mortality_epa_vsl/impacts-darwin-montecarlo-damages-vsl_popavg-histclim-delta.zarr"
 )
 
 

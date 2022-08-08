@@ -31,7 +31,7 @@ def calculate_batch_damages(batch, ec, input_path, output_path):
 def labor_inputs(
     path_econ="/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
     input_path="/shares/gcp/outputs/labor/impacts-woodwork/mc_correct_rebasing_for_integration",
-    output_path="/shares/gcp/integration/float32/input_data_histclim/labor_data/new_mc/",
+    output_path="/shares/gcp/integration/float32/sectoral_ir_damages/labor_data/new_mc/",
 ):
     # if __name__ == "__main__":
     ec = EconVars(path_econ=path_econ)

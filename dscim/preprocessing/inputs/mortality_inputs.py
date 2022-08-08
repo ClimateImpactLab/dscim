@@ -34,7 +34,7 @@ prep_mortality_damages(
         delta_costs="monetized_costs_vsl_epa_scaled",
         histclim_deaths="monetized_deaths_vsl_epa_popavg",
     ),
-    outpath="/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v4.zarr",
+    outpath="/shares/gcp/integration/float32/sectoral_ir_damages/mortality_data/impacts-darwin-montecarlo-damages-v4.zarr",
 )
 
 #########################
@@ -62,5 +62,5 @@ prep_mortality_damages(
 #     delta_costs = 'monetized_costs_vsl_epa_scaled',
 #     histclim_deaths = 'monetized_histclim_deaths_vsl_epa_scaled',
 # ),
-#     outpath="/shares/gcp/integration/float32/input_data_histclim/mortality_data/impacts-darwin-montecarlo-damages-v5.zarr",
+#     outpath="/shares/gcp/integration/float32/sectoral_ir_damages/mortality_data/impacts-darwin-montecarlo-damages-v5.zarr",
 # )

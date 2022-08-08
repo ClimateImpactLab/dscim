@@ -16,7 +16,7 @@ print("testing message: version jun 25")
 def calculate_batch_damages(batch, ec):
     path = "/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled"
     save_path = (
-        "/shares/gcp/integration/float32/input_data_histclim/energy_data/hybrid_price/"
+        "/shares/gcp/integration/float32/sectoral_ir_damages/energy_data/hybrid_price/"
     )
     print(f"Processing batch={batch} damages in {os.getpid()}")
     concatenate_energy_damages(
@@ -35,7 +35,7 @@ def energy_inputs(
     re_calculate=False,
     path_econ="/shares/gcp/estimation/mortality/release_2020/data/3_valuation/inputs",
     input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
-    output_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/",
+    output_path="/shares/gcp/integration/float32/sectoral_ir_damages/energy_data/",
 ):
     # if __name__ == "__main__":
 

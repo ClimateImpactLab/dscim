@@ -29,7 +29,17 @@ def update_damage_function_library(
 
 
 def combine_CAMEL_coefs(
-    recipe, disc, eta, rho, CAMEL, coastal, AMEL, input_dir, mask='unmasked', pulse_year=2020, fit=True
+    recipe,
+    disc,
+    eta,
+    rho,
+    CAMEL,
+    coastal,
+    AMEL,
+    input_dir,
+    mask="unmasked",
+    pulse_year=2020,
+    fit=True,
 ):
 
     print(f"Creating {recipe} {disc} for {CAMEL}...")
