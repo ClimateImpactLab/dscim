@@ -95,7 +95,7 @@ def run_ssps(
         if "CAMEL" in sector:
             kwargs.update(
                 {
-                    "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/",
+                    "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/unmasked",
                     "save_files": [
                         "damage_function_points",
                         "marginal_damages",
@@ -213,7 +213,7 @@ def run_rff(
             "save_path": save_path,
             "eta": eta_rho[0],
             "rho": eta_rho[1],
-            "damage_function_path": f"{conf['paths']['rff_damage_function_library']}/{sector}/2020",
+            "damage_function_path": f"{conf['paths']['rff_damage_function_library']}/{sector}/2020/unmasked",
             "save_files": ["uncollapsed_sccs"],
             "ecs_mask_path": None,
             "ecs_mask_name": None,

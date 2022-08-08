@@ -29,18 +29,18 @@ def update_damage_function_library(
 
 
 def combine_CAMEL_coefs(
-    recipe, disc, eta, rho, CAMEL, coastal, AMEL, input_dir, pulse_year=2020, fit=True
+    recipe, disc, eta, rho, CAMEL, coastal, AMEL, input_dir, mask='unmasked', pulse_year=2020, fit=True
 ):
 
     print(f"Creating {recipe} {disc} for {CAMEL}...")
-    os.makedirs(f"{input_dir}/{CAMEL}/{pulse_year}", exist_ok=True)
+    os.makedirs(f"{input_dir}/{CAMEL}/{pulse_year}/{mask}", exist_ok=True)
 
     coefs, fit = {}, {}
 
     for sector in [coastal, AMEL]:
         coefs[
             sector
-        ] = f"{input_dir}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
+        ] = f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
 
     coefs["combined"] = xr.combine_by_coords(
         [
@@ -59,7 +59,7 @@ def combine_CAMEL_coefs(
     }
 
     coefs["combined"].to_netcdf(
-        f"{input_dir}/{CAMEL}/{pulse_year}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
+        f"{input_dir}/{CAMEL}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
     )
 
     if fit:
@@ -67,7 +67,7 @@ def combine_CAMEL_coefs(
         for sector in [coastal, AMEL]:
             fit[
                 sector
-            ] = f"{input_dir}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
+            ] = f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
 
         fit["combined"] = xr.open_dataset(fit[coastal]) + xr.open_dataset(fit[AMEL])
 
@@ -80,5 +80,5 @@ def combine_CAMEL_coefs(
         }
 
         fit["combined"].to_netcdf(
-            f"{input_dir}/{CAMEL}/{pulse_year}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
+            f"{input_dir}/{CAMEL}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
         )
