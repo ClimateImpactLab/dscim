@@ -1176,7 +1176,7 @@ class MainRecipe(StackedDamages, ABC):
             rhos = xr.DataArray(self.rho, coords=[cons_pc.year])
         else:
             # plug the unique rho in an array, and compute e^rho - 1
-            rhos = xr.ufuncs.expm1(xr.DataArray(self.rho, coords=[cons_pc.year]))
+            rhos = np.expm1(xr.DataArray(self.rho, coords=[cons_pc.year]))
 
         stream_rhos = np.divide(
             1, np.multiply.accumulate((rhos.values + 1), rhos.dims.index("year"))
@@ -1311,8 +1311,8 @@ class MainRecipe(StackedDamages, ABC):
             discounting_type=self.discounting_type,
             fair_aggregation=self.fair_aggregation,
         )
-    
-        @cachedproperty
+
+    @cachedproperty
     @save("uncollapsed_discount_factors")
     def uncollapsed_discount_factors(self):
         pop = self.collapsed_pop.sum("region")
@@ -1345,7 +1345,6 @@ class MainRecipe(StackedDamages, ABC):
             md[var].encoding.clear()
 
         return md
-
 
     def ce(self, obj, dims):
         """Rechunk data appropriately and apply the certainty equivalence
