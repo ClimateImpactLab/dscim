@@ -117,12 +117,6 @@ def run_ssps(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
 
-        if marginal_damages == True:
-            md = menu_item.uncollapsed_marginal_damages
-
-        if factors == True:
-            df = menu_item.uncollapsed_discount_factors
-
 
 def run_rff(
     sectors,
@@ -189,9 +183,3 @@ def run_rff(
             menu_item.global_consumption.to_netcdf(
                 f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
             )
-
-        if marginal_damages == True:
-            md = menu_item.uncollapsed_marginal_damages
-
-        if factors == True:
-            f = menu_item.uncollapsed_discount_factors
