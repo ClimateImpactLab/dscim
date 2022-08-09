@@ -36,8 +36,6 @@ def run_ssps(
     masks=[None],
     fair_dims_list=[["simulation"]],
     global_cons=False,
-    factors=False,
-    marginal_damages=False,
     order="damage_function",
 ):
 
@@ -126,8 +124,6 @@ def run_rff(
     config,
     USA,
     global_cons=True,
-    factors=True,
-    marginal_damages=True,
     order="scc",
 ):
 
