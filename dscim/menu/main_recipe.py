@@ -1311,8 +1311,8 @@ class MainRecipe(StackedDamages, ABC):
             discounting_type=self.discounting_type,
             fair_aggregation=self.fair_aggregation,
         )
-    
-        @cachedproperty
+
+    @cachedproperty
     @save("uncollapsed_discount_factors")
     def uncollapsed_discount_factors(self):
         pop = self.collapsed_pop.sum("region")
@@ -1345,7 +1345,6 @@ class MainRecipe(StackedDamages, ABC):
             md[var].encoding.clear()
 
         return md
-
 
     @cachedproperty
     @save("uncollapsed_discount_factors")
