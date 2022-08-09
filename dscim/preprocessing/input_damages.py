@@ -242,7 +242,7 @@ def calculate_labor_batch_damages(batch, ec, input_path, save_path):
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
     )
-    print(f"Saved!")
+    print("Saved!")
 
 
 def calculate_labor_damages(
@@ -261,7 +261,7 @@ def calculate_labor_damages(
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
-        r = p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
 
 
 def compute_ag_damages(
@@ -620,7 +620,7 @@ def calculate_energy_batch_damages(batch, ec, input_path, save_path):
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
     )
-    print(f"Saved!")
+    print("Saved!")
 
 
 def calculate_energy_damages(
@@ -655,7 +655,7 @@ def calculate_energy_damages(
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
-        r = p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
 
 
 def prep_mortality_damages(
