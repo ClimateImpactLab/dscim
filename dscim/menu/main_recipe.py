@@ -163,6 +163,8 @@ class MainRecipe(StackedDamages, ABC):
             "scc",
             "uncollapsed_discount_factors",
             "uncollapsed_marginal_damages",
+            "global_consumption",
+            "global_consumption_no_pulse",
         ],
         **kwargs,
     ):

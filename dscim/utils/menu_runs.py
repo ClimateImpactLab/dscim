@@ -35,7 +35,6 @@ def run_ssps(
     AR,
     masks=[None],
     fair_dims_list=[["simulation"]],
-    global_cons=False,
     order="damage_function",
 ):
 
@@ -107,14 +106,6 @@ def run_ssps(
         menu_item = MENU_OPTIONS[menu_option](**kwargs)
         menu_item.order_plate(order)
 
-        if global_cons:
-            menu_item.global_consumption_no_pulse.to_netcdf(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption_no_pulse.nc4"
-            )
-            menu_item.global_consumption.to_netcdf(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
-            )
-
 
 def run_rff(
     sectors,
@@ -171,11 +162,3 @@ def run_rff(
 
         menu_item = MENU_OPTIONS[menu_option](**kwargs)
         menu_item.order_plate(order)
-
-        if global_cons:
-            menu_item.global_consumption_no_pulse.to_netcdf(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption_no_pulse.nc4"
-            )
-            menu_item.global_consumption.to_netcdf(
-                f"{save_path}/{menu_option}_{discount_type}_eta{menu_item.eta}_rho{menu_item.rho}_global_consumption.nc4"
-            )
