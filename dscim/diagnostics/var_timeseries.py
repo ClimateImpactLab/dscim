@@ -94,6 +94,7 @@ def get_ssp_id(
     output,
     results_root,
     discrate=0.02,
+    pulse_year=2020,
 ):
 
     sccs = (
@@ -142,6 +143,7 @@ def rff_timeseries(
     output,
     config,
     runid_root,
+    USA,
     discrate=0.02,
     pulse_year=2020,
 ):
@@ -213,23 +215,24 @@ def rff_timeseries(
     # gmst
     with open(config) as config_file:
         params = yaml.full_load(config_file)
-        params["climate"].update(
+        params["rff_climate"].update(
             {
-                "gmst_fair_path": "/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc"
+                "gmst_fair_path": "/shares/gcp/integration/rff2/climate/ar6_rff_fair162_control_pulse_all_gases_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_ohc_emissions-driven_naturalfix_v5.03_Feb072022.nc",
+                "pulse_year": pulse_year,
             }
         )
     gmst = (
-        Climate(**params["climate"])
+        Climate(**params["rff_climate"])
         .fair_pulse.temperature.sel(gas=gas, drop=True)
         .rename("gmst")
     )
     gmst_pulse = (
-        Climate(**params["climate"])
+        Climate(**params["rff_climate"])
         .fair_pulse.temperature.sel(gas=gas, drop=True)
         .rename("gmst")
     )
     gmst_control = (
-        Climate(**params["climate"])
+        Climate(**params["rff_climate"])
         .fair_control.temperature.sel(gas=gas, drop=True)
         .rename("gmst")
     )
@@ -239,14 +242,15 @@ def rff_timeseries(
     )
 
     # gdp
-    gdp = (
-        xr.open_dataset(
+    if USA:
+        gdp = xr.open_dataset(
+            "/shares/gcp/integration_replication/inputs/econ/rff_USA_socioeconomics.nc4"
+        )
+    else:
+        gdp = xr.open_dataset(
             "/shares/gcp/integration_replication/inputs/econ/rff_global_socioeconomics.nc4"
         )
-        .drop("region")
-        .rename({"runid": "rff_sp"})
-        .gdp.sel(rff_sp=cw.rff_sp)
-    )
+    gdp = gdp.drop("region").rename({"runid": "rff_sp"}).gdp.sel(rff_sp=cw.rff_sp)
 
     data = xr.combine_by_coords(
         [
@@ -402,10 +406,16 @@ def ssp_timeseries(
     # gmst
     with open(config) as config_file:
         params = yaml.full_load(config_file)
+        params["AR6_ssp_climate"].update({"pulse_year": pulse_year})
+
+    # gdp
+    gdp = xr.open_dataset(
+        f"{results_root}/{recipe}_{disc}_eta{eta}_rho{rho}_global_consumption.nc4"
+    ).__xarray_dataarray_variable__.rename("gdp")
 
     anom_var = "gmsl" if "coastal" in sector else "temperature"
 
-    anomaly = Climate(**params["climate"]).fair_pulse[anom_var]
+    anomaly = Climate(**params["AR6_ssp_climate"]).fair_pulse[anom_var]
 
     if "coastal" not in sector:
         anomaly = anomaly.sel(gas=gas, drop=True)
@@ -421,6 +431,7 @@ def ssp_timeseries(
                 emissions,
                 c_emissions,
                 anomaly,
+                gdp,
             ]
         ]
     )
@@ -443,6 +454,7 @@ def ssp_timeseries(
             "marginal_damages",
             "discount_factors",
             "discounted_damages",
+            "gdp",
         ]
     ):
 
