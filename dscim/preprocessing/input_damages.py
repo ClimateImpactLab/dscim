@@ -14,7 +14,7 @@ import xarray as xr
 from pathlib import Path
 from itertools import product
 from functools import partial
-from p_tqdm import p_map
+from p_tqdm import p_map, p_umap
 from dscim.menu.simple_storage import EconVars
 from zarr.errors import GroupNotFoundError
 
@@ -220,11 +220,48 @@ def concatenate_labor_damages(
 
         # save out
         if format_file == "zarr":
-            concat_ds.to_zarr(f"{path_to_file}.zarr", consolidated=True, mode="w")
+            to_store = concat_ds.copy()
+            for var in to_store.variables:
+                to_store[var].encoding.clear()
+
+            to_store.to_zarr(f"{path_to_file}.zarr", mode="w", consolidated=True)
         elif format_file == "netcdf":
             concat_ds.to_netcdf(f"{path_to_file}.nc4")
 
     return concat_ds
+
+
+def calculate_labor_batch_damages(batch, ec, input_path, save_path):
+    print(f"Processing batch={batch} damages in {os.getpid()}")
+    concatenate_labor_damages(
+        input_path=input_path,
+        save_path=save_path,
+        ec_cls=ec,
+        variable="rebased",
+        val_type="wage-levels",
+        format_file="zarr",
+        query=f"exists==True&batch=='batch{batch}'",
+    )
+    print("Saved!")
+
+
+def calculate_labor_damages(
+    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+    input_path="/shares/gcp/outputs/labor/impacts-woodwork/mc_correct_rebasing_for_integration",
+    save_path="/shares/gcp/integration/float32/input_data_histclim/labor_data/replication/",
+):
+    ec = EconVars(path_econ)
+    # process in 3 rounds to limit memory usage
+    for i in range(0, 3):
+        partial_func = partial(
+            calculate_labor_batch_damages,
+            input_path=input_path,
+            save_path=save_path,
+            ec=ec,
+        )
+        print("Processing batches:")
+        print(list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
 
 
 def compute_ag_damages(
@@ -561,11 +598,64 @@ def concatenate_energy_damages(
         logger.info(f"Concatenating and processing {i}")
 
         if format_file == "zarr":
-            concat_ds.to_zarr(f"{path_to_file}.zarr", consolidated=True, mode="w")
+            to_store = concat_ds.copy()
+            for var in to_store.variables:
+                to_store[var].encoding.clear()
+
+            to_store.to_zarr(f"{path_to_file}.zarr", mode="w", consolidated=True)
         elif format_file == "netcdf":
             concat_ds.to_netcdf(f"{path_to_file}.nc4")
 
     return concat_ds
+
+
+def calculate_energy_batch_damages(batch, ec, input_path, save_path):
+    print(f"Processing batch={batch} damages in {os.getpid()}")
+    concatenate_energy_damages(
+        input_path=input_path,
+        file_prefix="TINV_clim_integration_total_energy",
+        save_path=save_path,
+        ec_cls=ec,
+        variable="rebased",
+        format_file="zarr",
+        query=f"exists==True&batch=='batch{batch}'",
+    )
+    print("Saved!")
+
+
+def calculate_energy_damages(
+    re_calculate=True,
+    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+    input_path="/shares/gcp/outputs/energy_pixel_interaction/impacts-blueghost/integration_resampled",
+    save_path="/shares/gcp/integration/float32/input_data_histclim/energy_data/replication_2022aug/",
+):
+    ec = EconVars(path_econ)
+
+    if re_calculate:
+        read_energy_files_parallel(
+            input_path=input_path,
+            save_path=save_path,
+            ec_cls=ec,
+            seed="TINV_clim_integration_total_energy_delta",
+        )
+        read_energy_files_parallel(
+            input_path=input_path,
+            save_path=save_path,
+            ec_cls=ec,
+            seed="TINV_clim_integration_total_energy_histclim",
+        )
+
+    # process in 3 rounds to limit memory usage
+    for i in range(0, 3):
+        partial_func = partial(
+            calculate_energy_batch_damages,
+            input_path=input_path,
+            save_path=save_path,
+            ec=ec,
+        )
+        print("Processing batches:")
+        print(list(range(i * 5, i * 5 + 5)))
+        p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
 
 
 def prep_mortality_damages(

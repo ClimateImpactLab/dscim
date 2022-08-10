@@ -161,6 +161,10 @@ class MainRecipe(StackedDamages, ABC):
             "discount_factors",
             "uncollapsed_sccs",
             "scc",
+            "uncollapsed_discount_factors",
+            "uncollapsed_marginal_damages",
+            "global_consumption",
+            "global_consumption_no_pulse",
         ],
         **kwargs,
     ):
@@ -285,6 +289,7 @@ class MainRecipe(StackedDamages, ABC):
         def scc():
             damage_function()
             self.global_consumption
+            self.global_consumption_no_pulse
             self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
@@ -293,6 +298,8 @@ class MainRecipe(StackedDamages, ABC):
                     self.stream_discount_factors
                     self.calculate_scc
                 self.uncollapsed_sccs
+                self.uncollapsed_marginal_damages
+                self.uncollapsed_discount_factors
 
         course_dict = {"damage_function": damage_function, "scc": scc}
 
@@ -1173,7 +1180,7 @@ class MainRecipe(StackedDamages, ABC):
             rhos = xr.DataArray(self.rho, coords=[cons_pc.year])
         else:
             # plug the unique rho in an array, and compute e^rho - 1
-            rhos = xr.ufuncs.expm1(xr.DataArray(self.rho, coords=[cons_pc.year]))
+            rhos = np.expm1(xr.DataArray(self.rho, coords=[cons_pc.year]))
 
         stream_rhos = np.divide(
             1, np.multiply.accumulate((rhos.values + 1), rhos.dims.index("year"))
@@ -1308,6 +1315,40 @@ class MainRecipe(StackedDamages, ABC):
             discounting_type=self.discounting_type,
             fair_aggregation=self.fair_aggregation,
         )
+
+    @cachedproperty
+    @save("uncollapsed_discount_factors")
+    def uncollapsed_discount_factors(self):
+        pop = self.collapsed_pop.sum("region")
+        pop = pop.reindex(
+            year=range(pop.year.min().values, self.ext_end_year + 1),
+            method="ffill",
+        )
+        f = self.calculate_discount_factors(
+            self.global_consumption_no_pulse / pop
+        ).to_dataset(name="discount_factor")
+        for var in f.variables:
+            f[var].encoding.clear()
+
+        return f
+
+    @cachedproperty
+    @save("uncollapsed_marginal_damages")
+    def uncollapsed_marginal_damages(self):
+
+        md = (
+            (
+                (self.global_consumption_no_pulse - self.global_consumption_pulse)
+                * self.climate.conversion
+            )
+            .rename("marginal_damages")
+            .to_dataset()
+        )
+
+        for var in md.variables:
+            md[var].encoding.clear()
+
+        return md
 
     def ce(self, obj, dims):
         """Rechunk data appropriately and apply the certainty equivalence
