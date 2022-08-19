@@ -4,7 +4,7 @@ from pandas.testing import assert_frame_equal
 from xarray.testing import assert_allclose
 import pytest
 
-from dscim.tests import open_zipped_results
+from . import open_zipped_results
 from dscim.menu.risk_aversion import RiskAversionRecipe
 
 

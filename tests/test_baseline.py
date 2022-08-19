@@ -3,7 +3,7 @@ from pandas.testing import assert_frame_equal
 from xarray.testing import assert_allclose
 import pytest
 import pandas
-from dscim.tests import open_zipped_results
+from . import open_zipped_results
 from dscim.menu.baseline import Baseline
 
 
