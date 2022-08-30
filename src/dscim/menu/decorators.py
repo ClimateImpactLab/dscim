@@ -61,8 +61,6 @@ def save(name):
                 elif isinstance(save, pd.DataFrame):
                     self.logger.info(f"Saving {filename_path}.csv")
                     save.to_csv(f"{filename_path}.csv", index=False)
-            else:
-                logger.warning(f"Skipped saving {name}.")
 
             return out
 
