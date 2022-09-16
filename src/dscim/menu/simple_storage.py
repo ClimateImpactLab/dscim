@@ -33,12 +33,14 @@ class Climate:
         indicating which simulations should be included or excluded.
     ecs_mask_name : str
         Name of mask to be called from within ``ecs_mask_path`` NetCDF file.
-    base_period: tuple
+    base_period: tuple, optional
         Period for rebasing FAIR temperature anomalies. This should match the CIL projection system's base period.
-    emission_scenarios: list
-        List of emission scenarios for which SCC will be calculated.
-    gases: list
-        List of greenhouse gases for which SCC will be calculated.
+    emission_scenarios: list or None, optional
+        List of emission scenarios for which SCC will be calculated. Default
+        is ["ssp119", "ssp126", "ssp245", "ssp460", "ssp370", "ssp585"].
+    gases: list or None, optional
+        List of greenhouse gases for which SCC will be calculated. Default is
+        ["CO2_Fossil", "CH4", "N2O"].
     """
 
     def __init__(
@@ -51,10 +53,22 @@ class Climate:
         gmsl_fair_path=None,
         ecs_mask_path=None,
         ecs_mask_name=None,
-        base_period=[2001, 2010],
-        emission_scenarios=["ssp119", "ssp126", "ssp245", "ssp460", "ssp370", "ssp585"],
-        gases=["CO2_Fossil", "CH4", "N2O"],
+        base_period=(2001, 2010),
+        emission_scenarios=None,
+        gases=None,
     ):
+        if emission_scenarios is None:
+            emission_scenarios = [
+                "ssp119",
+                "ssp126",
+                "ssp245",
+                "ssp460",
+                "ssp370",
+                "ssp585",
+            ]
+        if gases is None:
+            gases = ["CO2_Fossil", "CH4", "N2O"]
+
         self.gmst_path = gmst_path
         self.gmsl_path = gmsl_path
         self.gmst_fair_path = gmst_fair_path
