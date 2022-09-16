@@ -768,7 +768,7 @@ class MainRecipe(StackedDamages, ABC):
         return median_params_marginal_damages
 
     @abstractmethod
-    def global_consumption_calculation(disc_type):
+    def global_consumption_calculation(self, disc_type):
         """Calculation of global consumption without climate change
 
         Returns
