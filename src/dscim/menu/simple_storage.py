@@ -352,7 +352,7 @@ class StackedDamages:
             if key in xr_array.coords
         }
 
-        self.logger.info(f"Subsetting on {valid_keys} keys.")
+        self.logger.debug(f"Subsetting on {valid_keys} keys.")
 
         xr_data = xr_array.sel(valid_keys).sel(
             year=slice(self.climate.pulse_year - 2, end_year)

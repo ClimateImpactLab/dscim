@@ -823,7 +823,7 @@ class MainRecipe(StackedDamages, ABC):
         # rff simulation means that GDP already exists out to 2300
         if 2300 in self.gdp.year:
 
-            self.logger.info("Global consumption found up to 2300.")
+            self.logger.debug("Global consumption found up to 2300.")
             global_cons = self.gdp.sum("region").rename("global_consumption")
         else:
 
