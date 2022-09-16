@@ -104,11 +104,19 @@ def get_weights(quantiles):
 
 
 def quantile_weight_quantilereg(
-    array, quantiles=[0.01, 0.05, 0.167, 0.25, 0.5, 0.75, 0.833, 0.95, 0.99]
+    array, quantiles=None
 ):
     """Produce quantile weights of the quantile regression damages.
+
+    Parameters
+    ----------
     qr_quantiles: the quantile regression quantiles for damages. (Must be 0-1!)
+    quantiles : sequence or None, optional
+        Quantiles to compute. Default is (0.01, 0.05, 0.167, 0.25, 0.5, 0.75,
+        0.833, 0.95, 0.99).
     """
+    if quantiles is None:
+        quantiles = [0.01, 0.05, 0.167, 0.25, 0.5, 0.75, 0.833, 0.95, 0.99]
 
     qr_quantiles = array.q.values
     weights = xr.DataArray(get_weights(qr_quantiles), dims=["q"], coords=[qr_quantiles])
