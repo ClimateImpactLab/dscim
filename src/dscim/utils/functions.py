@@ -68,7 +68,7 @@ def calculate_constant_equivalent_discount_rate(
     sel_dict,
     eta,
     rho,
-    mean_dims=["simulation"],
+    mean_dims=("simulation",),
     uncollapsed=False,
 ):
     """
