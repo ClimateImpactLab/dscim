@@ -33,15 +33,18 @@ class MainRecipe(StackedDamages, ABC):
         Discounting is discrete if ``True``, else continuous (default is ``False``).
     fit_type : str
         Type of damage function estimation: ``'ols'``, ``'quantreg'``
-    weitzman_parameter: list of float
+    weitzman_parameter: list of float or None, optional
         If <= 1: The share of global consumption below which bottom coding is implemented.
-        If > 1: Absolute dollar value of global consumption below which bottom
+        If > 1: Absolute dollar value of global consumption below which bottom.
+        Default is [0.1, 0.5].
         coding is implemented.
-    fair_aggregation : list of str
-        How to value climate uncertainty from FAIR: ``median``, ``mean``, ``ce``, ``median_params``
+    fair_aggregation : list of str or None, optional
+        How to value climate uncertainty from FAIR: ``median``, ``mean``,
+        ``ce``, ``median_params``. Default is ["ce", "mean", "gwr_mean",
+        "median", "median_params"].
     rho : float
         Pure rate of time preference parameter
-    fair_dims : list of str
+    fair_dims : list of str or None, optional
         List of dimensions over which the FAIR CE/mean/median options should be collapsed. Default value is ["simulation"], but lists such as ["simulation", "rcp", "ssp"] can be passed. Note: If dimensions other than 'simulation' are passed, 'median_params' fair aggregation cannot be passed.
     """
 
@@ -92,82 +95,105 @@ class MainRecipe(StackedDamages, ABC):
         damage_function_path=None,
         clip_gmsl=False,
         gdppc_bottom_code=39.39265060424805,
-        scc_quantiles=[0.05, 0.17, 0.25, 0.5, 0.75, 0.83, 0.95],
+        scc_quantiles=None,
         scenario_dimensions=None,
-        weitzman_parameter=[0.1, 0.5],
-        fair_aggregation=["ce", "mean", "gwr_mean", "median", "median_params"],
+        weitzman_parameter=None,
+        fair_aggregation=None,
         filename_suffix="",
         discrete_discounting=False,
-        quantreg_quantiles=[
-            0.05,
-            0.1,
-            0.15,
-            0.2,
-            0.25,
-            0.3,
-            0.35,
-            0.4,
-            0.45,
-            0.5,
-            0.55,
-            0.6,
-            0.65,
-            0.7,
-            0.75,
-            0.8,
-            0.85,
-            0.9,
-            0.95,
-        ],
-        quantreg_weights=[
-            0.075,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.05,
-            0.075,
-        ],
-        full_uncertainty_quantiles=[
-            0.01,
-            0.05,
-            0.17,
-            0.25,
-            0.5,
-            0.75,
-            0.83,
-            0.95,
-            0.99,
-        ],
+        quantreg_quantiles=None,
+        quantreg_weights=None,
+        full_uncertainty_quantiles=None,
         extrap_formula=None,
-        fair_dims=["simulation"],
-        save_files=[
-            "damage_function_points",
-            "damage_function_coefficients",
-            "damage_function_fit",
-            "marginal_damages",
-            "discount_factors",
-            "uncollapsed_sccs",
-            "scc",
-            "uncollapsed_discount_factors",
-            "uncollapsed_marginal_damages",
-            "global_consumption",
-            "global_consumption_no_pulse",
-        ],
+        fair_dims=None,
+        save_files=None,
         **kwargs,
     ):
+        if scc_quantiles is None:
+            scc_quantiles = [0.05, 0.17, 0.25, 0.5, 0.75, 0.83, 0.95]
+
+        if weitzman_parameter is None:
+            weitzman_parameter = [0.1, 0.5]
+
+        if fair_aggregation is None:
+            fair_aggregation = ["ce", "mean", "gwr_mean", "median", "median_params"]
+
+        if quantreg_quantiles is None:
+            quantreg_quantiles = [
+                0.05,
+                0.1,
+                0.15,
+                0.2,
+                0.25,
+                0.3,
+                0.35,
+                0.4,
+                0.45,
+                0.5,
+                0.55,
+                0.6,
+                0.65,
+                0.7,
+                0.75,
+                0.8,
+                0.85,
+                0.9,
+                0.95,
+            ]
+
+        if quantreg_weights is None:
+            quantreg_weights = [
+                0.075,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.05,
+                0.075,
+            ]
+
+        if full_uncertainty_quantiles is None:
+            full_uncertainty_quantiles = [
+                0.01,
+                0.05,
+                0.17,
+                0.25,
+                0.5,
+                0.75,
+                0.83,
+                0.95,
+                0.99,
+            ]
+
+        if fair_dims is None:
+            fair_dims = ["simulation"]
+
+        if save_files is None:
+            save_files = [
+                "damage_function_points",
+                "damage_function_coefficients",
+                "damage_function_fit",
+                "marginal_damages",
+                "discount_factors",
+                "uncollapsed_sccs",
+                "scc",
+                "uncollapsed_discount_factors",
+                "uncollapsed_marginal_damages",
+                "global_consumption",
+                "global_consumption_no_pulse",
+            ]
 
         super().__init__(
             sector_path=sector_path,
