@@ -103,9 +103,7 @@ def get_weights(quantiles):
     return weights
 
 
-def quantile_weight_quantilereg(
-    array, quantiles=None
-):
+def quantile_weight_quantilereg(array, quantiles=None):
     """Produce quantile weights of the quantile regression damages.
 
     Parameters
