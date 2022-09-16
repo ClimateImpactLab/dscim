@@ -74,24 +74,26 @@ def batch_maps(
     ECON_ZARR,
     eta,
     maxmin=True,
-    selection=dict(year=2097, ssp=["SSP2", "SSP3", "SSP4"], batch="batch0"),
+    selection=None,
     location=(0.35, -0.2),
     gcm="mean",
     prefix=None,
-    variables=[
+    variables=(
         "rp_inc_share",
         "rp_damage_share",
         "rp_cons_share",
         "rp",
         "cons",
         "cons_ce",
-    ],
-    maxes=[None, None, None, None, None, None],
-    mins=[None, None, None, None, None, None],
+    ),
+    maxes=(None, None, None, None, None, None),
+    mins=(None, None, None, None, None, None),
     year=2097,
     plot=True,
     save_path=None,
 ):
+    if selection is None:
+        selection = dict(year=2097, ssp=["SSP2", "SSP3", "SSP4"], batch="batch0")
 
     assert len(maxes) == len(
         variables

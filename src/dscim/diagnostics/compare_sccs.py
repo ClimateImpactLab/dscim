@@ -4,7 +4,7 @@ import numpy as np
 
 
 def compare_sccs(
-    rootdict, recipe, disc, eta, rho, quantiles=[0, 0.05, 0.5, 0.95, 1], wp="0.5"
+    rootdict, recipe, disc, eta, rho, quantiles=(0, 0.05, 0.5, 0.95, 1), wp="0.5"
 ):
 
     this_list = []

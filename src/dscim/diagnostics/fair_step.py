@@ -21,7 +21,7 @@ def marginal_damages(
     sector,
     sector_path,
     discounting,
-    recipes=["risk_aversion", "equity"],
+    recipes=("risk_aversion", "equity"),
     save_path=None,
 ):
 
@@ -98,7 +98,7 @@ def global_consumption(
     sector,
     sector_path,
     discounting,
-    recipes=["risk_aversion", "equity"],
+    recipes=("risk_aversion", "equity"),
     save_path=None,
     scale=10**12,
 ):
@@ -153,12 +153,12 @@ def output_scc(
     sector_path,
     eta,
     rho,
-    recipes=["adding_up", "risk_aversion", "equity", "local"],
-    discounting=["constant_model_collapsed", "constant", "euler_ramsey", "euler_gwr"],
+    recipes=("adding_up", "risk_aversion", "equity", "local"),
+    discounting=("constant_model_collapsed", "constant", "euler_ramsey", "euler_gwr"),
     save_path=None,
     file=None,
     subset_dict=None,
-    index=[
+    index=(
         "discount_type",
         "discrate",
         "weitzman_parameter",
@@ -166,7 +166,7 @@ def output_scc(
         "ssp",
         "rcp",
         "gas",
-    ],
+    ),
 ):
 
     final_dfs = []
@@ -230,14 +230,19 @@ def plot_implicit_rates(
     sector,
     path,
     fair_aggregation="ce",
-    ssp=["SSP3"],
-    model=["IIASA GDP"],
+    ssp=None,
+    model=None,
     pulse_year=2020,
-    recipes=["risk_aversion", "equity"],
-    discounting=["ramsey", "gwr"],
+    recipes=("risk_aversion", "equity"),
+    discounting=("ramsey", "gwr"),
     save_path=None,
     csv=True,
 ):
+    if ssp is None:
+        ssp = ["SSP3"]
+
+    if model is None:
+        model = ["IIASA GDP"]
 
     for recipe in recipes:
 

@@ -22,18 +22,23 @@ def mumbai_plots(
     eta,
     title=True,
     aspect=1,
-    selection=dict(year=2097),
-    region_dict={
-        "IND.21.317.1249": "Mumbai, IND",
-        "CAN.2.33.913": "Vancouver, CAN",
-        "USA.14.608": "Chicago, USA",
-        "EGY.11": "Cairo, EGY",
-        "SDN.4.11.50.164": "Khartoum, SDN",
-        "NGA.25.510": "Lagos, NGA",
-        "SAU.7": "Riyadh, SAU",
-        "RUS.16.430.430": "St Petersburg, RUS",
-    },
+    selection=None,
+    region_dict=None,
 ):
+    if selection is None:
+        selection = dict(year=2097)
+
+    if region_dict is None:
+        region_dict = {
+            "IND.21.317.1249": "Mumbai, IND",
+            "CAN.2.33.913": "Vancouver, CAN",
+            "USA.14.608": "Chicago, USA",
+            "EGY.11": "Cairo, EGY",
+            "SDN.4.11.50.164": "Khartoum, SDN",
+            "NGA.25.510": "Lagos, NGA",
+            "SAU.7": "Riyadh, SAU",
+            "RUS.16.430.430": "St Petersburg, RUS",
+        }
 
     assert premium in [
         "risk_aversion",

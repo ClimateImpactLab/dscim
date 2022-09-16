@@ -70,7 +70,7 @@ def damage_function(
     rho,
     year=2097,
     hue_vars="ssp",
-    recipes=["adding_up", "risk_aversion", "equity"],
+    recipes=("adding_up", "risk_aversion", "equity"),
     scale=10**12,
     x_lim=(-np.inf, np.inf),
     y_lim=(-np.inf, np.inf),
@@ -97,7 +97,7 @@ def damage_function(
         Type of discounting. Can be 'constant', 'ramsey', or 'wr'.
     year: int
         Year of damage function to be plotted.
-    recipes : list of str
+    recipes : sequence of str
         Recipe types to be plotted. Can be 'adding_up', 'risk_aversion', 'equity'
     scale : int
         Units of dollars for axis. ie., if 10**12 is passed, y axis will be in trillions.
@@ -269,8 +269,8 @@ def damage_function_w_consumption(
     output,
     eta,
     rho,
-    years=[2050, 2099],
-    recipes=["equity"],
+    years=(2050, 2099),
+    recipes=("equity",),
     disc="constant",
     model="IIASA GDP",
     ssp="SSP3",

@@ -15,10 +15,12 @@ def plot_stacked(
     eta=2.0,
     rho=0.0,
     xlim=(-1, 8),
-    years=[2020, 2050, 2090, 2100, 2200, 2300],
+    years=None,
     sharey=False,
     rff=True,
 ):
+    if years is None:
+        years = [2020, 2050, 2090, 2100, 2200, 2300]
 
     root_rff = f"/shares/gcp/integration_replication/results/rff/{sector}/2020/"
     root_ssp = f"/shares/gcp/integration_replication/results/AR6_ssp/{sector}/2020/"

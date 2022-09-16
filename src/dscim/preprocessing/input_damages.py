@@ -276,7 +276,7 @@ def compute_ag_damages(
     batches=range(0, 15),
     num_cpus=15,
     file="/disaggregated_damages.nc4",
-    vars=["wc_no_reallocation"],
+    vars=None,
     min_year=2010,
     max_year=2099,
 ):
@@ -297,6 +297,8 @@ def compute_ag_damages(
     save_path str
         Path where files should be saved
     """
+    if vars is None:
+        vars = ["wc_no_reallocation"]
 
     if integration:
         assert (

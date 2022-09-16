@@ -33,10 +33,14 @@ def run_ssps(
     config,
     USA,
     AR,
-    masks=[None],
-    fair_dims_list=[["simulation"]],
+    masks=None,
+    fair_dims_list=None,
     order="damage_function",
 ):
+    if masks is None:
+        masks = [None]
+    if fair_dims_list is None:
+        fair_dims_list = [["simulation"]]
 
     with open(config, "r") as stream:
         conf = yaml.safe_load(stream)
