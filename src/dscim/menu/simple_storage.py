@@ -54,10 +54,10 @@ class Climate:
         ecs_mask_path=None,
         ecs_mask_name=None,
         base_period=(2001, 2010),
-        emission_scenarios=None,
+        emission_scenarios=(),
         gases=None,
     ):
-        if emission_scenarios is None:
+        if emission_scenarios == ():
             emission_scenarios = [
                 "ssp119",
                 "ssp126",
