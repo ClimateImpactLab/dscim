@@ -37,7 +37,7 @@ class Climate:
         Period for rebasing FAIR temperature anomalies. This should match the CIL projection system's base period.
     emission_scenarios: list or None, optional
         List of emission scenarios for which SCC will be calculated. Default
-        is ["ssp119", "ssp126", "ssp245", "ssp460", "ssp370", "ssp585"].
+        is (), which gets set to ["ssp119", "ssp126", "ssp245", "ssp460", "ssp370", "ssp585"].
     gases: list or None, optional
         List of greenhouse gases for which SCC will be calculated. Default is
         ["CO2_Fossil", "CH4", "N2O"].
@@ -54,10 +54,10 @@ class Climate:
         ecs_mask_path=None,
         ecs_mask_name=None,
         base_period=(2001, 2010),
-        emission_scenarios=None,
+        emission_scenarios=(),
         gases=None,
     ):
-        if emission_scenarios is None:
+        if emission_scenarios == ():
             emission_scenarios = [
                 "ssp119",
                 "ssp126",
