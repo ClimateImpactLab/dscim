@@ -1,5 +1,3 @@
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-
 # DSCIM: The Data-driven Spatial Climate Impact Model
 
 This Python library enables the calculation of sector-specific partial social cost of greenhouse gases (SC-GHG) and SCGHGs that are combined across sectors using a variety of valuation methods and assumptions. The main purpose of this
@@ -7,6 +5,45 @@ library is to parse the monetized spatial damages from different sectors and int
 using different options ("menu options") that encompass different decisions, such as
 discount levels, discount strategies, and different considerations related to
 economic and climate uncertainty.
+
+## Installation
+
+Install with `pip` using:
+```shell
+pip install dscim
+```
+
+Install the unreleased bleeding-edge version of the package with:
+```shell
+pip install git+https://github.com/climateimpactlab/dscim
+```
+
+### Dependencies
+
+`dscim` requires Python > 3.8. Additional compiled packages are required so we recommend installing `dscim` into a `conda` environment along with its dependencies.
+
+- numpy
+- pandas
+- xarray
+- matplotlib
+- dask
+- distributed
+- requests
+- statsmodels
+- click
+- zarr
+- dask-jobqueue
+- seaborn
+- geopandas
+- netcdf4
+- h5netcdf
+- impactlab-tools
+- p_tqdm
+
+## Support
+Source code is available online at https://github.com/climateimpactlab/dscim. Please file bugs in the [bug tracker](https://github.com/climateimpactlab/dscim/issues).
+
+This software is Open Source and available under the Apache License, Version 2.0.
 
 ## Structure and logic
 
