@@ -64,14 +64,14 @@ def test_econvars_netcdf(tmp_path):
     infile_path = d / "data.nc"
     ds_in = xr.Dataset(
         {
-        "pop": (["region", "runid", "year"], np.ones((1, 2, 3))),
-        "gdp": (["region", "runid", "year"], np.ones((1, 2, 3))),
+            "pop": (["region", "runid", "year"], np.ones((1, 2, 3))),
+            "gdp": (["region", "runid", "year"], np.ones((1, 2, 3))),
         },
         coords={
             "region": (["region"], ["a"]),
             "runid": (["runid"], [1, 2]),
             "year": (["year"], [5, 6, 7]),
-        }
+        },
     )
     ds_in.to_netcdf(infile_path)
 
@@ -99,7 +99,7 @@ def test_econvars_zarr(tmp_path):
             "region": (["region"], ["a"]),
             "runid": (["runid"], [1, 2]),
             "year": (["year"], [5, 6, 7]),
-        }
+        },
     )
     ds_in.to_zarr(infile_path, consolidated=True)
 
@@ -107,5 +107,3 @@ def test_econvars_zarr(tmp_path):
     actual = evs.econ_vars
 
     xr.testing.assert_equal(actual, ds_in)
-
-
