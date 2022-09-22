@@ -2,7 +2,7 @@ import numpy as np
 import xarray as xr
 import pytest
 import os
-from dscim.menu.simple_storage import StackedDamages
+from dscim.menu.simple_storage import StackedDamages, EconVars
 
 
 @pytest.fixture
@@ -51,3 +51,61 @@ def test_adding_up_damages(stacked_damages):
             * stacked_damages.pop
         ).sum("region"),
     )
+
+
+def test_econvars_netcdf(tmp_path):
+    """
+    Test that EconVars instances give "gdp", "pop" from NetCDF file
+    """
+    # Set up input data in temporary directory because EconVars needs to read
+    # from file on directory.
+    d = tmp_path / "econvars"
+    d.mkdir()
+    infile_path = d / "data.nc"
+    ds_in = xr.Dataset(
+        {
+        "pop": (["region", "runid", "year"], np.ones((1, 2, 3))),
+        "gdp": (["region", "runid", "year"], np.ones((1, 2, 3))),
+        },
+        coords={
+            "region": (["region"], ["a"]),
+            "runid": (["runid"], [1, 2]),
+            "year": (["year"], [5, 6, 7]),
+        }
+    )
+    ds_in.to_netcdf(infile_path)
+
+    evs = EconVars(path_econ=str(infile_path))
+    actual = evs.econ_vars
+
+    xr.testing.assert_equal(actual, ds_in)
+
+
+def test_econvars_zarr(tmp_path):
+    """
+    Test that EconVars instances give "gdp", "pop" from Zarr store
+    """
+    # Set up input data in temporary directory because EconVars needs to read
+    # from Zarr Store on disk.
+    d = tmp_path / "econvars"
+    d.mkdir()
+    infile_path = d / "data.zarr"
+    ds_in = xr.Dataset(
+        {
+            "pop": (["region", "runid", "year"], np.ones((1, 2, 3))),
+            "gdp": (["region", "runid", "year"], np.ones((1, 2, 3))),
+        },
+        coords={
+            "region": (["region"], ["a"]),
+            "runid": (["runid"], [1, 2]),
+            "year": (["year"], [5, 6, 7]),
+        }
+    )
+    ds_in.to_zarr(infile_path, consolidated=True)
+
+    evs = EconVars(path_econ=str(infile_path))
+    actual = evs.econ_vars
+
+    xr.testing.assert_equal(actual, ds_in)
+
+
