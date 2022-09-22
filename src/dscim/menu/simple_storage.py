@@ -38,6 +38,8 @@ class Climate:
     emission_scenarios: list or None, optional
         List of emission scenarios for which SCC will be calculated. Default
         is (), which gets set to ["ssp119", "ssp126", "ssp245", "ssp460", "ssp370", "ssp585"].
+        Use `None` when RCP emission scenarios are not the climate projections,
+        such as with RFF-SP projections.
     gases: list or None, optional
         List of greenhouse gases for which SCC will be calculated. Default is
         ["CO2_Fossil", "CH4", "N2O"].
