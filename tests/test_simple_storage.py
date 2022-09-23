@@ -308,7 +308,7 @@ def test_climate_anomaly_vars(test_path, expected):
         gmst_fair_path="bacon",
         pulse_year=0,
         damages_pulse_conversion_path="bacon",
-        gmsl_fair_path=str(test_path),
+        gmsl_fair_path=test_path,
     )
     actual = clim.anomaly_vars
     assert actual == expected
