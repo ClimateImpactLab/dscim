@@ -28,10 +28,10 @@ class Climate:
     damages_pulse_conversion_path: str
         Path to file containing conversion factors for each greenhouse gas
         to turn the pulse units into the appropriate units for an SCC calculation.
-    ecs_mask_path : str
+    ecs_mask_path : str or None, optional
         Path to a boolean NetCDF4 dataset sharing the same coordinates as self.anomalies,
         indicating which simulations should be included or excluded.
-    ecs_mask_name : str
+    ecs_mask_name : str or None, optional
         Name of mask to be called from within ``ecs_mask_path`` NetCDF file.
     base_period: tuple, optional
         Period for rebasing FAIR temperature anomalies. This should match the CIL projection system's base period.
