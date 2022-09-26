@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- New unit tests. ([PR #50](https://github.com/ClimateImpactLab/dscim/pull/50), [@brews](https://github.com/brews))
 ### Changed
 - Updated README with additional technical details. ([PR #49](https://github.com/ClimateImpactLab/dscim/pull/49), [@brews](https://github.com/brews))
+### Fixed
+- Minor fixes to docstrs. ([PR #50](https://github.com/ClimateImpactLab/dscim/pull/50), [@brews](https://github.com/brews))
+
 
 ## [0.2.1] - 2022-09-22
 ### Fixed
