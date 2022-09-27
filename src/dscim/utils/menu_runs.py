@@ -118,7 +118,6 @@ def run_rff(
     eta_rhos,
     config,
     USA,
-    global_cons=True,
     order="scc",
 ):
 
