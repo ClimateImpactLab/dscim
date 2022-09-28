@@ -147,12 +147,9 @@ class Climate:
         anomaly = xr.combine_by_coords(datasets, combine_attrs="override")
 
         # drop unnecessary coordinates
-        anomaly = anomaly.drop_dims(
-            [
-                i
-                for i in ["confidence", "kind", "locations", "workflow_src"]
-                if i in anomaly.coords
-            ]
+        anomaly = anomaly.drop_vars(
+            ["confidence", "kind", "locations", "workflow_src"],
+            errors="ignore",
         )
 
         # rename variables
