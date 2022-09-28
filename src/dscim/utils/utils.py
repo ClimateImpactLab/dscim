@@ -353,9 +353,6 @@ def model_outputs(
     global_c : xr.DataArray
         Array with global consumption extrapolated to 2300. This is only used
         when ``extrapolation_type`` is ``global_c_ratio``.
-    fix_global_c : int
-        Year to fix damages and use as base to the ``global_c_ratio``
-        extrapolation. Default value is 2099.
     year_start_pred: int
         Start of extrapolation
     year_range: sequence, lst, tuple, range
