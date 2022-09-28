@@ -324,10 +324,8 @@ def model_outputs(
     formula,
     year_range,
     year_start_pred,
-    year_end_pred,
     quantiles,
     global_c=None,
-    base_year=2010,
     min_anomaly=0,
     max_anomaly=20,
     step_anomaly=0.2,
@@ -360,8 +358,6 @@ def model_outputs(
         extrapolation. Default value is 2099.
     year_start_pred: int
         Start of extrapolation
-    year_end_pred: int
-        End of extrapolation
     year_range: sequence, lst, tuple, range
         Range of years to estimate over. Default is 2010 to 2100
 
@@ -380,32 +376,14 @@ def model_outputs(
     # set exogenous variables for predictions
     gmsl = np.arange(min_gmsl, max_gmsl, step_gmsl)
     temps = np.arange(min_anomaly, max_anomaly, step_anomaly)
-    extrap_years = range(year_start_pred, year_end_pred + 1)
 
     if ("anomaly" in damage_function.columns) and ("gmsl" in damage_function.columns):
         exog_X = pd.DataFrame(product(temps, gmsl))
         exog = dict(anomaly=exog_X.values[:, 0], gmsl=exog_X.values[:, 1])
-
-        extrap_X = pd.DataFrame(product(temps, extrap_years, gmsl))
-        extrap_exog = dict(
-            anomaly=extrap_X.values[:, 0],
-            year_rebase=extrap_X.values[:, 1] - base_year,
-            gmsl=extrap_X.values[:, 2],
-        )
     elif "anomaly" in damage_function.columns:
         exog = dict(anomaly=temps)
-
-        extrap_X = pd.DataFrame(product(temps, extrap_years))
-        extrap_exog = dict(
-            anomaly=extrap_X.values[:, 0], year_rebase=extrap_X.values[:, 1] - base_year
-        )
     elif "gmsl" in damage_function.columns:
         exog = dict(gmsl=gmsl)
-
-        extrap_X = pd.DataFrame(product(gmsl, extrap_years))
-        extrap_exog = dict(
-            gmsl=extrap_X.values[:, 0], year_rebase=extrap_X.values[:, 1] - base_year
-        )
     else:
         print("Independent variables not found.")
 
