@@ -400,5 +400,9 @@ def clip_damages(
         out = (
             data[var].map_blocks(chunk_func, template=template).rename(var).to_dataset()
         )
-        outpath = path.replace(".zarr", "_clipped.zarr")
+
+        parent, name = path.parent, path.name
+        clipped_name = name.replace(".zarr", "_clipped.zarr")
+        outpath = Path(parent).joinpath(clipped_name)
+
         out.to_zarr(outpath, mode="a", consolidated=True)
