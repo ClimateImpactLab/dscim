@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import numpy as np
 import xarray as xr
 import pytest
@@ -422,3 +423,353 @@ def test_climate_anomalies(tmp_path):
     assert isinstance(actual["pulse_gmsl"].data, type(expected["pulse_gmsl"].data))
     # Check again, once Dataset is actually computed.
     xr.testing.assert_allclose(actual.compute(), expected.compute())
+
+
+def test_stackeddamages_cut():
+    """
+    Test basic StackedDamages.cut on pulse_year
+    """
+    # Lots of setup for this on.
+    # First, create the DataArray we want to .cut(). We want some values
+    # before the pulse year and some values after the end_year so we can
+    # check they're cut.
+    time = np.arange(2045, 2080)
+    x_fake = np.arange(len(time))
+    input_xr = xr.DataArray(x_fake, coords=[time], dims=["year"], name="foobar")
+    expected = input_xr.sel(year=slice(2048, 2075))
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    fake_climate = MockClimate(pulse_year=2050)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars="FakeEconVars",
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code="???",
+        subset_dict={},
+    )
+
+    actual = damages.cut(input_xr, end_year=2075)
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_cut_subset_dict():
+    """
+    Test StackedDamages.cut on self.climate.pulse_year and a self.subset_dict
+    """
+    # Lots of setup for this on.
+    # First, create the DataArray we want to .cut(). We want some values
+    # before the pulse year and some values after the end_year so we can
+    # check they're cut. We also want an extra coordinate (dim0) that will
+    # get subset by `subset_dict` once we instantiate StackedDamages.
+    time = np.arange(2045, 2080)
+    x_fake = np.arange(len(time))
+    input_xr = xr.DataArray(
+        [x_fake, x_fake],
+        coords=[["a", "b"], time],
+        dims=["dim0", "year"],
+        name="fakedata",
+    )
+    expected = input_xr.sel(dim0=["b"], year=slice(2048, 2075))
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    fake_climate = MockClimate(pulse_year=2050)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars="FakeEconVars",
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code="???",
+        subset_dict={"dim0": ["b"]},
+    )
+
+    actual = damages.cut(input_xr, end_year=2075)
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_cut_econ_vars_2099():
+    """
+    Test StackedDamages.cut_econ_vars clips on pulse_year without 2300 year
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after,
+    # but not 2300, because this seems to trigger a particular behavior.
+    time = np.arange(2045, 2110)
+    x_fake = np.ones(len(time))
+    input_xr = xr.DataArray(
+        x_fake, coords=[time], dims=["year"], name="foobar"
+    ).to_dataset()
+    expected = input_xr.sel(year=slice(2048, 2099))
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2050)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=0.00,
+        subset_dict={},
+    )
+
+    actual = damages.cut_econ_vars
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_cut_econ_vars_2300():
+    """
+    Test StackedDamages.cut_econ_vars clips on pulse_year *with* year 2300
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after,
+    # INCLUDING 2300 here, because this triggers a particular behavior.
+    time = np.arange(2245, 2310)
+    x_fake = np.ones(len(time))
+    input_xr = xr.DataArray(
+        x_fake, coords=[time], dims=["year"], name="foobar"
+    ).to_dataset()
+    expected = input_xr.sel(year=slice(2248, 2300))
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2250)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=0.00,
+        subset_dict={},
+    )
+
+    actual = damages.cut_econ_vars
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_gdp():
+    """
+    Test StackedDamages.gdp returns something "cut".
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after.
+    time = np.arange(2045, 2110)
+    x_fake = np.ones(len(time))
+    input_xr = xr.DataArray(
+        x_fake, coords=[time], dims=["year"], name="gdp"
+    ).to_dataset()
+    expected = input_xr.sel(year=slice(2048, 2099))["gdp"]
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2050)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=0.00,
+        subset_dict={},
+    )
+
+    actual = damages.gdp
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_pop():
+    """
+    Test StackedDamages.pop returns something and it should be "cut".
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after.
+    time = np.arange(2045, 2110)
+    x_fake = np.ones(len(time))
+    input_xr = xr.DataArray(
+        x_fake, coords=[time], dims=["year"], name="pop"
+    ).to_dataset()
+    expected = input_xr.sel(year=slice(2048, 2099))["pop"]
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2050)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=0.00,
+        subset_dict={},
+    )
+
+    actual = damages.pop
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_gdppc():
+    """
+    Test StackedDamages.gdppc returns "cut" gdp/pop.
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after.
+    time = np.arange(2045, 2110)
+    x_fake = np.ones(len(time))
+    input_xr = xr.Dataset(
+        {
+            "gdp": (["year"], x_fake * 2.0),
+            "pop": (["year"], x_fake * 0.5),
+        },
+        coords={
+            "year": (["year"], time),
+        },
+    )
+    expected = (input_xr["gdp"] / input_xr["pop"]).sel(year=slice(2048, 2099))
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2050)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=0.00,
+        subset_dict={},
+    )
+
+    actual = damages.gdppc
+
+    xr.testing.assert_equal(actual, expected)
+
+
+def test_stackeddamages_gdppc_with_bottom_code():
+    """
+    Test StackedDamages.gdppc uses gdppc_bottom_code instead of gdp/pop.
+    """
+    # Lots of setup for this on.
+    # First, create the input Dataset. We want some values before the pulse
+    # year and some values after.
+    time = np.arange(2045, 2110)
+    x_fake = np.ones(len(time))
+    gdppc_bottom_code = 5.0
+    input_xr = xr.Dataset(
+        {
+            "gdp": (["year"], x_fake * 2.0),
+            "pop": (["year"], x_fake * 0.5),
+        },
+        coords={
+            "year": (["year"], time),
+        },
+    )
+    expected = xr.DataArray(
+        x_fake * gdppc_bottom_code,
+        coords=[time],
+        dims=["year"],
+    ).sel(year=slice(2048, 2099))
+
+    # Setup input data to instantiate a minimalist StackedDamages
+    # with enough fake data that we can test basic behavior.
+
+    @dataclass
+    class MockClimate:
+        pulse_year: int
+
+    @dataclass
+    class MockEconVars:
+        econ_vars: xr.Dataset
+
+    fake_climate = MockClimate(pulse_year=2050)
+    fake_econvars = MockEconVars(econ_vars=input_xr)
+
+    damages = StackedDamages(
+        sector_path="",
+        save_path="",
+        econ_vars=fake_econvars,
+        climate_vars=fake_climate,
+        eta=0,
+        gdppc_bottom_code=gdppc_bottom_code,
+        subset_dict={},
+    )
+
+    actual = damages.gdppc
+
+    xr.testing.assert_equal(actual, expected)
