@@ -176,7 +176,6 @@ def reformat_climate_files():
     newds = convert_old_to_newformat_AR(
         pathdt,
         gas="CO2_Fossil",
-        pulseyrs=[2020, 2030, 2040, 2050, 2060, 2070, 2080],
         var="temperature",
     )
 
