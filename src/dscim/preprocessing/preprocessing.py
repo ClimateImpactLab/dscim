@@ -330,11 +330,11 @@ def clip_damages(
         params = loaded_config["sectors"][sector]
 
     # get sector paths and variable names
-    path = Path(params["sector_path"])
+    sector_path = Path(params["sector_path"])
     histclim = params["histclim"]
     delta = params["delta"]
 
-    with xr.open_zarr(path, chunks=None)[delta] as ds:
+    with xr.open_zarr(sector_path, chunks=None)[delta] as ds:
         with xr.open_zarr(econ_path, chunks=None) as gdppc:
 
             ce_batch_dims = [i for i in ds.dims]
@@ -343,7 +343,7 @@ def clip_damages(
                 i for i in ds.region.values if i in gdppc.region.values
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = [xr.open_zarr(path).chunks[c][0] for c in ce_batch_dims]
+            ce_chunks = [xr.open_zarr(sector_path).chunks[c][0] for c in ce_batch_dims]
             print(ce_chunks)
 
     template = xr.DataArray(
@@ -394,11 +394,15 @@ def clip_damages(
 
         return damages
 
-    data = xr.open_zarr(path)
+    data = xr.open_zarr(sector_path)
 
     for var in [delta, histclim]:
         out = (
             data[var].map_blocks(chunk_func, template=template).rename(var).to_dataset()
         )
-        outpath = path.replace(".zarr", "_clipped.zarr")
+
+        parent, name = sector_path.parent, sector_path.name
+        clipped_name = name.replace(".zarr", "_clipped.zarr")
+        outpath = Path(parent).joinpath(clipped_name)
+
         out.to_zarr(outpath, mode="a", consolidated=True)

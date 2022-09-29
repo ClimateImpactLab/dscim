@@ -310,6 +310,16 @@ class StackedDamages:
         A dictionary with coordinate values to filter data.
     eta : int
         Curvature parameter of the CRRA utility function.
+    gdppc_bottom_code : int or float
+        Minimum values allowed for per-capita GDP in ``self.gdppc``.
+    ce_path : str, optional
+        Path to directory containing certainty equivalent reduced damages and
+        risk aversion data. This directory can contain `adding_up_cc.zarr` and
+        `adding_up_no_cc.zarr` which have reduced damages due to climate in
+        dollars (by impact region, year, etc.) for the `adding_up` recipe with
+        climate change (cc) and without climate change (no cc).
+        This directory should also contain `risk_aversion_{ce_type}_eta{eta}.zarr`
+        as used for risk aversion calculations.
     """
 
     NAME = ""
