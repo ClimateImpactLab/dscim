@@ -215,6 +215,66 @@ def test_climate_gmsl_anomalies(tmp_path):
     xr.testing.assert_equal(actual, expected)
 
 
+@pytest.mark.parametrize(
+    "unnecesary_coord", ["confidence", "kind", "locations", "workflow_src"]
+)
+def test_climate_gmsl_anomalies_dropcoords(tmp_path, unnecesary_coord):
+    """
+    Test that Climate instances give "gmsl_anomalies" with "unnecessary coords" dropped
+    """
+    # Set up input data in temporary directory because Climate needs to read
+    # from a magical Zarr Store.
+    d = tmp_path / "climate"
+    d.mkdir()
+    infile_path = d / "gmsl_fair.zarr"
+    gases = ["CO2_Fossil", "CH4", "N2O"]
+    # This struction might appear weird, but matches that used for initial EPA runs.
+    ds_in = xr.Dataset(
+        {
+            "gmsl": (
+                [
+                    unnecesary_coord,
+                    "runtype",
+                    "pulse_year",
+                    "simulation",
+                    "runid",
+                    "year",
+                    "gas",
+                ],
+                np.ones((1, 2, 1, 1, 2, 1, 3)),
+            ),
+        },
+        coords={
+            "gas": (["gas"], gases),
+            "pulse_year": (["pulse_year"], [2020]),
+            "runid": (["runid"], [1, 2]),
+            "runtype": (["runtype"], ["control", "pulse"]),
+            "simulation": (["simulation"], [1]),
+            "year": (["year"], [2020]),
+            unnecesary_coord: (
+                [unnecesary_coord],
+                ["foobar"],
+            ),  # This one is unnecessary.
+        },
+    )
+    ds_in.to_zarr(infile_path)
+
+    clim = Climate(
+        gmst_path="",
+        gmsl_path="",
+        gmst_fair_path="bacon",
+        gmsl_fair_path=str(infile_path),
+        pulse_year=2020,
+        damages_pulse_conversion_path="bacon",
+        ecs_mask_path=None,
+        emission_scenarios=None,
+        gases=gases,
+    )
+    actual = clim.gmsl_anomalies
+
+    assert unnecesary_coord not in actual.coords
+
+
 def test_climate_gmst_anomalies(tmp_path):
     """
     Test that Climate instances give "gmst_anomalies" from a GMST FAIR NetCDF file path
