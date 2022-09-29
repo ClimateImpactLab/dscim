@@ -5,7 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+### Changed
+- Removed incomplete "time_trend" extrapolation option from `dscim.utils.utils.model_outputs()`, along with unused function arguments. This is a breaking change. ([PR #53](https://github.com/ClimateImpactLab/dscim/pull/53), [@brews](https://github.com/brews))
 
 ## [0.3.0] - 2022-09-29
 ### Added
