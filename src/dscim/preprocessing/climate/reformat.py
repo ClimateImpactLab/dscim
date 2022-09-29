@@ -8,9 +8,6 @@ from p_tqdm import p_map
 def convert_old_to_newformat_AR(
     oldpaths,
     gas="CO2_Fossil",
-    pulseyrs=[
-        2020,
-    ],
     var="temperature",
 ):
     """
