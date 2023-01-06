@@ -1,5 +1,5 @@
 xarray
-pandas
+pandas==1.5.1
 numpy
 matplotlib
 dask
