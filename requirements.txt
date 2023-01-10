@@ -1,8 +1,8 @@
-xarray==2022.11.0
+xarray
 pandas
 numpy==1.23.3
 matplotlib
-dask==2022.10.2
+dask
 distributed
 requests
 statsmodels

@@ -23,7 +23,6 @@ requires = [
     "setuptools>=62.0",
     "wheel",
     "setuptools_scm>=7.0",
-    "dask<=2022.10.2",
 ]
 build-backend = "setuptools.build_meta"
 
