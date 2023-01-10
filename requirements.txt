@@ -1,4 +1,4 @@
-xarray
+xarray==2022.11.0
 pandas
 numpy==1.23.3
 matplotlib
