@@ -907,8 +907,10 @@ class MainRecipe(StackedDamages, ABC):
         if parameter <= 1:
             parameter = parameter * no_cc_consumption
 
-        w_utility = parameter ** (1 - self.eta) / (1 - self.eta)
-        bottom_utility = parameter ** (-self.eta) * (parameter - cc_consumption)
+        w_utility = np.float_power(parameter, (1 - self.eta)) / (1 - self.eta)
+        bottom_utility = np.float_power(parameter, (-self.eta)) * (
+            parameter - cc_consumption
+        )
         bottom_coded_cons = power(
             ((1 - self.eta) * (w_utility - bottom_utility)), (1 / (1 - self.eta))
         )
@@ -1107,7 +1109,10 @@ class MainRecipe(StackedDamages, ABC):
         if discrate in ["constant", "constant_model_collapsed"]:
             if self.discrete_discounting:
                 discrate_damages = [
-                    damages * (1 / (1 + r)) ** (damages.year - self.climate.pulse_year)
+                    damages
+                    * np.float_power(
+                        (1 / (1 + r)), (damages.year - self.climate.pulse_year)
+                    )
                     for r in self.CONST_DISC_RATES
                 ]
             else:
@@ -1213,9 +1218,9 @@ class MainRecipe(StackedDamages, ABC):
         )
 
         # calculate the marginal utility component of the discount factors for each period.
-        ratio = cons_pc.sel(year=self.climate.pulse_year) ** (self.eta) / cons_pc ** (
-            self.eta
-        )
+        ratio = np.float_power(
+            cons_pc.sel(year=self.climate.pulse_year), (self.eta)
+        ) / np.float_power(cons_pc, (self.eta))
 
         # the discount factor is the product of the two components.
         factors = stream_rhos * ratio
