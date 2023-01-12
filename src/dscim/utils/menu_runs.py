@@ -2,6 +2,7 @@ from dscim.menu.simple_storage import Climate, EconVars
 import dscim.menu.baseline
 import dscim.menu.risk_aversion
 import dscim.menu.equity
+from pathlib import Path
 
 import os
 import gc
@@ -46,11 +47,19 @@ def run_ssps(
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho, mask, fair_dims in product(
-        sectors, pulse_years, menu_discs, eta_rhos.items(), masks, fair_dims_list
+        sectors, pulse_years, menu_discs, eta_rhos, masks, fair_dims_list
     ):
 
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
+        dfc_path = (
+            Path(save_path)
+            / "unmasked"
+            / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
+        )
+        if dfc_path.is_file():
+            print("sccs found")
+            continue
 
         if mask is not None:
             save_path = save_path + "/" + mask
@@ -65,7 +74,7 @@ def run_ssps(
             )
 
         if USA:
-            econ = EconVars(path_econ=conf["econdata"]["USA_ssp"])
+            econ = EconVars(path_econ=conf["econdata"]["Accra_ssp"])
         else:
             econ = EconVars(path_econ=conf["econdata"]["global_ssp"])
 
@@ -76,7 +85,7 @@ def run_ssps(
                 pulse_year=pulse_year,
                 ecs_mask_name=mask,
             ),
-            "formula": conf["sectors"][sector if not USA else sector[:-4]]["formula"],
+            "formula": conf["sectors"][sector if not USA else sector[:-6]]["formula"],
             "discounting_type": discount_type,
             "sector": sector,
             "ce_path": f"{conf['paths']['reduced_damages_library']}/{sector}/",
@@ -97,7 +106,7 @@ def run_ssps(
             kwargs.update(
                 {
                     "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/unmasked",
-                    "save_files": [
+                        "save_files": [
                         "damage_function_points",
                         "marginal_damages",
                         "discount_factors",
@@ -126,7 +135,7 @@ def run_rff(
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(
-        sectors, pulse_years, menu_discs, eta_rhos.items()
+        sectors, pulse_years, menu_discs, eta_rhos
     ):
 
         menu_option, discount_type = menu_disc

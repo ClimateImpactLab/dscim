@@ -907,15 +907,24 @@ class MainRecipe(StackedDamages, ABC):
         if parameter <= 1:
             parameter = parameter * no_cc_consumption
 
-        w_utility = parameter ** (1 - self.eta) / (1 - self.eta)
-        bottom_utility = parameter ** (-self.eta) * (parameter - cc_consumption)
-        bottom_coded_cons = power(
-            ((1 - self.eta) * (w_utility - bottom_utility)), (1 / (1 - self.eta))
-        )
+        if self.eta == 1:
+            w_utility = np.log(parameter)
+            bottom_utility = parameter ** (-1) * (parameter - cc_consumption)
+            bottom_coded_cons = np.exp((w_utility - bottom_utility))
 
-        clipped_cons = xr.where(
-            cc_consumption > parameter, cc_consumption, bottom_coded_cons
-        )
+            clipped_cons = xr.where(
+                cc_consumption > parameter, cc_consumption, bottom_coded_cons
+            )
+        else:
+            w_utility = parameter ** (1 - self.eta) / (1 - self.eta)
+            bottom_utility = parameter ** (-self.eta) * (parameter - cc_consumption)
+            bottom_coded_cons = power(
+                ((1 - self.eta) * (w_utility - bottom_utility)), (1 / (1 - self.eta))
+            )
+
+            clipped_cons = xr.where(
+                cc_consumption > parameter, cc_consumption, bottom_coded_cons
+            )
 
         return clipped_cons
 

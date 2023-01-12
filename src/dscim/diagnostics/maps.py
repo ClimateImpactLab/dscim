@@ -27,7 +27,7 @@ def make_map(
     save_path=None,
     maxmin=True,
 ):
-
+    
     # create figure
     fig, ax = plt.subplots(figsize=figsize, facecolor="white")
 
@@ -146,7 +146,8 @@ def maps(
     else:
         damages = damages.sel({"gcm": gcm})
 
-    merged = xr.merge([damages, gdppc]).to_dataframe().reset_index()
+    merged = xr.merge([damages, gdppc])
+    merged = merged.sel(region = [s for s in merged.region.values if 'IND.' in s]).to_dataframe().reset_index()
 
     shp_file = gpd.read_file(
         "/shares/gcp/climate/_spatial_data/world-combo-new-nytimes/new_shapefile.shp"

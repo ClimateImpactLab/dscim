@@ -246,6 +246,63 @@ def sum_AMEL(
             summed.to_zarr(output, consolidated=True, mode="a")
 
 
+def sum_LAM(
+    sectors,
+    config,
+    AMEL,
+):
+
+    # load config
+    with open(config, "r") as stream:
+        loaded_config = yaml.safe_load(stream)
+        params = loaded_config["sectors"]
+
+    output = params[LAM]["sector_path"]
+
+    # save summed variables to zarr one by one
+    for i, var in enumerate(["delta", "histclim"]):
+
+        datasets = []
+
+        for sector in sectors:
+            print(f"Opening {sector},{params[sector]['sector_path']}")
+            ds = xr.open_zarr(params[sector]["sector_path"], consolidated=True)
+            ds = ds[params[sector][var]].rename(var)
+            ds = xr.where(np.isinf(ds), np.nan, ds)
+            datasets.append(ds)
+
+        summed = (
+            xr.concat(datasets, dim="variable")
+            .sum("variable")
+            .rename(f"summed_{var}")
+            .astype(np.float32)
+            .chunk(
+                {
+                    "batch": 15,
+                    "ssp": 1,
+                    "model": 1,
+                    "rcp": 1,
+                    "gcm": 1,
+                    "year": 10,
+                    "region": 24378,
+                }
+            )
+            .to_dataset()
+        )
+
+        summed.attrs["paths"] = str({s: params[s]["sector_path"] for s in sectors})
+        summed.attrs["delta"] = str({s: params[s]["delta"] for s in sectors})
+        summed.attrs["histclim"] = str({s: params[s]["histclim"] for s in sectors})
+
+        for v in summed.variables:
+            summed[v].encoding.clear()
+
+        if i == 0:
+            summed.to_zarr(output, consolidated=True, mode="w")
+        else:
+            summed.to_zarr(output, consolidated=True, mode="a")
+
+
 def subset_USA_reduced_damages(
     sector,
     reduction,
@@ -302,6 +359,64 @@ def subset_USA_ssp_econ(
         consolidated=True,
         mode="w",
     )
+    
+def subset_Accra_reduced_damages(
+    sector,
+    reduction,
+    recipe,
+    eta,
+    input_path,
+):
+
+    if recipe == "adding_up":
+        ds = xr.open_zarr(
+            f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
+        )
+    elif recipe == "risk_aversion":
+        ds = xr.open_zarr(
+            f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
+        )
+
+    subset = ds.sel(region=[i for i in ds.region.values if "GHA.5" in i])
+
+    for var in subset.variables:
+        subset[var].encoding.clear()
+
+    if recipe == "adding_up":
+        subset.to_zarr(
+            f"{input_path}/{sector}_Accra/{recipe}_{reduction}.zarr",
+            consolidated=True,
+            mode="w",
+        )
+    elif recipe == "risk_aversion":
+        subset.to_zarr(
+            f"{input_path}/{sector}_Accra/{recipe}_{reduction}_eta{eta}.zarr",
+            consolidated=True,
+            mode="w",
+        )
+
+
+def subset_Accra_ssp_econ(
+    in_path,
+    out_path,
+):
+
+    zarr = xr.open_zarr(
+        in_path,
+        consolidated=True,
+    )
+
+    zarr = zarr.sel(region=[i for i in zarr.region.values if "GHA.5" in i])
+
+    for var in zarr.variables:
+        zarr[var].encoding.clear()
+
+    zarr.to_zarr(
+        out_path,
+        consolidated=True,
+        mode="w",
+    )
+
 
 
 def clip_damages(

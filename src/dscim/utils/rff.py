@@ -168,7 +168,7 @@ def rff_damage_functions(
     )
 
     for recipe_disc, sector, eta_rho in product(
-        recipes_discs, sectors, eta_rhos.items()
+        recipes_discs, sectors, eta_rhos
     ):
 
         print(f"{datetime.now()} : {recipe_disc} {sector} {eta_rho}")
