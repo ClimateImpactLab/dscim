@@ -8,6 +8,179 @@ import os
 import sys
 from numpy.testing import assert_allclose
 from datetime import datetime
+import fsspec
+import pyarrow
+import gurobipy as gp
+import time
+from scipy.sparse import coo_matrix
+from gurobipy import GRB
+
+## Solve the optimization problem
+def solve_optimization(ssp_df, rff_df):
+    
+    ssp_df = ssp_df[(ssp_df.scenario != 'SSP1') & (ssp_df.scenario != 'SSP5')]
+
+    output = []
+
+    header = ['year', 'param', 'name', 'value']
+    
+    years = pd.unique(ssp_df.year)
+    for year in years:
+        sspidf = ssp_df[ssp_df.year == year]
+        rffidf = rff_df[rff_df.year == year]
+
+        if rffidf.shape[0] == 0:
+            continue
+            
+        isoyears = pd.unique(sspidf.isoyear)
+
+        # Create parameters list
+        alphaparams = pd.unique(sspidf.yearscen)
+
+        # Drop the first entry for each subgroup
+        alphaparams_butfirst = np.delete(alphaparams, 0)
+        params = np.concatenate((isoyears, alphaparams_butfirst))
+        paramindex_alpha0 = len(isoyears)
+
+        # Construct objective function
+        if 'weight' in rff_df.columns:
+            weights = [rffidf.weight[(rffidf.isoyear == isoyear)].values[0] for isoyear in isoyears]
+        else:
+            weights = np.ones(len(isoyears))
+        objfunc = np.concatenate((weights, np.zeros(len(alphaparams_butfirst))))
+
+        # Contruct constraints, all in the form of A x < b
+        AA_rows = []
+        AA_cols = []
+        AA_data = []
+        bb = []
+
+        def add_AA_cell(row, col, value):
+            AA_rows.append(row)
+            AA_cols.append(col)
+            AA_data.append(value)
+
+        ## Rows defining absolute values
+
+        # d_it > y_it - (sum_s>1 alpha_is y_sit + (1 - sum_s>1 alpha_is) y_1it)
+        # -d_it - (sum_s>1 alpha_is y_sit - (sum_s>1 alpha_is) y_1it) < -y_it + y_1it
+
+        # d_it > -(y_it - (sum_s>1 alpha_is y_sit + (1 - sum_s>1 alpha_is) y_1it))
+        # -d_it + (sum_s>1 alpha_is y_sit - (sum_s>1 alpha_is) y_1it) < y_it - y_1it
+
+        for ii, isoyear in enumerate(isoyears):
+            subdf = sspidf[sspidf.isoyear == isoyear]
+            if subdf.shape[0] == 0 or not np.any(rffidf.isoyear == isoyear):
+                continue
+
+            try:
+                y1it = subdf.loginc[subdf.yearscen == alphaparams[0]].values[0]
+            except Exception as ex:
+                # print(ii,isoyear,ex)
+                # print("Exception! Keep going..") # KM added
+                continue
+                           
+            add_AA_cell(len(bb), ii, -1)
+            add_AA_cell(len(bb) + 1, ii, -1)
+
+            for jj, alphaparam in enumerate(alphaparams_butfirst):
+                ysit = subdf.loginc[subdf.yearscen == alphaparam].values[0]
+        
+                add_AA_cell(len(bb), paramindex_alpha0 + jj, -ysit + y1it)
+                add_AA_cell(len(bb) + 1, paramindex_alpha0 + jj, ysit - y1it)
+
+            bb.append(-rffidf.loginc[(rffidf.isoyear == isoyear)].values[0] + y1it)
+            bb.append(rffidf.loginc[(rffidf.isoyear == isoyear)].values[0] - y1it)
+
+        constrindex_alphag10 = len(bb)
+    
+        # sum alpha_is < 1
+        for jj in range(paramindex_alpha0, len(params)):
+            add_AA_cell(constrindex_alphag10, jj, 1)
+        bb.append(1)
+
+        constrindex_end = constrindex_alphag10 + 1
+
+        AA = coo_matrix((AA_data, (AA_rows, AA_cols)), shape=(constrindex_end, len(params)))
+
+        # Also constrained so that d_it > 0 and alpha_is > 0
+
+        env = gp.Env(empty=True)
+        env.setParam("OutputFlag",0)
+        env.start()
+        mod = gp.Model("gourmet",env=env)
+        xx = mod.addMVar(shape=len(objfunc), vtype=GRB.CONTINUOUS, name="xx")
+        mod.setObjective(objfunc @ xx, GRB.MINIMIZE)
+        bb = np.array(bb)
+        mod.addConstr(AA @ xx <= bb)
+        mod.optimize()
+        errors = np.around(xx.X[:paramindex_alpha0], 6)
+        alphas = np.around(xx.X[paramindex_alpha0:], 6)
+
+        for ii, error in enumerate(errors):
+            output.append([year, 'error', isoyears[ii], error])
+
+        output.append([year, 'alpha', alphaparams[0], max(0, 1 - sum(alphas))])
+        for ii, alpha in enumerate(alphas):
+            output.append([year, 'alpha', alphaparams_butfirst[ii], alpha])
+
+    out_df = pd.DataFrame(output, columns=header)
+
+    return out_df
+
+
+# Process SSP sample
+def process_ssp_sample(ssppath):
+    ssp_df = pd.read_csv(ssppath, skiprows=11)
+    ssp_df = ssp_df[ssp_df.year >= 2010] 
+    ssp_df['loginc'] = np.log(ssp_df.value)
+    ssp_df['isoyear'] = ssp_df.apply(lambda row: "%s:%d" % (row.iso, row.year), axis=1)
+    ssp_df['yearscen'] = ssp_df.apply(lambda row: "%d:%s/%s" % (row.year, row.model, row.scenario), axis=1)   
+    
+    return ssp_df
+
+
+## Process RFF Sample
+def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER):
+    read_feather = (os.path.join(rffpath, "run_%d.feather" % i))    
+    rff_raw = pd.read_feather(read_feather)
+    rff_raw.rename(columns={'Year': 'year', 'Country': 'iso'}, inplace=True)
+    
+    
+    # Fill missing data with mean across SSP scenarios of the same years
+    rff_df=pd.DataFrame()
+    for iso, group in rff_raw.groupby(['iso']):
+        minyear = min(group.year)
+        before_all = ssp_df[(ssp_df.year < minyear) & (ssp_df.iso == iso)][['iso','year', 'value']] 
+        before = before_all.groupby(['iso','year']).mean().reset_index()
+        after = pd.DataFrame(dict(iso=iso, year=group.year, value=(88.58 / 98.71)*(group.GDP*1e6) / (group.Pop*1000))) # Get in per capita 2005 PPP-adjusted USD rff GDP 
+        all_year_df = pd.concat((before, after))
+        rff_df = pd.concat((rff_df, all_year_df))
+        
+        
+    rff_df['loginc'] = np.log(rff_df.value)
+    rff_df['isoyear'] = rff_df.apply(lambda row: "%s:%d" % (row.iso, row.year), axis=1)
+
+
+    rff_df = pd.merge(rff_df, rff_raw, on=['year', 'iso'], how='left')
+    
+    rff_df['weight']=(88.58 / 98.71)*rff_df.GDP # Adjust weight measurement from 2011 tp 2005 PPP USD
+    
+    # print(rff_df.iso[np.isnan(rff_df.weight)])
+    rff_df.weight[np.isnan(rff_df.weight)] = np.exp(np.nanmean(np.log(rff_df.weight))) # Fill missing value weights with sample mean
+
+    out_df = solve_optimization(ssp_df, rff_df)
+
+    write_file = os.path.join(outdir, "emulate-%d.csv") % i
+
+    protocol = write_file.split('://')[0] if '://' in write_file else ''
+    write_options = storage_options if protocol != '' else {}
+    fs = fsspec.filesystem(protocol, **write_options)
+
+    with fs.open(write_file, 'w') as outf:
+        outf.write(HEADER.strip() + '\n')
+        out_df.to_csv(outf, index=False)
+        # print("writing",write_file)
 
 
 def clean_simulation(
