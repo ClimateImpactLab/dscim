@@ -15,6 +15,7 @@ import time
 from scipy.sparse import coo_matrix
 from gurobipy import GRB
 
+
 ## Solve the optimization problem
 def solve_optimization(ssp_df, rff_df):
 
