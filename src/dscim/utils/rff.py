@@ -79,8 +79,8 @@ def solve_optimization(ssp_df, rff_df):
             try:
                 y1it = subdf.loginc[subdf.yearscen == alphaparams[0]].values[0]
             except Exception as ex:
-                # print(ii,isoyear,ex)
-                # print("Exception! Keep going..") # KM added
+                print(ii,isoyear,ex)
+                print("Exception! Keep going..") # KM added
                 continue
 
             add_AA_cell(len(bb), ii, -1)
@@ -148,7 +148,7 @@ def process_ssp_sample(ssppath):
 
 
 ## Process RFF Sample
-def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER):
+def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
     read_feather = os.path.join(rffpath, "run_%d.feather" % i)
     rff_raw = pd.read_feather(read_feather)
     rff_raw.rename(columns={"Year": "year", "Country": "iso"}, inplace=True)
