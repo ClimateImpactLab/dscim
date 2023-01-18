@@ -37,6 +37,7 @@ def run_ssps(
     masks=None,
     fair_dims_list=None,
     order="damage_function",
+    regenerate_sccs = True,
 ):
     if masks is None:
         masks = [None]
@@ -52,19 +53,22 @@ def run_ssps(
 
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
-        dfc_path = (
-            Path(save_path)
-            / "unmasked"
-            / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
-        )
-        if dfc_path.is_file():
-            print("sccs found")
-            continue
 
         if mask is not None:
             save_path = save_path + "/" + mask
         else:
             save_path = save_path + "/" + "unmasked"
+
+        if not regenerate_sccs:
+            scc_path = (
+                Path(save_path)
+                / "unmasked"
+                / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
+            )
+            if dfc_path.is_file():
+                print("sccs found")
+                continue
+
 
         if fair_dims != ["simulation"]:
             save_path = (
@@ -74,7 +78,7 @@ def run_ssps(
             )
 
         if USA:
-            econ = EconVars(path_econ=conf["econdata"]["Accra_ssp"])
+            econ = EconVars(path_econ=conf["econdata"]["USA_ssp"])
         else:
             econ = EconVars(path_econ=conf["econdata"]["global_ssp"])
 
@@ -85,7 +89,7 @@ def run_ssps(
                 pulse_year=pulse_year,
                 ecs_mask_name=mask,
             ),
-            "formula": conf["sectors"][sector if not USA else sector[:-6]]["formula"],
+            "formula": conf["sectors"][sector if not USA else sector[:-4]]["formula"],
             "discounting_type": discount_type,
             "sector": sector,
             "ce_path": f"{conf['paths']['reduced_damages_library']}/{sector}/",
@@ -127,8 +131,8 @@ def run_rff(
     eta_rhos,
     config,
     USA,
-    global_cons=True,
     order="scc",
+    regenerate_sccs = True,
 ):
 
     with open(config, "r") as stream:
@@ -140,6 +144,16 @@ def run_rff(
 
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/unmasked"
+
+        if not regenerate_sccs:
+            scc_path = (
+                Path(save_path)
+                / "unmasked"
+                / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
+            )
+            if dfc_path.is_file():
+                print("sccs found")
+                continue
 
         if USA:
             econ = EconVars(
