@@ -211,7 +211,7 @@ def extrapolate(
         return np.log(exp_interp) * factor
 
     elif method == "squared":
-        sqr_array = (xr_array**2).sel(year=slice(start_year, end_year))
+        sqr_array = (np.float_power(xr_array, 2)).sel(year=slice(start_year, end_year))
         sqr_interp = sqr_array.interp(
             year=np.arange(end_year + 1, interp_year + 1),
             method="linear",
@@ -255,7 +255,7 @@ def extrapolate(
 
 def power(a, b):
     """Power function that doesn't return NaN values for negative fractional exponents"""
-    return np.sign(a) * (np.abs(a)) ** b
+    return np.sign(a) * np.float_power(np.abs(a), b)
 
 
 def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
@@ -300,14 +300,14 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
 
     if func is None:
         exp = 1 / (1 - eta)
-        utility = np.true_divide(array ** (1 - eta), (1 - eta))
+        utility = np.true_divide(np.float_power(array, (1 - eta)), (1 - eta))
 
         if weights is None:
             exp_utility = utility.mean(dim=dims)
         else:
             exp_utility = utility.weighted(weights).mean(dim=dims)
 
-        ce_array = (exp_utility * (1 - eta)) ** exp
+        ce_array = np.float_power((exp_utility * (1 - eta)), exp)
 
     else:
         try:

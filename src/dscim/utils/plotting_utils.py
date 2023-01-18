@@ -33,9 +33,9 @@ class MajorSymLogLocator(SymmetricalLogLocator):
         if orders_magnitude <= 1:
             spread = vmax - vmin
             exp = np.floor(np.log10(spread))
-            rest = spread * 10 ** (-exp)
+            rest = spread * np.float_power(10, -exp)
 
-            stride = 10**exp * (
+            stride = np.float_power(10, exp) * (
                 0.25 if rest < 2.0 else 0.5 if rest < 4 else 1.0 if rest < 6 else 2.0
             )
 
@@ -46,7 +46,9 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             pos_a, pos_b = np.floor(np.log10(max(vmin, 1))), np.ceil(
                 np.log10(max(vmax, 1))
             )
-            positive_powers = 10 ** np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
+            positive_powers = np.float_power(
+                10, np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
+            )
             positive = np.ravel(np.outer(positive_powers, [1.0, 5.0]))
 
             linear = np.array([0.0]) if vmin < 1 and vmax > -1 else np.array([])
@@ -55,7 +57,9 @@ class MajorSymLogLocator(SymmetricalLogLocator):
                 np.log10(-min(vmax, -1))
             )
             negative_powers = -(
-                10 ** np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1]
+                np.float_power(
+                    10, np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1]
+                )
             )
             negative = np.ravel(np.outer(negative_powers, [1.0, 5.0]))
 
@@ -66,14 +70,20 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             pos_a, pos_b = np.floor(np.log10(max(vmin, 1))), np.ceil(
                 np.log10(max(vmax, 1))
             )
-            positive = 10 ** np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
+            positive = np.float_power(
+                10, np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
+            )
 
             linear = np.array([0.0]) if vmin < 1 and vmax > -1 else np.array([])
 
             neg_a, neg_b = np.floor(np.log10(-min(vmin, -1))), np.ceil(
                 np.log10(-min(vmax, -1))
             )
-            negative = -(10 ** np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1])
+            negative = -(
+                np.float_power(
+                    10, np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1]
+                )
+            )
 
             return np.concatenate([negative, linear, positive])
 

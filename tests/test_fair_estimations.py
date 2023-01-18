@@ -158,13 +158,18 @@ def test_c_equivalence():
         c_equivalence(array, dims, eta=1, weights=None, func_args=None, func=None)
     assert c_equivalence(
         array, dims, eta=10, weights=None, func_args=None, func=None
-    ) == (np.divide(array ** (1 - 10), 1 - 10).values.mean() * (1 - 10)) ** (
-        1 / (1 - 10)
+    ) == np.float_power(
+        np.divide(np.float_power(array, (1 - 10)), 1 - 10).values.mean() * (1 - 10),
+        (1 / (1 - 10)),
     )
     assert c_equivalence(
         array, dims, eta=10, weights=weights, func_args=None, func=None
-    ) == ((np.divide(array ** (1 - 10), 1 - 10) * weights).values.sum() * (1 - 10)) ** (
-        1 / (1 - 10)
+    ) == np.float_power(
+        (
+            (np.divide(np.float_power(array, (1 - 10)), 1 - 10) * weights).values.sum()
+            * (1 - 10)
+        ),
+        (1 / (1 - 10)),
     )
     with pytest.raises(ValueError):
         c_equivalence(-array, dims, eta=10, weights=None, func_args=None, func=None)
