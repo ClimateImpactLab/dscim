@@ -79,8 +79,8 @@ def solve_optimization(ssp_df, rff_df):
             try:
                 y1it = subdf.loginc[subdf.yearscen == alphaparams[0]].values[0]
             except Exception as ex:
-                print(ii,isoyear,ex)
-                print("Exception! Keep going..") # KM added
+                print(ii, isoyear, ex)
+                print("Exception! Keep going..")  # KM added
                 continue
 
             add_AA_cell(len(bb), ii, -1)
