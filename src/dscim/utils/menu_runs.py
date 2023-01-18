@@ -65,7 +65,7 @@ def run_ssps(
                 / "unmasked"
                 / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
             )
-            if dfc_path.is_file():
+            if scc_path.is_file():
                 print("sccs found")
                 continue
 
@@ -150,7 +150,7 @@ def run_rff(
                 / "unmasked"
                 / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
             )
-            if dfc_path.is_file():
+            if scc_path.is_file():
                 print("sccs found")
                 continue
 
