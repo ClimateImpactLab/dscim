@@ -37,7 +37,7 @@ def run_ssps(
     masks=None,
     fair_dims_list=None,
     order="damage_function",
-    regenerate_sccs = True,
+    regenerate_sccs=True,
 ):
     if masks is None:
         masks = [None]
@@ -68,7 +68,6 @@ def run_ssps(
             if dfc_path.is_file():
                 print("sccs found")
                 continue
-
 
         if fair_dims != ["simulation"]:
             save_path = (
@@ -110,7 +109,7 @@ def run_ssps(
             kwargs.update(
                 {
                     "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/unmasked",
-                        "save_files": [
+                    "save_files": [
                         "damage_function_points",
                         "marginal_damages",
                         "discount_factors",
@@ -132,7 +131,7 @@ def run_rff(
     config,
     USA,
     order="scc",
-    regenerate_sccs = True,
+    regenerate_sccs=True,
 ):
 
     with open(config, "r") as stream:
