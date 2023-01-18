@@ -154,8 +154,9 @@ def test_c_equivalence():
         c_equivalence(array, dims, eta=0, weights=None, func_args=None, func=None)
         == array.values.mean()
     )  # most things cancel out with eta=0
-    with pytest.raises(ZeroDivisionError):
-        c_equivalence(array, dims, eta=1, weights=None, func_args=None, func=None)
+    assert c_equivalence(
+        array, dims, eta=1, weights=None, func_args=None, func=None
+    ) == (np.exp(np.log(array).values.mean()))
     assert c_equivalence(
         array, dims, eta=10, weights=None, func_args=None, func=None
     ) == (np.divide(array ** (1 - 10), 1 - 10).values.mean() * (1 - 10)) ** (
