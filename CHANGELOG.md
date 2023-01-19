@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 - Remove old/unnecessary files. ([PR #57](https://github.com/ClimateImpactLab/dscim/pull/57), [@JMGilbert](https://github.com/JMGilbert))
+### Added
+- Add functions used for producing RFF weights. ([PR #66](https://github.com/ClimateImpactLab/dscim/pull/66), [@davidrzhdu](https://github.com/davidrzhdu))
 
 
 ## [0.3.0] - 2022-09-29
