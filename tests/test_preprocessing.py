@@ -289,8 +289,6 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
         )
         reduced_damages_out = d / "reduced_damages"
 
-        sectors = ["dummy_sector1", "dummy_sector2"]
-
         config_data = dict(
             paths=dict(reduced_damages_library=str(d / "reduced_damages")),
             sectors=dict(
