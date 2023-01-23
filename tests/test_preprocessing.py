@@ -10,6 +10,7 @@ from dscim.preprocessing.preprocessing import (
     subset_USA_reduced_damages,
     sum_AMEL,
     reduce_damages,
+    ce_from_chunk,
 )
 from pathlib import Path
 import yaml
@@ -424,3 +425,117 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
             xr.testing.assert_equal(
                 xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
             )
+
+            
+@pytest.mark.parametrize(
+    "recipe, eta, reduction, zero",
+    [
+        ("adding_up", None, "cc", True),
+        ("adding_up", None, "no_cc", False),
+        ("adding_up", None, "no_cc", True),
+        ("risk_aversion", 1, "cc", True),
+        ("risk_aversion", 10, "no_cc", False),
+        ("risk_aversion", 1, "no_cc", True),
+        ("risk_aversion", 10, "cheese", True),
+    ],
+)
+def test_ce_from_chunk(tmp_path, recipe, eta, reduction, zero):
+    d = tmp_path / "ce_from_chunk"
+    d.mkdir()
+    dummy_socioeconomics_dir = d / "dummy_se"
+    dummy_socioeconomics_dir.mkdir()
+    dummy_socioeconomics_file = (
+        dummy_socioeconomics_dir / "integration_dummy_se.zarr"
+    )
+    
+    dummy_soecioeconomics = xr.Dataset(
+        {
+            "gdp": (["ssp", "region", "model", "year"], [[[[30,100,30,100,30,100,30,100,30,100]]*2]]*2),
+            "gdppc": (["ssp", "region", "model", "year"], [[[[30,100,30,100,30,100,30,100,30,100]]*2]]*2),
+            "pop": (["ssp", "region", "model", "year"], [[[[30,100,30,100,30,100,30,100,30,100]]*2]]*2),
+        },
+        coords={
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "region": (["region"], ["ZWE.test_region"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], np.arange(2020,2030)),
+        },
+    )
+    
+    dummy_soecioeconomics.to_zarr(
+        dummy_socioeconomics_file, consolidated=True, mode="w"
+    )
+    
+    ce_batch_coords = {'ssp': np.array(['SSP3'], dtype='<U4'),
+     'region': ["ZWE.test_region"],
+     'model': np.array(['IIASA GDP'], dtype='<U15'),
+     'year': np.arange(2020,2030),
+     'gcm': np.array(['ABCD1'], dtype='<U13'),
+     'rcp': np.array(['rcp45'], dtype='<U5')}
+    
+    in_chunk = xr.Dataset(
+        {
+            "delta_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                [[[[[[[3,10,3,10,3,10,3,10,3,10]]]*15]]]],
+            ),
+            "histclim_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                [[[[[[[30,100,30,100,30,100,30,100,30,100]]]*15]]]],
+            ),
+        },
+        coords={
+            "gcm": (["gcm"], ["ABCD1"]),
+            "model": (["model"], ["IIASA GDP"]),
+            "rcp": (["rcp"], ["rcp45"]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "batch": (["batch"], np.arange(15)),
+            "region": (["region"], ["ZWE.test_region"]),
+            "year": (["year"], np.arange(2020,2030)),
+        },
+    ).astype(np.float32).chunk(
+            {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": 24378,
+            }
+        )
+    
+    if reduction not in ["cc", "no_cc"]:
+        with pytest.raises(NotImplementedError) as excinfo:
+            out_actual = ce_from_chunk(in_chunk,
+                      filepath = "/",
+                      reduction = "",
+                      bottom_code = 40,
+                      histclim = "histclim_dummy1",
+                      delta = "delta_dummy1",
+                      recipe = recipe,
+                      eta = "",
+                      zero = "",
+                      socioec = str(dummy_socioeconomics_file),
+                      ce_batch_coords = ce_batch_coords)
+        assert (
+            str(excinfo.value)
+            == "Pass 'cc' or 'no_cc' to reduction."
+        )
+    else:
+        out_actual = ce_from_chunk(in_chunk,
+                      filepath = "/",
+                      reduction = reduction,
+                      bottom_code = 40,
+                      histclim = "histclim_dummy1",
+                      delta = "delta_dummy1",
+                      recipe = recipe,
+                      eta = eta,
+                      zero = zero,
+                      socioec = str(dummy_socioeconomics_file),
+                      ce_batch_coords = ce_batch_coords)
+
+        if not zero or reduction == "no_cc":
+            np.testing.assert_allclose(out_actual.values, np.array([[[[[[40]],[[100.]],[[40]],[[100.]],[[40]],[[100.]],[[40]],[[100.]],[[40]],[[100.]]]]]]),rtol = 1e-20, atol = 1e-10)
+        else:
+            np.testing.assert_allclose(out_actual.values, np.array([[[[[[40]],[[90.]],[[40]],[[90.]],[[40]],[[90.]],[[40]],[[90.]],[[40]],[[90.]]]]]]),rtol = 1e-20, atol = 1e-10)            
