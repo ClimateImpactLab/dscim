@@ -8,7 +8,7 @@ def ce_func(consumption, dims, eta):
     """Calculate CRRA function"""
     # use log utility when eta is 1
     if eta == 1:
-        return xr.ufuncs.exp(xr.ufuncs.log(consumption).mean(dims))
+        return np.exp(np.log(consumption).mean(dims))
     # CRRA utility otherwise
     else:
         return power(
