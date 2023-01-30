@@ -18,6 +18,30 @@ from gurobipy import GRB
 
 ## Solve the optimization problem
 def solve_optimization(ssp_df, rff_df):
+    """Generate weights based on which to derive the weighted average of damage function coefficents
+    across six SSP-growth models for a single RFF-SP
+
+    This function applies an emulation scheme to calculate a set of weights, constrained to
+    sum to unity, that, when used to take a weighted average of global GDP across SSP-growth models
+    (3 SSPs X 2 IAMs), most closely recovers the global GDP in the RFF-SP simulation run that
+    wish to emulate. The emulation scheme is estimated and applied separately for each 5-year period,
+    of a single RFF-SP. Within each period, the scheme aims to interpolate between the SSP-growth models
+    in order to match the country-level GDPs designated by the given RFF-SP. Empirically, it solves
+    an optimization problem to minimize a weighted sum of country-level errors, taking country-level
+    RFF-SP GDPs as weights
+
+    Parameters
+    ----------
+    ssp_df : pd.DataFrame
+        Dataset with country-level log per capita GDPs by SSP-growth models in 5-year increments, post-
+        processed by the `process_ssp_sample` function
+    rff_df : pd.DataFrame
+        Dateset with country-level GDPs and log per capita GDPs for a single RFF-SP simulation run
+    Returns
+    ------
+        Dataset with a set of SSP-growth model weights and country-level errors in 5-year increments
+        for a single RFF-SP
+    """
 
     ssp_df = ssp_df[(ssp_df.scenario != "SSP1") & (ssp_df.scenario != "SSP5")]
 
@@ -137,6 +161,7 @@ def solve_optimization(ssp_df, rff_df):
 
 # Process SSP sample
 def process_ssp_sample(ssppath):
+    """Clean SSP per capita GDP projections"""
     ssp_df = pd.read_csv(ssppath, skiprows=11)
     ssp_df = ssp_df[ssp_df.year >= 2010]
     ssp_df["loginc"] = np.log(ssp_df.value)
@@ -150,6 +175,13 @@ def process_ssp_sample(ssppath):
 
 ## Process RFF Sample
 def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
+    """Clean raw socioeconomic projections from a single RFF-SP simulation run,
+    pass the cleaned dataset to the `solve_optimization` function, and save outputs
+
+    This produces a csv file of RFF emulator weights and country-level errors in 5-year
+    increments for a single RFF-SP
+    """
+
     read_feather = os.path.join(rffpath, "run_%d.feather" % i)
     rff_raw = pd.read_feather(read_feather)
     rff_raw.rename(columns={"Year": "year", "Country": "iso"}, inplace=True)
