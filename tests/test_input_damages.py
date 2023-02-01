@@ -440,3 +440,5 @@ def test_calculate_labor_batch_damages(
             tmp_path, "calculate_labor_batch_damages/rebased_wage-levels_batch6.zarr"
         )
     )
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
