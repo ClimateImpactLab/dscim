@@ -26,7 +26,7 @@ def test_parse_projection_filesys(tmp_path):
                         os.makedirs(os.path.join(tmp_path, b, r, g, m, s))
 
     out_expected = {
-        "batch": list(chain(repeat("batch6", 16), repeat("batch9", 16))),
+        "batch": list(chain(repeat("batch9", 16), repeat("batch6", 16))),
         "rcp": list(chain(repeat("rcp85", 8), repeat("rcp45", 8))) * 2,
         "gcm": list(chain(repeat("ACCESS1-0", 4), repeat("GFDL-CM3", 4))) * 4,
         "model": list(chain(repeat("high", 2), repeat("low", 2))) * 8,
