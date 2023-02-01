@@ -33,7 +33,7 @@ def test_parse_projection_filesys(tmp_path):
         "ssp": ["SSP2", "SSP3"] * 16,
         "path": [
             os.path.join(tmp_path, b, r, g, m, s)
-            for b in batch
+            for b in ["batch9", "batch6"]
             for r in rcp
             for g in gcm
             for m in model
