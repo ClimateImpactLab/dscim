@@ -324,7 +324,6 @@ def compute_ag_damages(
     def process_batch(g):
         i = g.batch.values[0]
         if i in [f"batch{j}" for j in batches]:
-
             print(f"Processing damages in {i}")
             ds = xr.open_mfdataset(g.path, preprocess=prep, parallel=True)[vars]
             attrs = ds.attrs
@@ -344,7 +343,6 @@ def compute_ag_damages(
                     "market_level",
                     "demand_topcode",
                 ]:
-
                     if var in ds.coords:
                         attrs[var] = ds[var].values
                         ds = ds.drop(var)
@@ -667,7 +665,6 @@ def prep_mortality_damages(
     outpath,
     path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
 ):
-
     print(
         "This function only works on mortality_v4 and mortality_v5 damages from the mortality repo's valuation. Earlier versions of mortality contain different variable definitions (per capita, not per capita, with or without histclim subtracted off."
     )
@@ -731,7 +728,6 @@ def coastal_inputs(
     vsl_valuation,
     path,
 ):
-
     try:
         d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
     except GroupNotFoundError:

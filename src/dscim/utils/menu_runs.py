@@ -50,7 +50,6 @@ def run_ssps(
     for sector, pulse_year, menu_disc, eta_rho, mask, fair_dims in product(
         sectors, pulse_years, menu_discs, eta_rhos, masks, fair_dims_list
     ):
-
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
 
@@ -133,14 +132,12 @@ def run_rff(
     order="scc",
     regenerate_sccs=True,
 ):
-
     with open(config, "r") as stream:
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(
         sectors, pulse_years, menu_discs, eta_rhos
     ):
-
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/unmasked"
 

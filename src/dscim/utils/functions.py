@@ -143,7 +143,6 @@ def calculate_constant_equivalent_discount_rate(
 
 
 def get_model_weights(rcp):
-
     # clean weights
     WEIGHT_FILE = (
         f"/shares/gcp/climate/SMME-weights/{rcp}_2090_SMME_edited_for_April_2016.tsv"
