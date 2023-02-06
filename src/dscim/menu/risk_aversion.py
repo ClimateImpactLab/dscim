@@ -56,7 +56,6 @@ class RiskAversionRecipe(MainRecipe):
         df = dams_collapse.to_dataframe("damages").reset_index()
 
         if "gwr" in self.discounting_type:
-
             df = df.assign(
                 ssp=str(list(self.gdp.ssp.values)),
                 model=str(list(self.gdp.model.values)),

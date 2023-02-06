@@ -24,7 +24,6 @@ mask_types = ["gdppc", "emissions", "climate"]
 
 
 def get_mask(mask_set, quantiles, dim="rff_sp"):
-
     # quantiles of variable
     quants = mask_set.quantile(quantiles, dim)
 
@@ -44,7 +43,6 @@ def get_mask(mask_set, quantiles, dim="rff_sp"):
 
 
 for mask_type in mask_types:
-
     if mask_type == "emissions":
         # mask on cumulative emissions in 2300
         mask_set = (

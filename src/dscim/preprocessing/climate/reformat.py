@@ -58,7 +58,6 @@ def stack_gases(gas_dict, date=str(date.today()), var="temperature"):
     conversions = {}
 
     for gas in gas_dict:
-
         # open climate data
         this = xr.open_dataset(
             "/shares/gcp/integration/rff2/climate/"
