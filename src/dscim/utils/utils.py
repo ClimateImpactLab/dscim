@@ -441,7 +441,6 @@ def model_outputs(
     y_hat_df = pd.concat(list_y_hats)
 
     if extrapolation_type == "time_trends":
-
         raise NotImplementedError(
             "This has not been tested since adding quantregs option."
         )
@@ -462,7 +461,6 @@ def model_outputs(
         # Reformulating parameters
         extrapolation_year = []
         for year in extrap_years:
-
             params_df = extrap_params.copy(deep=True)
             unint_terms = int(len(params_df.columns) / 2)
 
@@ -483,7 +481,6 @@ def model_outputs(
         preds = pd.concat([y_hat_df, extrap_y_hat]).to_xarray()
 
     elif extrapolation_type == "global_c_ratio":
-
         # convert to xarray immediately
         index = ["year", "q"] if type_estimation == "quantreg" else ["year"]
         y_hat_df = y_hat_df.set_index(
@@ -594,7 +591,6 @@ def compute_damages(anomaly, betas, formula):
         formula
         == "damages ~ -1 + anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)"
     ):
-
         damages_fair = (
             betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
@@ -604,7 +600,6 @@ def compute_damages(anomaly, betas, formula):
     elif (
         formula == "damages ~ anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)"
     ):
-
         damages_fair = (
             betas["Intercept"]
             + betas["anomaly"] * anomaly.temperature
@@ -613,7 +608,6 @@ def compute_damages(anomaly, betas, formula):
             + betas["np.power(gmsl, 2)"] * np.power(anomaly.gmsl, 2)
         )
     elif formula == "damages ~ -1 + gmsl + anomaly + np.power(anomaly, 2)":
-
         damages_fair = (
             betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
@@ -621,32 +615,27 @@ def compute_damages(anomaly, betas, formula):
         )
 
     elif formula == "damages ~ -1 + anomaly + np.power(anomaly, 2)":
-
         damages_fair = betas["anomaly"] * anomaly.temperature + betas[
             "np.power(anomaly, 2)"
         ] * np.power(anomaly.temperature, 2)
 
     elif formula == "damages ~ anomaly + np.power(anomaly, 2)":
-
         damages_fair = (
             betas["Intercept"]
             + betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
         )
     elif formula == "damages ~ gmsl + np.power(gmsl, 2)":
-
         damages_fair = (
             betas["Intercept"]
             + betas["gmsl"] * anomaly.gmsl
             + betas["np.power(gmsl, 2)"] * np.power(anomaly.gmsl, 2)
         )
     elif formula == "damages ~ -1 + gmsl + np.power(gmsl, 2)":
-
         damages_fair = betas["gmsl"] * anomaly.gmsl + betas[
             "np.power(gmsl, 2)"
         ] * np.power(anomaly.gmsl, 2)
     elif formula == "damages ~ -1 + gmsl":
-
         damages_fair = betas["gmsl"] * anomaly.gmsl
 
     elif formula == "damages ~ -1 + np.power(anomaly, 2)":

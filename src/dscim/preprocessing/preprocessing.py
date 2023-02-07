@@ -29,7 +29,6 @@ def ce_from_chunk(
     socioec,
     ce_batch_coords,
 ):
-
     year = chunk.year.values
     ssp = chunk.ssp.values
     model = chunk.model.values
@@ -99,7 +98,6 @@ def reduce_damages(
 
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
-
             assert (
                 xr.open_zarr(damages).chunks["batch"][0] == 15
             ), "'batch' dim on damages does not have chunksize of 15. Please rechunk."
@@ -193,7 +191,6 @@ def sum_AMEL(
     config,
     AMEL,
 ):
-
     # load config
     with open(config, "r") as stream:
         loaded_config = yaml.safe_load(stream)
@@ -203,7 +200,6 @@ def sum_AMEL(
 
     # save summed variables to zarr one by one
     for i, var in enumerate(["delta", "histclim"]):
-
         datasets = []
 
         for sector in sectors:
@@ -252,7 +248,6 @@ def subset_USA_reduced_damages(
     eta,
     input_path,
 ):
-
     if recipe == "adding_up":
         ds = xr.open_zarr(
             f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
@@ -285,7 +280,6 @@ def subset_USA_ssp_econ(
     in_path,
     out_path,
 ):
-
     zarr = xr.open_zarr(
         in_path,
         consolidated=True,
@@ -335,7 +329,6 @@ def clip_damages(
 
     with xr.open_zarr(sector_path, chunks=None)[delta] as ds:
         with xr.open_zarr(econ_path, chunks=None) as gdppc:
-
             ce_batch_dims = [i for i in ds.dims]
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
@@ -354,7 +347,6 @@ def clip_damages(
     def chunk_func(
         damages,
     ):
-
         year = damages.year.values
         ssp = damages.ssp.values
         model = damages.model.values

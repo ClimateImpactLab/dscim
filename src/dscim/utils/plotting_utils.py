@@ -12,7 +12,6 @@ class MajorSymLogLocator(SymmetricalLogLocator):
 
     @staticmethod
     def orders_magnitude(vmin, vmax):
-
         max_size = np.log10(max(abs(vmax), 1))
         min_size = np.log10(max(abs(vmin), 1))
 
@@ -24,7 +23,6 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             return max(min_size, max_size)
 
     def tick_values(self, vmin, vmax):
-
         if vmax < vmin:
             vmin, vmax = vmax, vmin
 
@@ -62,7 +60,6 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             return np.concatenate([negative, linear, positive])
 
         else:
-
             pos_a, pos_b = np.floor(np.log10(max(vmin, 1))), np.ceil(
                 np.log10(max(vmax, 1))
             )

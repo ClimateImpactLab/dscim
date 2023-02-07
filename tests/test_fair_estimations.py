@@ -201,7 +201,6 @@ def run_model_outputs(conf):
 
 
 def test_model_outputs():
-
     """
     input cases variation :
     formula :

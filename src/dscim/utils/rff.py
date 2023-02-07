@@ -170,7 +170,6 @@ def rff_damage_functions(
     for recipe_disc, sector, eta_rho in product(
         recipes_discs, sectors, eta_rhos.items()
     ):
-
         print(f"{datetime.now()} : {recipe_disc} {sector} {eta_rho}")
 
         weight_df(

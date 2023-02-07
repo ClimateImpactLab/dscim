@@ -27,7 +27,6 @@ def save(name):
             save = out
 
             if (self.save_path is not None) and (name in self.save_files):
-
                 if not os.path.exists(self.save_path):
                     os.makedirs(self.save_path)
 
@@ -35,7 +34,6 @@ def save(name):
                 filename_path = os.path.join(self.save_path, filename)
 
                 if isinstance(save, xr.DataArray):
-
                     save = save.rename(name).to_dataset()
                     save.attrs = self.output_attrs
 

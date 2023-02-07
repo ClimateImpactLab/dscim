@@ -135,7 +135,6 @@ class Waiter:
 
         # limit options for code release
         if self.ALLOWED_SECTORS != "any":
-
             assert any(
                 [sector in self.ALLOWED_SECTORS]
             ), f"Sector {sector} unavailable. Please pass one of {self.ALLOWED_SECTORS}."
