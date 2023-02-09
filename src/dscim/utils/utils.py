@@ -299,15 +299,21 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
         )
 
     if func is None:
-        exp = 1 / (1 - eta)
-        utility = np.true_divide(array ** (1 - eta), (1 - eta))
+        if eta == 1:
+            utility = np.log(array)
+        else:
+            exp = 1 / (1 - eta)
+            utility = np.true_divide(array ** (1 - eta), (1 - eta))
 
         if weights is None:
             exp_utility = utility.mean(dim=dims)
         else:
             exp_utility = utility.weighted(weights).mean(dim=dims)
 
-        ce_array = (exp_utility * (1 - eta)) ** exp
+        if eta == 1:
+            ce_array = np.exp(exp_utility)
+        else:
+            ce_array = (exp_utility * (1 - eta)) ** exp
 
     else:
         try:
