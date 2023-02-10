@@ -65,7 +65,6 @@ class EquityRecipe(MainRecipe):
         df = dams_collapse.to_dataframe("damages").reset_index()
 
         if "gwr" in self.discounting_type:
-
             df = df.assign(
                 ssp=str(list(self.gdp.ssp.values)),
                 model=str(list(self.gdp.model.values)),
@@ -74,7 +73,6 @@ class EquityRecipe(MainRecipe):
         return df
 
     def global_consumption_calculation(self, disc_type):
-
         # get global consumption certainty equivalent across regions
         ce_cons = c_equivalence(
             self.gdppc,

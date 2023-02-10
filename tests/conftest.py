@@ -66,7 +66,6 @@ def menu_class(request):
 
 @pytest.fixture(scope="module")
 def menu_instance(menu_class, discount_types, econ, climate):
-
     datadir = os.path.join(os.path.dirname(__file__), "data")
     yield menu_class(
         sector_path=[{"dummy_sector": os.path.join(datadir, "damages")}],
