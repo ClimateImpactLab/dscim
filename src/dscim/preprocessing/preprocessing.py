@@ -158,34 +158,6 @@ def reduce_damages(
         )
 
 
-def reformat_climate_files():
-    from dscim.preprocessing.climate.reformat import (
-        convert_old_to_newformat_AR,
-        stack_gases,
-    )
-
-    # convert AR6 files
-    bd = "/shares/gcp/integration/float32/dscim_input_data/climate/AR6"
-    pathdt = {
-        "median": f"{bd}/ar6_fair162_medianparams_control_pulse_2020-2080_10yrincrements_conc_rf_temp_lambdaeff_emissions-driven_2naturalfix_v4.0_Jan212022.nc",
-        "sims": f"{bd}/ar6_fair162_control_pulse_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_emissions-driven_naturalfix_v4.0_Jan212022.nc",
-    }
-
-    newds = convert_old_to_newformat_AR(
-        pathdt,
-        gas="CO2_Fossil",
-        var="temperature",
-    )
-
-    newds.to_netcdf(
-        f"{bd}/ar6_fair162_sim_and_medianparams_control_pulse_2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_emissions-driven_naturalfix_v4.0_Jan212022.nc"
-    )
-
-    # convert RFF files
-    gases = {"CO2_Fossil": "Feb072022", "CH4": "Feb072022", "N2O": "Feb072022"}
-    stack_gases(gas_dict=gases)
-
-
 def sum_AMEL(
     sectors,
     config,
