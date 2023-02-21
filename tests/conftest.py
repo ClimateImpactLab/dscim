@@ -4,6 +4,10 @@ import pytest
 from dscim.menu.simple_storage import Climate, EconVars
 from dscim.menu.baseline import Baseline
 from dscim.menu.risk_aversion import RiskAversionRecipe
+from pathlib import Path
+from itertools import product
+import numpy as np
+import pandas as pd
 
 # @MIKE: CHANGE ME
 data_dir = "."
@@ -108,3 +112,41 @@ def menu_instance(menu_class, discount_types, econ, climate):
         fair_aggregation=["median_params", "ce", "mean"],
         weitzman_parameter=[0.1],
     )
+
+
+@pytest.fixture
+def weights_unclean(tmp_path):
+    d = Path(tmp_path) / "clean_root"
+    d.mkdir()
+
+    filename = str(d / "emulate-fivebean-1234.csv")
+
+    alpha = list(
+        product(
+            np.arange(2010, 2021, 5),
+            ["alpha"],
+            ["high", "low"],
+            ["SSP2", "SSP3", "SSP4"],
+            [1],
+        )
+    )
+    error = list(product(np.arange(2010, 2021, 5), ["USA", "ARG"], ["error"], [1]))
+    alpha_file = pd.DataFrame(alpha, columns=["year", "param", "model", "ssp", "value"])
+    alpha_file["name"] = alpha_file.apply(
+        lambda x: "/".join([":".join([str(x.year), x.model]), x.ssp]), axis=1
+    )
+    alpha_file = alpha_file.drop(columns=["model", "ssp"])
+
+    error_file = pd.DataFrame(error, columns=["year", "country", "param", "value"])
+    error_file["name"] = error_file.apply(
+        lambda x: ":".join([x.country, str(x.year)]), axis=1
+    )
+    error_file = error_file.drop(columns=["country"])
+    out = pd.concat([alpha_file, error_file]).reset_index().drop(columns="index")
+
+    out.to_csv(filename, index=False)
+    with open(filename, "r+") as f:
+        lines = f.readlines()
+        lines.insert(0, "#\n" * 9)
+        f.seek(0)
+        f.writelines(lines)
