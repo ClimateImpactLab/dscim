@@ -6,6 +6,7 @@ from dscim.utils.rff import (
     clean_error,
     weight_df,
     rff_damage_functions,
+    prep_rff_socioeconomics,
 )
 import pytest
 from pathlib import Path
@@ -253,3 +254,65 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
     )
 
     xr.testing.assert_allclose(out_actual, out_expected)
+
+
+@pytest.mark.parametrize("USA", [True, False])
+def test_prep_rff_socioeconomics(tmp_path, USA):
+    # May want to use "real" numbers for this test, since there is some more intensive calculation
+    deflator_file = pd.DataFrame({"year": [2011, 2019], "gdpdef": [1, 2]})
+    deflator_file.to_csv(tmp_path / "fed_income_inflation.csv")
+
+    rff_econ = xr.Dataset(
+        {
+            "Pop": (["runid", "Country", "Year"], np.ones((5, 2, 5))),
+            "GDP": (["runid", "Country", "Year"], np.ones((5, 2, 5))),
+        },
+        coords={
+            "Country": (["Country"], ["USA", "ZWE"]),
+            "Year": (["Year"], [2021, 2022, 2023, 2099, 2100]),
+            "runid": (["runid"], np.arange(1, 6)),
+        },
+    )
+
+    rff_econ.to_netcdf(tmp_path / "rff-sp_socioeconomics_all_runs_feather_files.nc")
+
+    runids = xr.Dataset(
+        {
+            "simulation": (["runid"], np.arange(4, -1, -1)),
+            "rff_sp": (["runid"], np.arange(1, 6)),
+        },
+        coords={
+            "runid": (["runid"], np.arange(1, 6)),
+        },
+    )
+
+    runids.to_netcdf(tmp_path / "dummy_runids.nc")
+
+    prep_rff_socioeconomics(
+        tmp_path / "fed_income_inflation.csv",
+        tmp_path / "rff-sp_socioeconomics_all_runs_feather_files.nc",
+        tmp_path / "dummy_runids.nc",
+        tmp_path,
+        USA,
+    )
+    file_USA = "USA" if USA else "global"
+    coord_USA = "USA" if USA else "world"
+    gdp_USA = 1 if USA else 2
+
+    out_expected = xr.Dataset(
+        {
+            "pop": (["region", "runid", "year"], np.ones((1, 5, 5)) * gdp_USA * 1e3),
+            "gdp": (["region", "runid", "year"], np.ones((1, 5, 5)) * gdp_USA * 2e6),
+        },
+        coords={
+            "region": (["region"], [coord_USA]),
+            "runid": (["runid"], np.arange(1, 6)),
+            "rff_sp": (["runid"], np.arange(1, 6)),
+            "year": (["year"], [2021, 2022, 2023, 2099, 2100]),
+        },
+    )
+    out_actual = xr.open_dataset(tmp_path / f"rff_{file_USA}_socioeconomics.nc4").sel(
+        year=[2021, 2022, 2023, 2099, 2100]
+    )
+
+    xr.testing.assert_allclose(out_expected, out_actual)
