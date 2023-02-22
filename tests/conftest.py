@@ -8,6 +8,7 @@ from pathlib import Path
 from itertools import product
 import numpy as np
 import pandas as pd
+import xarray as xr
 
 # @MIKE: CHANGE ME
 data_dir = "."
@@ -150,3 +151,38 @@ def weights_unclean(tmp_path):
         lines.insert(0, "#\n" * 9)
         f.seek(0)
         f.writelines(lines)
+
+
+@pytest.fixture
+def save_ssprff_econ(tmp_path):
+    d = tmp_path / "econ"
+    d.mkdir(exist_ok=True)
+
+    ssp_econ = xr.Dataset(
+        {
+            "gdp": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 4))),
+            "gdppc": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 4))),
+            "pop": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 4))),
+        },
+        coords={
+            "ssp": (["ssp"], ["SSP3"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], [2021, 2022, 2023, 2099]),
+        },
+    )
+
+    rff_econ = xr.Dataset(
+        {
+            "pop": (["region", "year", "runid"], np.ones((1, 5, 5))),
+            "gdp": (["region", "year", "runid"], np.ones((1, 5, 5))),
+        },
+        coords={
+            "region": (["region"], ["world"]),
+            "year": (["year"], [2021, 2022, 2023, 2099, 2100]),
+            "runid": (["runid"], np.arange(1, 6)),
+        },
+    )
+
+    ssp_econ.to_zarr(d / "integration-econ-bc39.zarr")
+    rff_econ.to_netcdf(d / "rff_global_socioeconomics.nc4")

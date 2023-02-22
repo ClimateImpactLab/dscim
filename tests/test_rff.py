@@ -1,7 +1,12 @@
 from itertools import product
 import numpy as np
 import pandas as pd
-from dscim.utils.rff import clean_simulation, clean_error, weight_df
+from dscim.utils.rff import (
+    clean_simulation,
+    clean_error,
+    weight_df,
+    rff_damage_functions,
+)
 import pytest
 from pathlib import Path
 import xarray as xr
@@ -145,3 +150,106 @@ def test_weight_df(tmp_path):
     xr.testing.assert_allclose(
         out_expected_fractional, xr.open_dataset(fractional_path)
     )
+
+
+def test_rff_damage_functions(tmp_path, save_ssprff_econ):
+    d = tmp_path / "weighting"
+    d.mkdir(exist_ok=True)
+
+    rff = d / "rff"
+    rff.mkdir(exist_ok=True)
+
+    ssp = d / "ssp"
+    ssp.mkdir(exist_ok=True)
+
+    sector = "dummy_sector"
+    eta_rhos = {1.0: 2.0}
+    USA = False
+
+    weights = xr.Dataset(
+        {
+            "value": (["model", "ssp", "rff_sp", "year"], np.ones((2, 1, 5, 4))),
+        },
+        coords={
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "rff_sp": (["rff_sp"], np.arange(1, 6)),
+            "year": (["year"], [2021, 2022, 2023, 2099]),
+        },
+    )
+
+    weights.to_netcdf(d / "damage_function_weights.nc4")
+
+    runids = xr.Dataset(
+        {
+            "simulation": (["runid"], np.arange(4, -1, -1)),
+            "rff_sp": (["runid"], np.arange(1, 6)),
+        },
+        coords={
+            "runid": (["runid"], np.arange(1, 6)),
+        },
+    )
+
+    runids.to_netcdf(d / "dummy_runids.nc")
+
+    df_in = xr.Dataset(
+        {
+            "anomaly": (
+                ["discount_type", "ssp", "model", "year"],
+                np.ones((1, 2, 2, 3)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["euler_ramsey"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], [2021, 2022, 2099]),
+        },
+    )
+
+    (ssp / sector / "2020").mkdir(parents=True, exist_ok=True)
+    df_in.to_netcdf(
+        ssp
+        / sector
+        / "2020"
+        / "risk_aversion_euler_ramsey_eta1.0_rho2.0_damage_function_coefficients.nc4"
+    )
+
+    rff_damage_functions(
+        sectors=[sector],
+        eta_rhos=eta_rhos,
+        USA=USA,
+        ssp_gdp=tmp_path / "econ" / "integration-econ-bc39.zarr",
+        rff_gdp=tmp_path / "econ" / "rff_global_socioeconomics.nc4",
+        recipes_discs=[
+            ("risk_aversion", "euler_ramsey"),
+        ],
+        in_library=ssp,
+        out_library=rff,
+        runid_path=d / "dummy_runids.nc",
+        weights_path=d,
+        pulse_year=2020,
+    )
+
+    out_actual = xr.open_dataset(
+        rff
+        / sector
+        / "2020"
+        / "risk_aversion_euler_ramsey_eta1.0_rho2.0_damage_function_coefficients.nc4"
+    )
+    out_expected = xr.Dataset(
+        {
+            "anomaly": (
+                ["discount_type", "year", "runid"],
+                np.ones((1, 4, 5)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["euler_ramsey"]),
+            "runid": (["runid"], np.arange(1, 6)),
+            "rff_sp": (["runid"], np.arange(1, 6)),
+            "year": (["year"], [2021, 2022, 2099, 2100]),
+        },
+    )
+
+    xr.testing.assert_allclose(out_actual, out_expected)
