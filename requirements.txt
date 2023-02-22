@@ -19,3 +19,6 @@ netcdf4
 h5netcdf
 impactlab-tools
 p_tqdm
+pyarrow
+gurobipy
+ipywidgets
