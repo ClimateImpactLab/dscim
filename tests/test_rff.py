@@ -164,7 +164,7 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
     ssp.mkdir(exist_ok=True)
 
     sector = "dummy_sector"
-    eta_rhos = [[1.0,2.0]]
+    eta_rhos = [[1.0, 2.0]]
     USA = False
 
     weights = xr.Dataset(
