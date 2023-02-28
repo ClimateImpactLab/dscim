@@ -666,7 +666,6 @@ def prep_mortality_damages(
     mortality_version,
     path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
 ):
-
     ec = EconVars(path_econ=path_econ)
 
     # longest-string gcm has to be processed first so the coordinate is the right str length
