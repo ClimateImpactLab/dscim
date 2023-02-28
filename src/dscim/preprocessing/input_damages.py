@@ -651,41 +651,61 @@ def calculate_energy_damages(
         p_umap(partial_func, list(range(i * 5, i * 5 + 5)))
 
 
+import xarray as xr
+from dscim.utils.functions import gcms
+from pathlib import Path
+from dscim.preprocessing.input_damages import prep_mortality_damages
+from dscim.menu.simple_storage import EconVars
+
+
 def prep_mortality_damages(
     gcms,
     paths,
     vars,
     outpath,
+    mortality_version,
     path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
 ):
-    print(
-        "This function only works on mortality_v4 and mortality_v5 damages from the mortality repo's valuation. Earlier versions of mortality contain different variable definitions (per capita, not per capita, with or without histclim subtracted off."
-    )
 
     ec = EconVars(path_econ=path_econ)
 
     # longest-string gcm has to be processed first so the coordinate is the right str length
     gcms = sorted(gcms, key=len, reverse=True)
 
+    if (mortality_version - 1) % 4 == 1:
+        scaling = "epa_iso_scaled"
+    elif (mortality_version - 1) % 4 == 2:
+        scaling = "epa_pop_avg"
+    elif (mortality_version - 1) % 4 == 3:
+        scaling = "epa_row"
+    elif (mortality_version - 1) % 4 == 0:
+        scaling = "epa_scaled"
+    valuation = "vsl" if mortality_version < 5 else "vly"
+
     for i, gcm in enumerate(gcms):
         print(gcm, i, "/", len(gcms))
 
-        def prep(ds, gcm=gcm):
-            return ds.sel(gcm=gcm).drop("gcm")
-
         data = {}
         for var, name in vars.items():
-            data[var] = xr.open_mfdataset(paths[var], preprocess=prep, parallel=True)[
-                name
-            ]
+
+            def prep(ds, gcm=gcm, scaling=scaling, valuation=valuation, name=name):
+                return ds.sel(gcm=gcm, scaling=scaling, valuation=valuation).drop(
+                    ["gcm", "scaling", "valuation"]
+                )
+
+            data = xr.open_mfdataset(
+                paths, preprocess=prep, parallel=True, engine="zarr"
+            )
 
         damages = xr.Dataset(
             {
                 "delta": (
-                    data["delta_deaths"] - data["histclim_deaths"] + data["delta_costs"]
+                    data[vars["delta_deaths"]]
+                    - data[vars["histclim_deaths"]]
+                    + data[vars["delta_costs"]]
                 )
                 / ec.econ_vars.pop.load(),
-                "histclim": data["histclim_deaths"] / ec.econ_vars.pop.load(),
+                "histclim": data[vars["histclim_deaths"]] / ec.econ_vars.pop.load(),
             }
         ).expand_dims({"gcm": [gcm]})
 
@@ -696,6 +716,14 @@ def prep_mortality_damages(
 
         # convert to EPA VSL
         damages = damages * 0.90681089
+
+        for v in list(damages.coords.keys()):
+            if damages.coords[v].dtype == object:
+                damages.coords[v] = damages.coords[v].astype("unicode")
+
+        for v in list(damages.variables.keys()):
+            if damages[v].dtype == object:
+                damages[v] = damages[v].astype("unicode")
 
         if i == 0:
             damages.to_zarr(
