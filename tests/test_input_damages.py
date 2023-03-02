@@ -559,8 +559,6 @@ def test_read_energy_files_parallel(
 ):
     read_energy_files_parallel(
         input_path=os.path.join(tmp_path, "energy_in_csv"),
-        save_path="unused",
-        ec_cls="unused",
         seed="TINV_clim_integration_total_energy_delta",
     )
 
@@ -920,4 +918,3 @@ def test_coastal_inputs(tmp_path):
     )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
-    
