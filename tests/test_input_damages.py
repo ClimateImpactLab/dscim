@@ -12,12 +12,14 @@ from dscim.preprocessing.input_damages import (
     concatenate_labor_damages,
     calculate_labor_batch_damages,
     calculate_labor_damages,
+    compute_ag_damages,
     read_energy_files,
     read_energy_files_parallel,
     calculate_energy_impacts,
     concatenate_energy_damages,
     calculate_energy_batch_damages,
     calculate_energy_damages,
+    coastal_inputs,
 )
 
 logger = logging.getLogger(__name__)
@@ -130,11 +132,11 @@ def labor_in_histclim(tmp_path):
 def econvars(tmp_path):
     econvars = xr.Dataset(
         {
-            "gdp": (["ssp", "region", "model", "year"], np.full((1, 2, 2, 2), 1)),
-            "pop": (["ssp", "region", "model", "year"], np.full((1, 2, 2, 2), 1)),
+            "gdp": (["ssp", "region", "model", "year"], np.full((2, 2, 2, 2), 1)),
+            "pop": (["ssp", "region", "model", "year"], np.full((2, 2, 2, 2), 1)),
         },
         coords={
-            "ssp": (["ssp"], ["SSP3"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
             "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2010, 2099]),
@@ -325,6 +327,103 @@ def test_calculate_labor_damages(
         )
 
         xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_compute_ag_damages(
+    tmp_path,
+    econvars,
+):
+    rcp = ["rcp45", "rcp85"]
+    gcm = ["ACCESS1-0", "GFDL-CM3"]
+    model = ["low", "high"]
+    ssp = ["SSP2", "SSP3"]
+    batch = ["batch6", "batch9"]
+
+    for r in rcp:
+        for g in gcm:
+            for m in model:
+                for s in ssp:
+                    for b in batch:
+                        d = os.path.join(tmp_path, "ag_in", b, r, g, m, s)
+                        if not os.path.exists(d):
+                            os.makedirs(d)
+                        infile = os.path.join(d, "disaggregated_damages.nc4")
+
+                        ds_in = xr.Dataset(
+                            {
+                                "wc_no_reallocation": (
+                                    [
+                                        "gcm",
+                                        "model",
+                                        "rcp",
+                                        "ssp",
+                                        "batch",
+                                        "region",
+                                        "year",
+                                        "variable",
+                                        "demand_topcode",
+                                        "Es_Ed",
+                                    ],
+                                    np.full((1, 1, 1, 1, 1, 2, 2, 1, 1, 1), 2),
+                                ),
+                            },
+                            coords={
+                                "region": (
+                                    ["region"],
+                                    ["ZWE.test_region", "USA.test_region"],
+                                ),
+                                "year": (["year"], [2010, 2099]),
+                                "ssp": (["ssp"], [s]),
+                                "iam": (["iam"], [m]),
+                                "continent": (["region"], ["Africa", "Americas"]),
+                                "variable": (["variable"], ["gdp"]),
+                                "demand_topcode": (["demand_topcode"], ["agshare_10"]),
+                                "Es_Ed": (["Es_Ed"], ["0.1_-0.04"]),
+                                "gcm": (["gcm"], [g]),
+                                "rcp": (["rcp"], [r]),
+                                "batch": (["batch"], [b]),
+                                "model": (["model"], [m]),
+                                "market_level": (["market_level"], ["continent"]),
+                            },
+                        )
+
+                        ds_in_save = ds_in.sel(iam=m, market_level="continent")
+
+                        ds_in_save.to_netcdf(infile)
+
+    ds_out_expected = xr.Dataset(
+        {
+            "delta": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                np.full((2, 2, 2, 2, 2, 2, 2), 2 * -1 * 1.273526),
+            ),
+        },
+        coords={
+            "batch": (["batch"], ["batch6", "batch9"]),
+            "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
+            "year": ([2010, 2099]),
+        },
+    )
+
+    compute_ag_damages(
+        input_path=os.path.join(tmp_path, "ag_in"),
+        pop=econvars.econ_vars.pop,
+        topcode="agshare_10",
+        integration=True,
+        varname="delta",
+        save_path=os.path.join(tmp_path, "ag_in", "agriculture_test_output.zarr"),
+        scalar=1,
+    )
+
+    ds_out_actual = xr.open_zarr(
+        os.path.join(tmp_path, "ag_in", "agriculture_test_output.zarr")
+    )
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
 @pytest.fixture
@@ -737,3 +836,88 @@ def test_calculate_energy_batch_damages(
     ds_out_actual = xr.open_zarr(os.path.join(tmp_path, "rebased_batch6.zarr"))
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_coastal_inputs(tmp_path):
+    ds_in = xr.Dataset(
+        {
+            "delta": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 0),
+            ),
+            "histclim": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 1),
+            ),
+        },
+        coords={
+            "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
+            "batch": (["batch"], ["batch3", "batch6"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+            "slr": (["slr"], [0, 9]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
+            "year": ([2020, 2090]),
+        },
+    )
+
+    d = os.path.join(tmp_path, "coastal_in")
+    if not os.path.exists(d):
+        os.makedirs(d)
+    infile = os.path.join(d, "coastal_damages_v0.21.zarr")
+
+    ds_in.to_zarr(infile)
+
+    coastal_inputs(
+        version="v0.21",
+        vsl_valuation="iso",
+        adapt_type="optimal",
+        path=os.path.join(tmp_path, "coastal_in"),
+    )
+
+    ds_out_expected = xr.Dataset(
+        {
+            "delta": (
+                ["region", "year", "batch", "slr", "model", "ssp"],
+                np.full((2, 2, 2, 2, 2, 1), 0),
+            ),
+            "histclim": (
+                ["region", "year", "batch", "slr", "model", "ssp"],
+                np.full((2, 2, 2, 2, 2, 1), 1),
+            ),
+        },
+        coords={
+            "batch": (["batch"], ["batch3", "batch6"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+            "slr": (["slr"], [0, 9]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "year": ([2020, 2090]),
+        },
+    )
+
+    ds_out_actual = xr.open_zarr(
+        os.path.join(tmp_path, "coastal_in", "coastal_damages_v0.21-optimal-iso.zarr")
+    )
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+    
