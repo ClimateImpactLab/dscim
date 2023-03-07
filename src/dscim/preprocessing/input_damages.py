@@ -734,7 +734,7 @@ def coastal_inputs(
             consolidated=True,
             mode="w",
         )
-    except:
+    except Exception:
         print(
             "vsl_valuation is not a dimension of the input dataset, subset adapt_type only"
         )
