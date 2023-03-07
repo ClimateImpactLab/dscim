@@ -174,7 +174,7 @@ def process_ssp_sample(ssppath):
 
 
 ## Process RFF Sample
-def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
+def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER):
     """Clean raw socioeconomic projections from a single RFF-SP simulation run,
     pass the cleaned dataset to the `solve_optimization` function, and save outputs
 
