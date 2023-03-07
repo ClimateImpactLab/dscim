@@ -836,61 +836,119 @@ def test_calculate_energy_batch_damages(
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-def test_coastal_inputs(tmp_path):
-    ds_in = xr.Dataset(
-        {
-            "delta": (
-                [
-                    "vsl_valuation",
-                    "region",
-                    "year",
-                    "batch",
-                    "slr",
-                    "model",
-                    "ssp",
-                    "adapt_type",
-                ],
-                np.full((3, 2, 2, 2, 2, 2, 1, 3), 0),
-            ),
-            "histclim": (
-                [
-                    "vsl_valuation",
-                    "region",
-                    "year",
-                    "batch",
-                    "slr",
-                    "model",
-                    "ssp",
-                    "adapt_type",
-                ],
-                np.full((3, 2, 2, 2, 2, 2, 1, 3), 1),
-            ),
-        },
-        coords={
-            "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
-            "batch": (["batch"], ["batch3", "batch6"]),
-            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
-            "slr": (["slr"], [0, 9]),
-            "ssp": (["ssp"], ["SSP3"]),
-            "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-            "year": ([2020, 2090]),
-        },
-    )
+@pytest.mark.parametrize("version_test", ["v0.21", "v0.20"])
+def test_coastal_inputs(tmp_path, version_test):
+    if version_test == "v0.21":
+        ds_in = xr.Dataset(
+            {
+                "delta": (
+                    [
+                        "vsl_valuation",
+                        "region",
+                        "year",
+                        "batch",
+                        "slr",
+                        "model",
+                        "ssp",
+                        "adapt_type",
+                    ],
+                    np.full((3, 2, 2, 2, 2, 2, 1, 3), 0),
+                ),
+                "histclim": (
+                    [
+                        "vsl_valuation",
+                        "region",
+                        "year",
+                        "batch",
+                        "slr",
+                        "model",
+                        "ssp",
+                        "adapt_type",
+                    ],
+                    np.full((3, 2, 2, 2, 2, 2, 1, 3), 1),
+                ),
+            },
+            coords={
+                "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
+                "batch": (["batch"], ["batch3", "batch6"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                "slr": (["slr"], [0, 9]),
+                "ssp": (["ssp"], ["SSP3"]),
+                "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
+                "year": ([2020, 2090]),
+            },
+        )
+
+    else:
+        ds_in = xr.Dataset(
+            {
+                "delta": (
+                    [
+                        "region",
+                        "year",
+                        "batch",
+                        "slr",
+                        "model",
+                        "ssp",
+                        "adapt_type",
+                    ],
+                    np.full((2, 2, 2, 2, 2, 1, 3), 0),
+                ),
+                "histclim": (
+                    [
+                        "region",
+                        "year",
+                        "batch",
+                        "slr",
+                        "model",
+                        "ssp",
+                        "adapt_type",
+                    ],
+                    np.full((2, 2, 2, 2, 2, 1, 3), 1),
+                ),
+            },
+            coords={
+                "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
+                "batch": (["batch"], ["batch3", "batch6"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                "slr": (["slr"], [0, 9]),
+                "ssp": (["ssp"], ["SSP3"]),
+                "year": ([2020, 2090]),
+            },
+        )
 
     d = os.path.join(tmp_path, "coastal_in")
     if not os.path.exists(d):
         os.makedirs(d)
-    infile = os.path.join(d, "coastal_damages_v0.21.zarr")
+    infile = os.path.join(d, f"coastal_damages_{version_test}.zarr")
 
     ds_in.to_zarr(infile)
 
-    coastal_inputs(
-        version="v0.21",
-        vsl_valuation="iso",
-        adapt_type="optimal",
-        path=os.path.join(tmp_path, "coastal_in"),
-    )
+    if version_test == "v0.21":
+        coastal_inputs(
+            version=version_test,
+            vsl_valuation="iso",
+            adapt_type="optimal",
+            path=os.path.join(tmp_path, "coastal_in"),
+        )
+
+        ds_out_actual = xr.open_zarr(
+            os.path.join(
+                tmp_path, "coastal_in", "coastal_damages_v0.21-optimal-iso.zarr"
+            )
+        )
+
+    else:
+        coastal_inputs(
+            version=version_test,
+            adapt_type="optimal",
+            path=os.path.join(tmp_path, "coastal_in"),
+        )
+        ds_out_actual = xr.open_zarr(
+            os.path.join(tmp_path, "coastal_in", "coastal_damages_v0.20-optimal.zarr")
+        )
 
     ds_out_expected = xr.Dataset(
         {
@@ -911,10 +969,6 @@ def test_coastal_inputs(tmp_path):
             "ssp": (["ssp"], ["SSP3"]),
             "year": ([2020, 2090]),
         },
-    )
-
-    ds_out_actual = xr.open_zarr(
-        os.path.join(tmp_path, "coastal_in", "coastal_damages_v0.21-optimal-iso.zarr")
     )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
