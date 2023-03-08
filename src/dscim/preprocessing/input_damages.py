@@ -727,20 +727,20 @@ def coastal_inputs(
         print(f"Zarr not found: {path}/coastal_damages_{version}.zarr")
         exit()
 
-    try:
+    if "vsl_valuation" in d.coords:
         d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
         d.to_zarr(
-            f"./coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
+            f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
             consolidated=True,
             mode="w",
         )
-    except Exception:
+    else:
         print(
             "vsl_valuation is not a dimension of the input dataset, subset adapt_type only"
         )
         d = d.sel(adapt_type=adapt_type, drop=True)
         d.to_zarr(
-            f"./coastal_damages_{version}-{adapt_type}.zarr",
+            f"{path}/coastal_damages_{version}-{adapt_type}.zarr",
             consolidated=True,
             mode="w",
         )
