@@ -664,26 +664,46 @@ def prep_mortality_damages(
     # longest-string gcm has to be processed first so the coordinate is the right str length
     gcms = sorted(gcms, key=len, reverse=True)
 
-    if (mortality_version - 1) % 4 == 1:
-        scaling = "epa_iso_scaled"
-    elif (mortality_version - 1) % 4 == 2:
-        scaling = "epa_pop_avg"
-    elif (mortality_version - 1) % 4 == 3:
-        scaling = "epa_row"
-    elif (mortality_version - 1) % 4 == 0:
-        scaling = "epa_scaled"
-    valuation = "vsl" if mortality_version < 5 else "vly"
+    if mortality_version == 0:
+        scaling_deaths = "epa_scaled"
+        scaling_costs = "epa_scaled"
+        valuation = "vly"
+    elif mortality_version == 1:
+        scaling_deaths = "epa_iso_scaled"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+    elif mortality_version == 4:
+        scaling_deaths = "epa_popavg"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+    elif mortality_version == 5:
+        scaling_deaths = "epa_row"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+
+    # We set 0 population to infinity so that per capita damages are 0 in locations with 0 population
+    pop = ec.econ_vars.pop.load()
+    pop = xr.where(pop == 0, np.Inf, pop)
 
     for i, gcm in enumerate(gcms):
-        print(gcm, i, "/", len(gcms))
+        print(gcm, i + 1, "/", len(gcms))
 
         data = {}
         for var, name in vars.items():
 
-            def prep(ds, gcm=gcm, scaling=scaling, valuation=valuation, name=name):
-                return ds.sel(gcm=gcm, scaling=scaling, valuation=valuation).drop(
-                    ["gcm", "scaling", "valuation"]
-                )
+            def prep(
+                ds,
+                gcm=gcm,
+                scaling_deaths=scaling_deaths,
+                scaling_costs=scaling_costs,
+                valuation=valuation,
+                name=name,
+            ):
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths, scaling_costs],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
 
             data = xr.open_mfdataset(
                 paths, preprocess=prep, parallel=True, engine="zarr"
@@ -692,12 +712,17 @@ def prep_mortality_damages(
         damages = xr.Dataset(
             {
                 "delta": (
-                    data[vars["delta_deaths"]]
-                    - data[vars["histclim_deaths"]]
-                    + data[vars["delta_costs"]]
+                    data[vars["delta_deaths"]].sel(scaling=scaling_deaths, drop=True)
+                    - data[vars["histclim_deaths"]].sel(
+                        scaling=scaling_deaths, drop=True
+                    )
+                    + data[vars["delta_costs"]].sel(scaling=scaling_costs, drop=True)
                 )
-                / ec.econ_vars.pop.load(),
-                "histclim": data[vars["histclim_deaths"]] / ec.econ_vars.pop.load(),
+                / pop,
+                "histclim": data[vars["histclim_deaths"]].sel(
+                    scaling=scaling_deaths, drop=True
+                )
+                / pop,
             }
         ).expand_dims({"gcm": [gcm]})
 
