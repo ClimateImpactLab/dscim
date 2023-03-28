@@ -680,6 +680,8 @@ def prep_mortality_damages(
         scaling_deaths = "epa_row"
         scaling_costs = "epa_scaled"
         valuation = "vsl"
+    else:
+        raise ValueError("Mortality version not valid: ", str(mortality_version))
 
     # We set 0 population to infinity so that per capita damages are 0 in locations with 0 population
     pop = ec.econ_vars.pop.load()
