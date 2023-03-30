@@ -728,12 +728,17 @@ def coastal_inputs(
         exit()
 
     if "vsl_valuation" in d.coords:
-        d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
-        d.to_zarr(
-            f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
-            consolidated=True,
-            mode="w",
-        )
+        if vsl_valuation == None:
+            raise ValueError(
+                "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
+            )
+        else:
+            d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
+            d.to_zarr(
+                f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
+                consolidated=True,
+                mode="w",
+            )
     else:
         print(
             "vsl_valuation is not a dimension of the input dataset, subset adapt_type only"
