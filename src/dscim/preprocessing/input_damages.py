@@ -208,7 +208,7 @@ def concatenate_labor_damages(
         conversion_value = 1.273526
         concat_ds = xr.combine_by_coords(list_damages_batch)
         for v in [f"histclim_{variable}", f"delta_{variable}"]:
-            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop) * -1 * conversion_value
+            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop.load()) * -1 * conversion_value
 
         # Save file
         file_name = f"{variable}_{val_type}_{i}"
@@ -348,7 +348,7 @@ def compute_ag_damages(
                         ds = ds.drop(var)
 
             # get in per capita 2019 PPP-adjusted USD damages
-            ds = (ds / pop) * -1 * 1.273526
+            ds = (ds / pop.load()) * -1 * 1.273526
 
             # replace infinite values with missings
             for var in ds.keys():
@@ -584,7 +584,7 @@ def concatenate_energy_damages(
         conversion_value = 1.273526
         concat_ds = xr.combine_by_coords(list_damages_batch)
         for v in [f"histclim_{variable}", f"delta_{variable}"]:
-            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop) * conversion_value
+            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop.load()) * conversion_value
 
         # Save file
         file_name = f"{variable}_{i}"
