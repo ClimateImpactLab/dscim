@@ -728,7 +728,7 @@ def coastal_inputs(
         exit()
 
     if "vsl_valuation" in d.coords:
-        if vsl_valuation == None:
+        if vsl_valuation is None:
             raise ValueError(
                 "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
             )
