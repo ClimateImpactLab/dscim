@@ -257,7 +257,25 @@ def subset_USA_reduced_damages(
             f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
         )
 
-    subset = ds.sel(region=[i for i in ds.region.values if "USA" in i])
+    US_territories = [
+        "USA",
+        "XBK",
+        "GUM",
+        "XHO",
+        "XJV",
+        "XJA",
+        "XKR",
+        "XMW",
+        "XNV",
+        "MNP",
+        "XPL",
+        "PRI",
+        "VIR",
+        "XWK",
+    ]
+    subset = ds.sel(
+        region=[i for i in ds.region.values if any(j in i for j in US_territories)]
+    )
 
     for var in subset.variables:
         subset[var].encoding.clear()
@@ -285,7 +303,25 @@ def subset_USA_ssp_econ(
         consolidated=True,
     )
 
-    zarr = zarr.sel(region=[i for i in zarr.region.values if "USA" in i])
+    US_territories = [
+        "USA",
+        "XBK",
+        "GUM",
+        "XHO",
+        "XJV",
+        "XJA",
+        "XKR",
+        "XMW",
+        "XNV",
+        "MNP",
+        "XPL",
+        "PRI",
+        "VIR",
+        "XWK",
+    ]
+    zarr = zarr.sel(
+        region=[i for i in zarr.region.values if any(j in i for j in US_territories)]
+    )
 
     for var in zarr.variables:
         zarr[var].encoding.clear()
