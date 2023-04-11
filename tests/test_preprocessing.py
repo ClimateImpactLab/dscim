@@ -27,9 +27,9 @@ def test_subset_USA_ssp_econ(tmp_path):
     outfile = d / "USA_ssp_econ.zarr"
     ds_in = xr.Dataset(
         {
-            "gdp": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
-            "gdppc": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
-            "pop": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
+            "gdp": (["ssp", "region", "model", "year"], np.ones((1, 3, 2, 3))),
+            "gdppc": (["ssp", "region", "model", "year"], np.ones((1, 3, 2, 3))),
+            "pop": (["ssp", "region", "model", "year"], np.ones((1, 3, 2, 3))),
         },
         coords={
             "ssp": (["ssp"], ["SSP3"]),
@@ -41,13 +41,13 @@ def test_subset_USA_ssp_econ(tmp_path):
 
     ds_out_expected = xr.Dataset(
         {
-            "gdp": (["ssp", "region", "model", "year"], np.ones((1, 1, 2, 3))),
-            "gdppc": (["ssp", "region", "model", "year"], np.ones((1, 1, 2, 3))),
-            "pop": (["ssp", "region", "model", "year"], np.ones((1, 1, 2, 3))),
+            "gdp": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
+            "gdppc": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
+            "pop": (["ssp", "region", "model", "year"], np.ones((1, 2, 2, 3))),
         },
         coords={
             "ssp": (["ssp"], ["SSP3"]),
-            "region": (["region"], ["USA.test_region"]),
+            "region": (["region"], ["USA.test_region", "XWX.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
         },
@@ -82,12 +82,12 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
         {
             reduction: (
                 ["ssp", "region", "model", "year", "gcm", "rcp"],
-                np.ones((2, 2, 2, 3, 2, 2)),
+                np.ones((2, 3, 2, 3, 2, 2)),
             ),
         },
         coords={
             "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region", "XWX.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
             "gcm": (["gcm"], ["Jonahs_GCM", "surrogate_GCM"]),
@@ -99,12 +99,12 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
         {
             reduction: (
                 ["ssp", "region", "model", "year", "gcm", "rcp"],
-                np.ones((2, 1, 2, 3, 2, 2)),
+                np.ones((2, 2, 2, 3, 2, 2)),
             ),
         },
         coords={
             "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "region": (["region"], ["USA.test_region"]),
+            "region": (["region"], ["USA.test_region", "XWX.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
             "gcm": (["gcm"], ["Jonahs_GCM", "surrogate_GCM"]),
@@ -270,8 +270,8 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
                 "cc",
                 eta,
                 "dummy_sector1",
-                "/home/jonahmgilbert/reduction/config.yml",
-                "/home/jonahmgilbert/reduction/dummy_se/integration_dummy_se.zarr/",
+                "/configdirectory/config.yml",
+                "/reductiondirectory/reduction.zarr",
             )
         assert (
             str(excinfo.value)
@@ -409,7 +409,7 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
                         "region": 24378,
                     }
                 )
-                + 38.39265060424805
+                + 38.39265060424805 # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
             )
 
             if recipe == "adding_up":
