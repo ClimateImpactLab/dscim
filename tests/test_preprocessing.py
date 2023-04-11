@@ -87,7 +87,10 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
         },
         coords={
             "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "region": (["region"], ["ZWE.test_region", "USA.test_region", "XWX.test_region"]),
+            "region": (
+                ["region"],
+                ["ZWE.test_region", "USA.test_region", "XWX.test_region"],
+            ),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
             "gcm": (["gcm"], ["Jonahs_GCM", "surrogate_GCM"]),
@@ -409,7 +412,7 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
                         "region": 24378,
                     }
                 )
-                + 38.39265060424805 # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
+                + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
             )
 
             if recipe == "adding_up":
