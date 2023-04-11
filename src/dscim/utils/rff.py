@@ -320,6 +320,7 @@ def weight_df(
     factors,
     pulse_year,
     fractional=False,
+    mask="unmasked",
 ):
     """Weight, fractionalize, and combine SSP damage functions,
     then multiply by RFF GDP to return RFF damage functions.
@@ -328,7 +329,7 @@ def weight_df(
     # get damage function as share of global GDP
     df = (
         xr.open_dataset(
-            f"{in_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
+            f"{in_library}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
         )
         / ssp_gdp
     )
@@ -339,7 +340,7 @@ def weight_df(
     # save fractional damage function
     if fractional:
         rff.sel(year=slice(2020, 2099)).to_netcdf(
-            f"{out_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
+            f"{out_library}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_fractional_{file}.nc4"
         )
 
     # recover damage function as dollars instead of fraction
@@ -352,7 +353,7 @@ def weight_df(
 
     os.makedirs(f"{out_library}/{sector}/{pulse_year}/", exist_ok=True)
     dfs.to_netcdf(
-        f"{out_library}/{sector}/{pulse_year}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
+        f"{out_library}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
     )
 
 
@@ -368,6 +369,7 @@ def rff_damage_functions(
     runid_path,
     weights_path,
     pulse_year,
+    mask,
 ):
     """Wrapper function for `weight_df()`."""
 
@@ -405,6 +407,7 @@ def rff_damage_functions(
             weights=weights,
             factors=factors,
             pulse_year=pulse_year,
+            mask=mask,
         )
 
 
