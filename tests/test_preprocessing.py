@@ -33,7 +33,10 @@ def test_subset_USA_ssp_econ(tmp_path):
         },
         coords={
             "ssp": (["ssp"], ["SSP3"]),
-            "region": (["region"], ["ZWE.test_region", "USA.test_region", "XBK.test_region"]),
+            "region": (
+                ["region"],
+                ["ZWE.test_region", "USA.test_region", "XBK.test_region"],
+            ),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
         },
