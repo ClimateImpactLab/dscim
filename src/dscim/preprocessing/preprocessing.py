@@ -158,6 +158,34 @@ def reduce_damages(
         )
 
 
+def reformat_climate_files():
+    from dscim.preprocessing.climate.reformat import (
+        convert_old_to_newformat_AR,
+        stack_gases,
+    )
+
+    # convert AR6 files
+    bd = "/shares/gcp/integration/float32/dscim_input_data/climate/AR6"
+    pathdt = {
+        "median": f"{bd}/ar6_fair162_medianparams_control_pulse_2020-2080_10yrincrements_conc_rf_temp_lambdaeff_emissions-driven_2naturalfix_v4.0_Jan212022.nc",
+        "sims": f"{bd}/ar6_fair162_control_pulse_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_emissions-driven_naturalfix_v4.0_Jan212022.nc",
+    }
+
+    newds = convert_old_to_newformat_AR(
+        pathdt,
+        gas="CO2_Fossil",
+        var="temperature",
+    )
+
+    newds.to_netcdf(
+        f"{bd}/ar6_fair162_sim_and_medianparams_control_pulse_2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_emissions-driven_naturalfix_v4.0_Jan212022.nc"
+    )
+
+    # convert RFF files
+    gases = {"CO2_Fossil": "Feb072022", "CH4": "Feb072022", "N2O": "Feb072022"}
+    stack_gases(gas_dict=gases)
+
+
 def sum_AMEL(
     sectors,
     config,
@@ -303,3 +331,105 @@ def subset_USA_ssp_econ(
         consolidated=True,
         mode="w",
     )
+
+
+def clip_damages(
+    config,
+    sector,
+    econ_path="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+):
+    """This function is no longer in use.
+    To operationalize, make sure to get a Dask client running with the following code:
+
+    # set up dask
+    dask.config.set(
+        {
+            "distributed.worker.memory.target": 0.7,
+            "distributed.worker.memory.spill": 0.8,
+            "distributed.worker.memory.pause": 0.9,
+        }
+    )
+
+    client = Client(n_workers=40, memory_limit="9G", threads_per_worker=1)
+    """
+
+    # load config
+    with open(config, "r") as stream:
+        loaded_config = yaml.safe_load(stream)
+        params = loaded_config["sectors"][sector]
+
+    # get sector paths and variable names
+    sector_path = Path(params["sector_path"])
+    histclim = params["histclim"]
+    delta = params["delta"]
+
+    with xr.open_zarr(sector_path, chunks=None)[delta] as ds:
+        with xr.open_zarr(econ_path, chunks=None) as gdppc:
+            ce_batch_dims = [i for i in ds.dims]
+            ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
+            ce_batch_coords["region"] = [
+                i for i in ds.region.values if i in gdppc.region.values
+            ]
+            ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
+            ce_chunks = [xr.open_zarr(sector_path).chunks[c][0] for c in ce_batch_dims]
+            print(ce_chunks)
+
+    template = xr.DataArray(
+        da.empty(ce_shapes, chunks=ce_chunks),
+        dims=ce_batch_dims,
+        coords=ce_batch_coords,
+    )
+
+    def chunk_func(
+        damages,
+    ):
+        year = damages.year.values
+        ssp = damages.ssp.values
+        model = damages.model.values
+        region = damages.region.values
+
+        gdppc = (
+            xr.open_zarr(econ_path, chunks=None)
+            .sel(year=year, ssp=ssp, model=model, region=region, drop=True)
+            .gdppc
+        )
+
+        # get damages as % of GDPpc
+        shares = damages / gdppc
+
+        # find the 1st/99th percentile of damage share
+        # across batches and regions
+        quantile = shares.quantile([0.01, 0.99], ["batch", "region"])
+
+        # find the equivalent damages
+        # if damage share is capped to 1st/99th percentile
+        quantdams = quantile * gdppc
+
+        # keep damages that are within cutoff,
+        # otherwise replace with capped damages
+        damages = xr.where(
+            (shares <= quantile.sel(quantile=0.99, drop=True)),
+            damages,
+            quantdams.sel(quantile=0.99, drop=True),
+        )
+
+        damages = xr.where(
+            (shares >= quantile.sel(quantile=0.01, drop=True)),
+            damages,
+            quantdams.sel(quantile=0.01, drop=True),
+        )
+
+        return damages
+
+    data = xr.open_zarr(sector_path)
+
+    for var in [delta, histclim]:
+        out = (
+            data[var].map_blocks(chunk_func, template=template).rename(var).to_dataset()
+        )
+
+        parent, name = sector_path.parent, sector_path.name
+        clipped_name = name.replace(".zarr", "_clipped.zarr")
+        outpath = Path(parent).joinpath(clipped_name)
+
+        out.to_zarr(outpath, mode="a", consolidated=True)

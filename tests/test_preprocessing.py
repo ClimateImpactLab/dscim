@@ -33,7 +33,7 @@ def test_subset_USA_ssp_econ(tmp_path):
         },
         coords={
             "ssp": (["ssp"], ["SSP3"]),
-            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region", "XBK.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
         },
@@ -47,7 +47,7 @@ def test_subset_USA_ssp_econ(tmp_path):
         },
         coords={
             "ssp": (["ssp"], ["SSP3"]),
-            "region": (["region"], ["USA.test_region", "XWX.test_region"]),
+            "region": (["region"], ["USA.test_region", "XBK.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
         },
@@ -89,7 +89,7 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
             "ssp": (["ssp"], ["SSP3", "SSP4"]),
             "region": (
                 ["region"],
-                ["ZWE.test_region", "USA.test_region", "XWX.test_region"],
+                ["ZWE.test_region", "USA.test_region", "XBK.test_region"],
             ),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
@@ -107,7 +107,7 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
         },
         coords={
             "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "region": (["region"], ["USA.test_region", "XWX.test_region"]),
+            "region": (["region"], ["USA.test_region", "XBK.test_region"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "year": (["year"], [2021, 2022, 2023]),
             "gcm": (["gcm"], ["Jonahs_GCM", "surrogate_GCM"]),
