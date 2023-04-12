@@ -127,6 +127,9 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
 
 
 def test_sum_AMEL(tmp_path):
+    """
+    Test that sum_AMEL outputs a Zarr file returns a file with damage function coefficients summed
+    """
     d = tmp_path / "AMEL"
     d.mkdir()
     dummy_AMEL_dir = d / "dummy_AMEL"
@@ -269,6 +272,9 @@ def test_sum_AMEL(tmp_path):
     ],
 )
 def test_reduce_damages(tmp_path, recipe, eta, batchsize):
+    """
+    Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
+    """
     if recipe == "adding_up" and eta is not None:
         with pytest.raises(AssertionError) as excinfo:
             reduce_damages(
@@ -445,6 +451,9 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
     ],
 )
 def test_ce_from_chunk(tmp_path, recipe, eta, reduction, zero):
+    """
+    Test that ce_from_chunk returns a ce over the given chunk
+    """
     d = tmp_path / "ce_from_chunk"
     d.mkdir()
     dummy_socioeconomics_dir = d / "dummy_se"
