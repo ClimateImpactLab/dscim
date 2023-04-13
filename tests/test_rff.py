@@ -67,9 +67,10 @@ def test_weight_df(tmp_path):
     disc = "risk_aversion"
     eta_rho = [1, 2]
     file = "damage_functions"
+    mask = "unmasked"
 
-    df_in_dir = d / sector / pulse_year
-    df_out_dir = d / "out" / sector / pulse_year
+    df_in_dir = d / sector / pulse_year / mask
+    df_out_dir = d / "out" / sector / pulse_year / mask
 
     df_in_file = (
         df_in_dir / f"{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
@@ -155,6 +156,7 @@ def test_weight_df(tmp_path):
         factors,
         pulse_year,
         True,
+        mask="unmasked",
     )
 
     xr.testing.assert_allclose(out_expected, xr.open_dataset(outfile_path))
@@ -243,12 +245,14 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
         runid_path=d / "dummy_runids.nc",
         weights_path=d,
         pulse_year=2020,
+        mask="unmasked",
     )
 
     out_actual = xr.open_dataset(
         rff
         / sector
         / "2020"
+        / "unmasked"
         / "risk_aversion_euler_ramsey_eta1.0_rho2.0_damage_function_coefficients.nc4"
     )
     out_expected = xr.Dataset(
