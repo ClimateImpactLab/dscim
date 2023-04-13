@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Included US territories in damages and economic variable subsetting. ([PR #78](https://github.com/ClimateImpactLab/dscim/pull/78), [@JMGilbert](https://github.com/JMGilbert))
 - Changed format of `eta_rhos` to allow for multiple values of `rho` for the same `eta`. ([PR #65](https://github.com/ClimateImpactLab/dscim/pull/65), [@JMGilbert](https://github.com/JMGilbert))
 ### Removed
+- Removed `clip_damage` function in `dscim/preprocessing/preprocessing.py`. ([PR #67](https://github.com/ClimateImpactLab/dscim/pull/67), [@JMGilbert](https://github.com/JMGilbert))
 - Removed climate reformatting functions and files -- to be added back with climate file generation. ([PR #67](https://github.com/ClimateImpactLab/dscim/pull/67), [@JMGilbert](https://github.com/JMGilbert))
 - Remove diagnostics module. ([PR #60](https://github.com/ClimateImpactLab/dscim/pull/60), [@JMGilbert](https://github.com/JMGilbert))
 - Remove old/unnecessary files. ([PR #57](https://github.com/ClimateImpactLab/dscim/pull/57), [@JMGilbert](https://github.com/JMGilbert))
