@@ -224,7 +224,7 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
         },
     )
 
-    (ssp / sector / "2020").mkdir(parents=True, exist_ok=True)
+    (ssp / sector / "2020" / "unmasked").mkdir(parents=True, exist_ok=True)
     df_in.to_netcdf(
         ssp
         / sector
