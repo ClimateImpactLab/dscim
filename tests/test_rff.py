@@ -37,6 +37,7 @@ def test_clean_weights_alpha(tmp_path, weights_unclean):
 
     xr.testing.assert_equal(out_actual, out_expected)
 
+
 def test_clean_weights_error(tmp_path, weights_unclean):
     """
     Test that clean weights correctly cleans alpha and error out of the weights file
