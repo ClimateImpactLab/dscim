@@ -229,6 +229,7 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
         ssp
         / sector
         / "2020"
+        / "unmasked"
         / "risk_aversion_euler_ramsey_eta1.0_rho2.0_damage_function_coefficients.nc4"
     )
 
