@@ -972,3 +972,61 @@ def test_coastal_inputs(tmp_path, version_test):
     )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_error_coastal_inputs(tmp_path, caplog):
+    ds_in = xr.Dataset(
+        {
+            "delta": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 0),
+            ),
+            "histclim": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 1),
+            ),
+        },
+        coords={
+            "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
+            "batch": (["batch"], ["batch3", "batch6"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+            "slr": (["slr"], [0, 9]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
+            "year": ([2020, 2090]),
+        },
+    )
+
+    d = os.path.join(tmp_path, "coastal_in")
+    if not os.path.exists(d):
+        os.makedirs(d)
+    infile = os.path.join(d, f"coastal_damages_v0.22.zarr")
+
+    ds_in.to_zarr(infile)
+
+    coastal_inputs(
+        version="v0.22",
+        adapt_type="optimal",
+        path=os.path.join(tmp_path, "coastal_in"),
+    )
+
+    assert "ValueError" in caplog.text
