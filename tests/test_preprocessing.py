@@ -262,10 +262,28 @@ def test_sum_AMEL(tmp_path):
     )
 
 
+def test_reduce_damages_error_eta():
+    """
+    Test that reduce_damages complains when adding up is passed an eta argument
+    """
+    with pytest.raises(AssertionError) as excinfo:
+        reduce_damages(
+            "adding_up",
+            "cc",
+            10,
+            "dummy_sector1",
+            "/configdirectory/config.yml",
+            "/reductiondirectory/reduction.zarr",
+        )
+    assert (
+        str(excinfo.value)
+        == "Adding up does not take an eta argument. Please set to None."
+    )
+
+
 @pytest.mark.parametrize(
     "recipe, eta, batchsize",
     [
-        ("adding_up", 10, 15),
         ("adding_up", None, 15),
         ("adding_up", None, 5),
         ("risk_aversion", 10, 15),
@@ -275,117 +293,87 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
     """
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """
-    if recipe == "adding_up" and eta is not None:
-        with pytest.raises(AssertionError) as excinfo:
-            reduce_damages(
-                recipe,
-                "cc",
-                eta,
-                "dummy_sector1",
-                "/configdirectory/config.yml",
-                "/reductiondirectory/reduction.zarr",
-            )
-        assert (
-            str(excinfo.value)
-            == "Adding up does not take an eta argument. Please set to None."
-        )
-    else:
-        d = tmp_path / "reduction"
-        d.mkdir()
-        dummy_sector1_dir = d / "dummy_sector1"
-        dummy_sector1_dir.mkdir()
-        dummy_socioeconomics_dir = d / "dummy_se"
-        dummy_socioeconomics_dir.mkdir()
-        dummy_soecioeconomics_file = (
-            dummy_socioeconomics_dir / "integration_dummy_se.zarr"
-        )
-        reduced_damages_out = d / "reduced_damages"
+    d = tmp_path / "reduction"
+    d.mkdir()
+    dummy_sector1_dir = d / "dummy_sector1"
+    dummy_sector1_dir.mkdir()
+    dummy_socioeconomics_dir = d / "dummy_se"
+    dummy_socioeconomics_dir.mkdir()
+    dummy_soecioeconomics_file = dummy_socioeconomics_dir / "integration_dummy_se.zarr"
+    reduced_damages_out = d / "reduced_damages"
 
-        config_data = dict(
-            paths=dict(reduced_damages_library=str(d / "reduced_damages")),
-            sectors=dict(
-                dummy_sector1=dict(
-                    sector_path=str(dummy_sector1_dir / "dummy_sector1.zarr"),
-                    delta="delta_dummy1",
-                    histclim="histclim_dummy1",
-                ),
+    config_data = dict(
+        paths=dict(reduced_damages_library=str(d / "reduced_damages")),
+        sectors=dict(
+            dummy_sector1=dict(
+                sector_path=str(dummy_sector1_dir / "dummy_sector1.zarr"),
+                delta="delta_dummy1",
+                histclim="histclim_dummy1",
             ),
-        )
+        ),
+    )
 
-        config_in = d / "config.yml"
+    config_in = d / "config.yml"
 
-        with open(config_in, "w") as outfile:
-            yaml.dump(config_data, outfile, default_flow_style=False)
+    with open(config_in, "w") as outfile:
+        yaml.dump(config_data, outfile, default_flow_style=False)
 
-        damages_ds_1 = xr.Dataset(
-            {
-                "delta_dummy1": (
-                    ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
-                    np.ones((2, 2, 2, 2, 15, 2, 2)),
-                ),
-                "histclim_dummy1": (
-                    ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
-                    np.ones((2, 2, 2, 2, 15, 2, 2)),
-                ),
-            },
-            coords={
-                "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
-                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-                "rcp": (["rcp"], ["rcp45", "rcp85"]),
-                "ssp": (["ssp"], ["SSP3", "SSP4"]),
-                "batch": (["batch"], np.arange(15)),
-                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
-                "year": (["year"], [2022, 2023]),
-            },
-        ).chunk(
-            {
-                "batch": batchsize,
-                "ssp": 1,
-                "model": 1,
-                "rcp": 1,
-                "gcm": 1,
-                "year": 10,
-                "region": 24378,
-            }
-        )
+    damages_ds_1 = xr.Dataset(
+        {
+            "delta_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                np.ones((2, 2, 2, 2, 15, 2, 2)),
+            ),
+            "histclim_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                np.ones((2, 2, 2, 2, 15, 2, 2)),
+            ),
+        },
+        coords={
+            "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "batch": (["batch"], np.arange(15)),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "year": (["year"], [2022, 2023]),
+        },
+    ).chunk(
+        {
+            "batch": batchsize,
+            "ssp": 1,
+            "model": 1,
+            "rcp": 1,
+            "gcm": 1,
+            "year": 10,
+            "region": 24378,
+        }
+    )
 
-        damages_ds_1.to_zarr(
-            dummy_sector1_dir / "dummy_sector1.zarr", consolidated=True, mode="w"
-        )
+    damages_ds_1.to_zarr(
+        dummy_sector1_dir / "dummy_sector1.zarr", consolidated=True, mode="w"
+    )
 
-        dummy_soecioeconomics = xr.Dataset(
-            {
-                "gdp": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
-                "gdppc": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
-                "pop": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
-            },
-            coords={
-                "ssp": (["ssp"], ["SSP3", "SSP4"]),
-                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
-                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-                "year": (["year"], [2021, 2022, 2023]),
-            },
-        )
+    dummy_soecioeconomics = xr.Dataset(
+        {
+            "gdp": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+            "gdppc": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+            "pop": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+        },
+        coords={
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], [2021, 2022, 2023]),
+        },
+    )
 
-        dummy_soecioeconomics.to_zarr(
-            dummy_soecioeconomics_file, consolidated=True, mode="w"
-        )
+    dummy_soecioeconomics.to_zarr(
+        dummy_soecioeconomics_file, consolidated=True, mode="w"
+    )
 
-        if batchsize != 15:
-            with pytest.raises(AssertionError) as excinfo:
-                reduce_damages(
-                    recipe,
-                    "cc",
-                    eta,
-                    "dummy_sector1",
-                    str(config_in),
-                    str(dummy_soecioeconomics_file),
-                )
-            assert (
-                str(excinfo.value)
-                == "'batch' dim on damages does not have chunksize of 15. Please rechunk."
-            )
-        else:
+    if batchsize != 15:
+        with pytest.raises(AssertionError) as excinfo:
             reduce_damages(
                 recipe,
                 "cc",
@@ -394,48 +382,61 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
                 str(config_in),
                 str(dummy_soecioeconomics_file),
             )
+        assert (
+            str(excinfo.value)
+            == "'batch' dim on damages does not have chunksize of 15. Please rechunk."
+        )
+    else:
+        reduce_damages(
+            recipe,
+            "cc",
+            eta,
+            "dummy_sector1",
+            str(config_in),
+            str(dummy_soecioeconomics_file),
+        )
 
-            damages_reduced_out_expected = (
-                xr.Dataset(
-                    {
-                        "cc": (
-                            ["ssp", "region", "model", "year", "gcm", "rcp"],
-                            np.ones((2, 2, 2, 2, 2, 2)),
-                        ),
-                    },
-                    coords={
-                        "ssp": (["ssp"], ["SSP3", "SSP4"]),
-                        "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
-                        "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-                        "year": (["year"], [2022, 2023]),
-                        "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
-                        "rcp": (["rcp"], ["rcp45", "rcp85"]),
-                    },
-                ).chunk(
-                    {
-                        "ssp": 1,
-                        "model": 1,
-                        "rcp": 1,
-                        "gcm": 1,
-                        "year": 10,
-                        "region": 24378,
-                    }
-                )
-                + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
+        damages_reduced_out_expected = (
+            xr.Dataset(
+                {
+                    "cc": (
+                        ["ssp", "region", "model", "year", "gcm", "rcp"],
+                        np.ones((2, 2, 2, 2, 2, 2)),
+                    ),
+                },
+                coords={
+                    "ssp": (["ssp"], ["SSP3", "SSP4"]),
+                    "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+                    "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                    "year": (["year"], [2022, 2023]),
+                    "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
+                    "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                },
+            ).chunk(
+                {
+                    "ssp": 1,
+                    "model": 1,
+                    "rcp": 1,
+                    "gcm": 1,
+                    "year": 10,
+                    "region": 24378,
+                }
+            )
+            + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
+        )
+
+        if recipe == "adding_up":
+            damages_reduced_actual_path = (
+                f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
+            )
+        else:
+            damages_reduced_actual_path = (
+                f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
             )
 
-            if recipe == "adding_up":
-                damages_reduced_actual_path = (
-                    f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
-                )
-            else:
-                damages_reduced_actual_path = (
-                    f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
-                )
-
-            xr.testing.assert_equal(
-                xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
-            )
+        xr.testing.assert_equal(
+            xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
+        )
 
 
 @pytest.mark.parametrize(
