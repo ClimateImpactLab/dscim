@@ -14,7 +14,10 @@ import xarray as xr
 
 
 @pytest.mark.parametrize("param", ["alpha", "error"])
-def test_clean_weights(tmp_path, weights_unclean, param):
+def test_clean_weights(tmp_path, param):
+    """
+    Test that clean weights correctly cleans alpha and error out of the weights file
+    """
     if param == "alpha":
         alpha = list(
             product(
@@ -48,6 +51,9 @@ def test_clean_weights(tmp_path, weights_unclean, param):
 
 
 def test_weight_df(tmp_path):
+    """
+    Test that weight_df correctly weights SSP damage functions to produce RFF damage functions
+    """
     d = tmp_path / "weighting"
     d.mkdir()
 
@@ -153,7 +159,10 @@ def test_weight_df(tmp_path):
     )
 
 
-def test_rff_damage_functions(tmp_path, save_ssprff_econ):
+def test_rff_damage_functions(tmp_path):
+    """
+    Test that rff_damage_functions correctly runs weight_df to produce RFF damage functions
+    """
     d = tmp_path / "weighting"
     d.mkdir(exist_ok=True)
 
@@ -258,6 +267,9 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
 
 @pytest.mark.parametrize("USA", [True, False])
 def test_prep_rff_socioeconomics(tmp_path, USA):
+    """
+    Test that rff socioeconomics generation is correctly interpolating and deflating
+    """
     # May want to use "real" numbers for this test, since there is some more intensive calculation
     deflator_file = pd.DataFrame({"year": [2011, 2019], "gdpdef": [1, 2]})
     deflator_file.to_csv(tmp_path / "fed_income_inflation.csv")
