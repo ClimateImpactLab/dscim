@@ -13,39 +13,43 @@ from pathlib import Path
 import xarray as xr
 
 
-@pytest.mark.parametrize("param", ["alpha", "error"])
-def test_clean_weights(tmp_path, param):
+def test_clean_weights_alpha(tmp_path):
     """
     Test that clean weights correctly cleans alpha and error out of the weights file
     """
-    if param == "alpha":
-        alpha = list(
-            product(
-                np.arange(2010, 2021, 5),
-                ["alpha"],
-                ["OECD Env-Growth", "IIASA GDP"],
-                ["SSP2", "SSP3", "SSP4"],
-                [1],
-            )
+    alpha = list(
+        product(
+            np.arange(2010, 2021, 5),
+            ["alpha"],
+            ["OECD Env-Growth", "IIASA GDP"],
+            ["SSP2", "SSP3", "SSP4"],
+            [1],
         )
-        alpha = pd.DataFrame(alpha, columns=["year", "var", "model", "ssp", "value"])
-        alpha["rff_sp"] = 1234
-        out_expected = (
-            alpha.set_index(["model", "ssp", "rff_sp", "year"])
-            .drop(columns="var")
-            .to_xarray()["value"]
-        )
-        out_actual = clean_simulation(1234, str(Path(tmp_path) / "clean_root"))
-    else:
-        error = list(product(np.arange(2010, 2021, 5), ["USA", "ARG"], ["error"], [1]))
-        error = pd.DataFrame(error, columns=["year", "iso", "var", "value"])
-        error["rff_sp"] = 1234
-        out_expected = (
-            error.set_index(["iso", "year", "rff_sp"])
-            .drop(columns="var")
-            .to_xarray()["value"]
-        )
-        out_actual = clean_error(1234, str(Path(tmp_path) / "clean_root"))
+    )
+    alpha = pd.DataFrame(alpha, columns=["year", "var", "model", "ssp", "value"])
+    alpha["rff_sp"] = 1234
+    out_expected = (
+        alpha.set_index(["model", "ssp", "rff_sp", "year"])
+        .drop(columns="var")
+        .to_xarray()["value"]
+    )
+    out_actual = clean_simulation(1234, str(Path(tmp_path) / "clean_root"))
+
+    xr.testing.assert_equal(out_actual, out_expected)
+
+def test_clean_weights_error(tmp_path, weights_unclean):
+    """
+    Test that clean weights correctly cleans alpha and error out of the weights file
+    """
+    error = list(product(np.arange(2010, 2021, 5), ["USA", "ARG"], ["error"], [1]))
+    error = pd.DataFrame(error, columns=["year", "iso", "var", "value"])
+    error["rff_sp"] = 1234
+    out_expected = (
+        error.set_index(["iso", "year", "rff_sp"])
+        .drop(columns="var")
+        .to_xarray()["value"]
+    )
+    out_actual = clean_error(1234, str(Path(tmp_path) / "clean_root"))
 
     xr.testing.assert_equal(out_actual, out_expected)
 
@@ -159,7 +163,7 @@ def test_weight_df(tmp_path):
     )
 
 
-def test_rff_damage_functions(tmp_path):
+def test_rff_damage_functions(tmp_path, save_ssprff_econ):
     """
     Test that rff_damage_functions correctly runs weight_df to produce RFF damage functions
     """
