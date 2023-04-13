@@ -351,7 +351,7 @@ def weight_df(
 
     dfs = xr.combine_by_coords([rff, post_2100])
 
-    os.makedirs(f"{out_library}/{sector}/{pulse_year}/", exist_ok=True)
+    os.makedirs(f"{out_library}/{sector}/{pulse_year}/{mask}", exist_ok=True)
     dfs.to_netcdf(
         f"{out_library}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta_rho[0]}_rho{eta_rho[1]}_{file}.nc4"
     )
