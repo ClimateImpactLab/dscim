@@ -1019,14 +1019,17 @@ def test_error_coastal_inputs(tmp_path, caplog):
     d = os.path.join(tmp_path, "coastal_in")
     if not os.path.exists(d):
         os.makedirs(d)
-    infile = os.path.join(d, f"coastal_damages_v0.22.zarr")
+    infile = os.path.join(d, "coastal_damages_v0.22.zarr")
 
     ds_in.to_zarr(infile)
 
-    coastal_inputs(
-        version="v0.22",
-        adapt_type="optimal",
-        path=os.path.join(tmp_path, "coastal_in"),
+    with pytest.raises(ValueError) as excinfo:
+        coastal_inputs(
+            version="v0.22",
+            adapt_type="optimal",
+            path=os.path.join(tmp_path, "coastal_in"),
+        )
+    assert (
+        str(excinfo.value)
+        == "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
     )
-
-    assert "ValueError" in caplog.text
