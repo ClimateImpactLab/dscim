@@ -13,7 +13,7 @@ from pathlib import Path
 import xarray as xr
 
 
-def test_clean_weights_alpha(tmp_path):
+def test_clean_weights_alpha(tmp_path, weights_unclean):
     """
     Test that clean weights correctly cleans alpha and error out of the weights file
     """
