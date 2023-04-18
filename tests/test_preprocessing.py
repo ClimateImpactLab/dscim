@@ -128,7 +128,7 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
 
 def test_sum_AMEL(tmp_path):
     """
-    Test that sum_AMEL outputs a Zarr file returns a file with damage function coefficients summed
+    Test that sum_AMEL outputs a Zarr file with four-sector damages summed
     """
     d = tmp_path / "AMEL"
     d.mkdir()
