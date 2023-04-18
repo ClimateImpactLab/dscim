@@ -2,6 +2,9 @@ from itertools import product
 import numpy as np
 import pandas as pd
 from dscim.utils.rff import (
+    solve_optimization,
+    process_ssp_sample,
+    process_rff_sample,
     clean_simulation,
     clean_error,
     weight_df,
@@ -9,8 +12,186 @@ from dscim.utils.rff import (
     prep_rff_socioeconomics,
 )
 import pytest
+import os
 from pathlib import Path
 import xarray as xr
+
+
+@pytest.fixture
+def ssp_df_in(tmp_path):
+    HEADER = """test
+    header
+    
+    
+    
+    
+    
+    
+    
+    
+    --
+    """
+
+    ssp_df_in = pd.DataFrame(
+        data={
+            "year": [2005] * 4
+            + [2015] * 3
+            + [2020] * 4
+            + [2005] * 4
+            + [2015] * 4
+            + [2020] * 4,
+            "model": ["low"] * 11 + ["high"] * 12,
+            "scenario": ["SSP2"] * 2
+            + ["SSP3"] * 2
+            + ["SSP2"]
+            + ["SSP3"] * 2
+            + ["SSP2", "SSP2", "SSP3", "SSP3"] * 4,
+            "iso": ["ZWE", "USA"] * 2 + ["USA"] + ["ZWE", "USA"] * 9,
+            "value": [1] * 23,
+        }
+    )
+    with open(os.path.join(tmp_path, "ssp_in.csv"), "w") as ssp_in:
+        ssp_in.write(HEADER.strip() + "\n")
+        ssp_df_in.to_csv(ssp_in, index=False)
+
+
+def test_solve_optimization(
+    tmp_path,
+    ssp_df_in,
+):
+    rff_df_in = pd.DataFrame(
+        data={
+            "iso": ["USA"],
+            "year": [2020],
+            "value": [1],
+            "loginc": [np.log(1)],
+            "isoyear": ["USA:2020"],
+            "Pop": [1],
+            "GDP": [1],
+        }
+    )
+    ssp_df = process_ssp_sample(os.path.join(tmp_path, "ssp_in.csv"))
+    ds_out_expected = pd.DataFrame(
+        data={
+            "year": [2020] * 6,
+            "param": ["error"] * 2 + ["alpha"] * 4,
+            "name": [
+                "ZWE:2020",
+                "USA:2020",
+                "2020:low/SSP2",
+                "2020:low/SSP3",
+                "2020:high/SSP2",
+                "2020:high/SSP3",
+            ],
+            "value": [0.0] * 3 + [1.0] + [0.0] * 2,
+        }
+    )
+    ds_out_actual = solve_optimization(ssp_df, rff_df_in)
+    pd.testing.assert_frame_equal(
+        ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
+    )
+
+
+def test_solve_optimization_exception(
+    tmp_path,
+    ssp_df_in,
+    capsys,
+):
+    rff_df_in = pd.DataFrame(
+        data={
+            "iso": ["USA", "ZWE"],
+            "year": [2015] * 2,
+            "value": [1] * 2,
+            "loginc": [np.log(1)] * 2,
+            "isoyear": ["USA:2015", "ZWE:2015"],
+            "Pop": [1] * 2,
+            "GDP": [1] * 2,
+            "weight": [1] * 2,
+        }
+    )
+    ssp_df = process_ssp_sample(os.path.join(tmp_path, "ssp_in.csv"))
+    solve_optimization(ssp_df, rff_df_in)
+    captured = capsys.readouterr()
+    assert "Exception! Keep going.." in captured.out
+
+
+def test_process_ssp_sample(
+    tmp_path,
+    ssp_df_in,
+):
+    ds_out_expected = pd.DataFrame(
+        data={
+            "year": [2015] * 3 + [2020] * 4 + [2015] * 4 + [2020] * 4,
+            "model": ["low"] * 7 + ["high"] * 8,
+            "scenario": ["SSP2"] + ["SSP3"] * 2 + ["SSP2", "SSP2", "SSP3", "SSP3"] * 3,
+            "iso": ["USA"] + ["ZWE", "USA"] * 7,
+            "value": [1] * 15,
+            "loginc": [np.log(1)] * 15,
+            "isoyear": ["USA:2015"]
+            + ["ZWE:2015", "USA:2015"]
+            + ["ZWE:2020", "USA:2020"] * 2
+            + ["ZWE:2015", "USA:2015"] * 2
+            + ["ZWE:2020", "USA:2020"] * 2,
+            "yearscen": ["2015:low/SSP2"]
+            + ["2015:low/SSP3"] * 2
+            + ["2020:low/SSP2"] * 2
+            + ["2020:low/SSP3"] * 2
+            + ["2015:high/SSP2"] * 2
+            + ["2015:high/SSP3"] * 2
+            + ["2020:high/SSP2"] * 2
+            + ["2020:high/SSP3"] * 2,
+        }
+    )
+    ds_out_actual = process_ssp_sample(os.path.join(tmp_path, "ssp_in.csv"))
+    pd.testing.assert_frame_equal(
+        ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
+    )
+
+
+def test_process_rff_sample(tmp_path, ssp_df_in):
+    rff_raw_in = pd.DataFrame(
+        data={
+            "Country": ["ZWE", "USA"],
+            "Year": [2020] * 2,
+            "Pop": [1000, 1000],
+            "GDP": [98.71 / 88.58, 98.71 / 88.58],
+        }
+    )
+    rff_raw_in.to_feather(os.path.join(tmp_path, "run_1.feather"))
+    ds_out_expected = pd.DataFrame(
+        data={
+            "year": [2015] * 6 + [2020] * 6,
+            "param": ["error"] * 2 + ["alpha"] * 4 + ["error"] * 2 + ["alpha"] * 4,
+            "name": ["USA:2015"]
+            + ["ZWE:2015"]
+            + ["2015:low/SSP2"]
+            + ["2015:low/SSP3"]
+            + ["2015:high/SSP2"]
+            + ["2015:high/SSP3"]
+            + ["ZWE:2020"]
+            + ["USA:2020"]
+            + ["2020:low/SSP2"]
+            + ["2020:low/SSP3"]
+            + ["2020:high/SSP2"]
+            + ["2020:high/SSP3"],
+            "value": [0.0] * 2 + [1.0] + [0.0] * 5 + [1.0] + [0.0] * 3,
+        }
+    )
+    test_HEADER = """test
+    header
+    """
+    process_rff_sample(
+        i=1,
+        rffpath=tmp_path,
+        ssp_df=process_ssp_sample(os.path.join(tmp_path, "ssp_in.csv")),
+        outdir=tmp_path,
+        HEADER=test_HEADER,
+    )
+    ds_out_actual = pd.read_csv(os.path.join(tmp_path, "emulate-1.csv"), skiprows=2)
+
+    pd.testing.assert_frame_equal(
+        ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
+    )
 
 
 def test_clean_weights_alpha(tmp_path, weights_unclean):
