@@ -21,14 +21,14 @@ import xarray as xr
 def ssp_df_in(tmp_path):
     HEADER = """test
     header
-    
-    
-    
-    
-    
-    
-    
-    
+    -
+    -
+    -
+    -
+    -
+    -
+    -
+    -
     --
     """
 
@@ -83,7 +83,7 @@ def test_solve_optimization(
                 "2020:high/SSP2",
                 "2020:high/SSP3",
             ],
-            "value": [0.0] * 3 + [1.0] + [0.0] * 2,
+            "value": [0.0] * 2 + [1.0] + [0.0] * 3,
         }
     )
     ds_out_actual = solve_optimization(ssp_df, rff_df_in)
@@ -148,7 +148,10 @@ def test_process_ssp_sample(
     )
 
 
-def test_process_rff_sample(tmp_path, ssp_df_in):
+def test_process_rff_sample(
+    tmp_path,
+    ssp_df_in,
+):
     rff_raw_in = pd.DataFrame(
         data={
             "Country": ["ZWE", "USA"],
@@ -188,7 +191,6 @@ def test_process_rff_sample(tmp_path, ssp_df_in):
         HEADER=test_HEADER,
     )
     ds_out_actual = pd.read_csv(os.path.join(tmp_path, "emulate-1.csv"), skiprows=2)
-
     pd.testing.assert_frame_equal(
         ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
     )
