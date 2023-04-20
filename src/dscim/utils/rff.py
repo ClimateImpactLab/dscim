@@ -20,7 +20,6 @@ from gurobipy import GRB
 def solve_optimization(ssp_df, rff_df):
     """Generate weights based on which to derive the weighted average of damage function coefficents
     across six SSP-growth models for a single RFF-SP
-
     This function applies an emulation scheme to calculate a set of weights, constrained to
     sum to unity, that, when used to take a weighted average of global GDP across SSP-growth models
     (3 SSPs X 2 IAMs), most closely recovers the global GDP in the RFF-SP simulation run that
@@ -29,7 +28,6 @@ def solve_optimization(ssp_df, rff_df):
     in order to match the country-level GDPs designated by the given RFF-SP. Empirically, it solves
     an optimization problem to minimize a weighted sum of country-level errors, taking country-level
     RFF-SP GDPs as weights
-
     Parameters
     ----------
     ssp_df : pd.DataFrame
@@ -177,7 +175,6 @@ def process_ssp_sample(ssppath):
 def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
     """Clean raw socioeconomic projections from a single RFF-SP simulation run,
     pass the cleaned dataset to the `solve_optimization` function, and save outputs
-
     This produces a csv file of RFF emulator weights and country-level errors in 5-year
     increments for a single RFF-SP
     """
@@ -188,7 +185,7 @@ def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
 
     # Fill missing data with mean across SSP scenarios of the same years
     rff_df = pd.DataFrame()
-    for iso, group in rff_raw.groupby(["iso"]):
+    for iso, group in rff_raw.groupby("iso"):
         minyear = min(group.year)
         before_all = ssp_df[(ssp_df.year < minyear) & (ssp_df.iso == iso)][
             ["iso", "year", "value"]
