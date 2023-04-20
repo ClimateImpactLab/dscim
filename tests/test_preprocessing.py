@@ -520,7 +520,7 @@ def test_reduce_damages_batchsize_error(tmp_path):
     )
 
 
-def test_ce_from_chunk(tmp_path):
+def test_ce_from_chunk_reductionerror(tmp_path):
     """
     Test that ce_from_chunk with an unimplemented reduction returns an error
     """
@@ -620,14 +620,14 @@ def test_ce_from_chunk(tmp_path):
 
 
 @pytest.mark.parametrize(
-    "recipe, eta, zero",
+    "recipe, eta, reduction, zero",
     [
-        ("adding_up", None, True),
-        ("adding_up", None, False),
-        ("adding_up", None, True),
-        ("risk_aversion", 1, True),
-        ("risk_aversion", 10, False),
-        ("risk_aversion", 1, True),
+        ("adding_up", None, "cc", True),
+        ("adding_up", None, "no_cc", False),
+        ("adding_up", None, "no_cc", True),
+        ("risk_aversion", 1, "cc", True),
+        ("risk_aversion", 10, "no_cc", False),
+        ("risk_aversion", 1, "no_cc", True),
     ],
 )
 def test_ce_from_chunk(tmp_path, recipe, eta, reduction, zero):
