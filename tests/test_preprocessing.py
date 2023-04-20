@@ -282,14 +282,13 @@ def test_reduce_damages_error_eta():
 
 
 @pytest.mark.parametrize(
-    "recipe, eta, batchsize",
+    "recipe, eta",
     [
-        ("adding_up", None, 15),
-        ("adding_up", None, 5),
-        ("risk_aversion", 10, 15),
+        ("adding_up", None),
+        ("risk_aversion", 10),
     ],
 )
-def test_reduce_damages(tmp_path, recipe, eta, batchsize):
+def test_reduce_damages(tmp_path, recipe, eta):
     """
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """
@@ -340,7 +339,7 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
         },
     ).chunk(
         {
-            "batch": batchsize,
+            "batch": 15,
             "ssp": 1,
             "model": 1,
             "rcp": 1,
@@ -372,83 +371,263 @@ def test_reduce_damages(tmp_path, recipe, eta, batchsize):
         dummy_soecioeconomics_file, consolidated=True, mode="w"
     )
 
-    if batchsize != 15:
-        with pytest.raises(AssertionError) as excinfo:
-            reduce_damages(
-                recipe,
-                "cc",
-                eta,
-                "dummy_sector1",
-                str(config_in),
-                str(dummy_soecioeconomics_file),
-            )
-        assert (
-            str(excinfo.value)
-            == "'batch' dim on damages does not have chunksize of 15. Please rechunk."
+    reduce_damages(
+        recipe,
+        "cc",
+        eta,
+        "dummy_sector1",
+        str(config_in),
+        str(dummy_soecioeconomics_file),
+    )
+
+    damages_reduced_out_expected = (
+        xr.Dataset(
+            {
+                "cc": (
+                    ["ssp", "region", "model", "year", "gcm", "rcp"],
+                    np.ones((2, 2, 2, 2, 2, 2)),
+                ),
+            },
+            coords={
+                "ssp": (["ssp"], ["SSP3", "SSP4"]),
+                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "year": (["year"], [2022, 2023]),
+                "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            },
+        ).chunk(
+            {
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": 24378,
+            }
+        )
+        + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
+    )
+
+    if recipe == "adding_up":
+        damages_reduced_actual_path = (
+            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
         )
     else:
+        damages_reduced_actual_path = (
+            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
+        )
+
+    xr.testing.assert_equal(
+        xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
+    )
+
+
+def test_reduce_damages_batchsize_error(tmp_path):
+    """
+    Test that reduce_damages with batchsize not equal to 15 returns an error
+    """
+    d = tmp_path / "reduction"
+    d.mkdir()
+    dummy_sector1_dir = d / "dummy_sector1"
+    dummy_sector1_dir.mkdir()
+    dummy_socioeconomics_dir = d / "dummy_se"
+    dummy_socioeconomics_dir.mkdir()
+    dummy_soecioeconomics_file = dummy_socioeconomics_dir / "integration_dummy_se.zarr"
+
+    config_data = dict(
+        paths=dict(reduced_damages_library=str(d / "reduced_damages")),
+        sectors=dict(
+            dummy_sector1=dict(
+                sector_path=str(dummy_sector1_dir / "dummy_sector1.zarr"),
+                delta="delta_dummy1",
+                histclim="histclim_dummy1",
+            ),
+        ),
+    )
+
+    config_in = d / "config.yml"
+
+    with open(config_in, "w") as outfile:
+        yaml.dump(config_data, outfile, default_flow_style=False)
+
+    damages_ds_1 = xr.Dataset(
+        {
+            "delta_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                np.ones((2, 2, 2, 2, 15, 2, 2)),
+            ),
+            "histclim_dummy1": (
+                ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                np.ones((2, 2, 2, 2, 15, 2, 2)),
+            ),
+        },
+        coords={
+            "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "batch": (["batch"], np.arange(15)),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "year": (["year"], [2022, 2023]),
+        },
+    ).chunk(
+        {
+            "batch": 5,
+            "ssp": 1,
+            "model": 1,
+            "rcp": 1,
+            "gcm": 1,
+            "year": 10,
+            "region": 24378,
+        }
+    )
+
+    damages_ds_1.to_zarr(
+        dummy_sector1_dir / "dummy_sector1.zarr", consolidated=True, mode="w"
+    )
+
+    dummy_soecioeconomics = xr.Dataset(
+        {
+            "gdp": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+            "gdppc": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+            "pop": (["ssp", "region", "model", "year"], np.ones((2, 2, 2, 3))),
+        },
+        coords={
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], [2021, 2022, 2023]),
+        },
+    )
+
+    dummy_soecioeconomics.to_zarr(
+        dummy_soecioeconomics_file, consolidated=True, mode="w"
+    )
+
+    with pytest.raises(AssertionError) as excinfo:
         reduce_damages(
-            recipe,
+            "risk_aversion",
             "cc",
-            eta,
+            2.0,
             "dummy_sector1",
             str(config_in),
             str(dummy_soecioeconomics_file),
         )
+    assert (
+        str(excinfo.value)
+        == "'batch' dim on damages does not have chunksize of 15. Please rechunk."
+    )
 
-        damages_reduced_out_expected = (
-            xr.Dataset(
-                {
-                    "cc": (
-                        ["ssp", "region", "model", "year", "gcm", "rcp"],
-                        np.ones((2, 2, 2, 2, 2, 2)),
-                    ),
-                },
-                coords={
-                    "ssp": (["ssp"], ["SSP3", "SSP4"]),
-                    "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
-                    "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-                    "year": (["year"], [2022, 2023]),
-                    "gcm": (["gcm"], ["ABCD1", "surrogate_GCM"]),
-                    "rcp": (["rcp"], ["rcp45", "rcp85"]),
-                },
-            ).chunk(
-                {
-                    "ssp": 1,
-                    "model": 1,
-                    "rcp": 1,
-                    "gcm": 1,
-                    "year": 10,
-                    "region": 24378,
-                }
-            )
-            + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
+
+def test_ce_from_chunk(tmp_path):
+    """
+    Test that ce_from_chunk with an unimplemented reduction returns an error
+    """
+    d = tmp_path / "ce_from_chunk"
+    d.mkdir()
+    dummy_socioeconomics_dir = d / "dummy_se"
+    dummy_socioeconomics_dir.mkdir()
+    dummy_socioeconomics_file = dummy_socioeconomics_dir / "integration_dummy_se.zarr"
+
+    dummy_soecioeconomics = xr.Dataset(
+        {
+            "gdp": (
+                ["ssp", "region", "model", "year"],
+                [[[[30, 100, 30, 100, 30, 100, 30, 100, 30, 100]] * 2]] * 2,
+            ),
+            "gdppc": (
+                ["ssp", "region", "model", "year"],
+                [[[[30, 100, 30, 100, 30, 100, 30, 100, 30, 100]] * 2]] * 2,
+            ),
+            "pop": (
+                ["ssp", "region", "model", "year"],
+                [[[[30, 100, 30, 100, 30, 100, 30, 100, 30, 100]] * 2]] * 2,
+            ),
+        },
+        coords={
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "region": (["region"], ["ZWE.test_region"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "year": (["year"], np.arange(2020, 2030)),
+        },
+    )
+
+    dummy_soecioeconomics.to_zarr(
+        dummy_socioeconomics_file, consolidated=True, mode="w"
+    )
+
+    ce_batch_coords = {
+        "ssp": np.array(["SSP3"], dtype="<U4"),
+        "region": ["ZWE.test_region"],
+        "model": np.array(["IIASA GDP"], dtype="<U15"),
+        "year": np.arange(2020, 2030),
+        "gcm": np.array(["ABCD1"], dtype="<U13"),
+        "rcp": np.array(["rcp45"], dtype="<U5"),
+    }
+
+    in_chunk = (
+        xr.Dataset(
+            {
+                "delta_dummy1": (
+                    ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                    [[[[[[[3, 10, 3, 10, 3, 10, 3, 10, 3, 10]]] * 15]]]],
+                ),
+                "histclim_dummy1": (
+                    ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
+                    [[[[[[[30, 100, 30, 100, 30, 100, 30, 100, 30, 100]]] * 15]]]],
+                ),
+            },
+            coords={
+                "gcm": (["gcm"], ["ABCD1"]),
+                "model": (["model"], ["IIASA GDP"]),
+                "rcp": (["rcp"], ["rcp45"]),
+                "ssp": (["ssp"], ["SSP3"]),
+                "batch": (["batch"], np.arange(15)),
+                "region": (["region"], ["ZWE.test_region"]),
+                "year": (["year"], np.arange(2020, 2030)),
+            },
         )
-
-        if recipe == "adding_up":
-            damages_reduced_actual_path = (
-                f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
-            )
-        else:
-            damages_reduced_actual_path = (
-                f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
-            )
-
-        xr.testing.assert_equal(
-            xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
+        .astype(np.float32)
+        .chunk(
+            {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": 24378,
+            }
         )
+    )
+
+    with pytest.raises(NotImplementedError) as excinfo:
+        out_actual = ce_from_chunk(
+            in_chunk,
+            filepath="/",
+            reduction="",
+            bottom_code=40,
+            histclim="histclim_dummy1",
+            delta="delta_dummy1",
+            recipe="adding_up",
+            eta="",
+            zero="",
+            socioec=str(dummy_socioeconomics_file),
+            ce_batch_coords=ce_batch_coords,
+        )
+    assert str(excinfo.value) == "Pass 'cc' or 'no_cc' to reduction."
 
 
 @pytest.mark.parametrize(
-    "recipe, eta, reduction, zero",
+    "recipe, eta, zero",
     [
-        ("adding_up", None, "cc", True),
-        ("adding_up", None, "no_cc", False),
-        ("adding_up", None, "no_cc", True),
-        ("risk_aversion", 1, "cc", True),
-        ("risk_aversion", 10, "no_cc", False),
-        ("risk_aversion", 1, "no_cc", True),
-        ("risk_aversion", 10, "cheese", True),
+        ("adding_up", None, True),
+        ("adding_up", None, False),
+        ("adding_up", None, True),
+        ("risk_aversion", 1, True),
+        ("risk_aversion", 10, False),
+        ("risk_aversion", 1, True),
     ],
 )
 def test_ce_from_chunk(tmp_path, recipe, eta, reduction, zero):
@@ -533,86 +712,69 @@ def test_ce_from_chunk(tmp_path, recipe, eta, reduction, zero):
         )
     )
 
-    if reduction not in ["cc", "no_cc"]:
-        with pytest.raises(NotImplementedError) as excinfo:
-            out_actual = ce_from_chunk(
-                in_chunk,
-                filepath="/",
-                reduction="",
-                bottom_code=40,
-                histclim="histclim_dummy1",
-                delta="delta_dummy1",
-                recipe=recipe,
-                eta="",
-                zero="",
-                socioec=str(dummy_socioeconomics_file),
-                ce_batch_coords=ce_batch_coords,
-            )
-        assert str(excinfo.value) == "Pass 'cc' or 'no_cc' to reduction."
-    else:
-        out_actual = ce_from_chunk(
-            in_chunk,
-            filepath="/",
-            reduction=reduction,
-            bottom_code=40,
-            histclim="histclim_dummy1",
-            delta="delta_dummy1",
-            recipe=recipe,
-            eta=eta,
-            zero=zero,
-            socioec=str(dummy_socioeconomics_file),
-            ce_batch_coords=ce_batch_coords,
-        )
+    out_actual = ce_from_chunk(
+        in_chunk,
+        filepath="/",
+        reduction=reduction,
+        bottom_code=40,
+        histclim="histclim_dummy1",
+        delta="delta_dummy1",
+        recipe=recipe,
+        eta=eta,
+        zero=zero,
+        socioec=str(dummy_socioeconomics_file),
+        ce_batch_coords=ce_batch_coords,
+    )
 
-        if not zero or reduction == "no_cc":
-            np.testing.assert_allclose(
-                out_actual.values,
-                np.array(
+    if not zero or reduction == "no_cc":
+        np.testing.assert_allclose(
+            out_actual.values,
+            np.array(
+                [
                     [
                         [
                             [
-                                [
-                                    [[40]],
-                                    [[100.0]],
-                                    [[40]],
-                                    [[100.0]],
-                                    [[40]],
-                                    [[100.0]],
-                                    [[40]],
-                                    [[100.0]],
-                                    [[40]],
-                                    [[100.0]],
-                                ]
+                                [[40]],
+                                [[100.0]],
+                                [[40]],
+                                [[100.0]],
+                                [[40]],
+                                [[100.0]],
+                                [[40]],
+                                [[100.0]],
+                                [[40]],
+                                [[100.0]],
                             ]
                         ]
                     ]
-                ),
-                rtol=1e-20,
-                atol=1e-10,
-            )
-        else:
-            np.testing.assert_allclose(
-                out_actual.values,
-                np.array(
+                ]
+            ),
+            rtol=1e-20,
+            atol=1e-10,
+        )
+    else:
+        np.testing.assert_allclose(
+            out_actual.values,
+            np.array(
+                [
                     [
                         [
                             [
-                                [
-                                    [[40]],
-                                    [[90.0]],
-                                    [[40]],
-                                    [[90.0]],
-                                    [[40]],
-                                    [[90.0]],
-                                    [[40]],
-                                    [[90.0]],
-                                    [[40]],
-                                    [[90.0]],
-                                ]
+                                [[40]],
+                                [[90.0]],
+                                [[40]],
+                                [[90.0]],
+                                [[40]],
+                                [[90.0]],
+                                [[40]],
+                                [[90.0]],
+                                [[40]],
+                                [[90.0]],
                             ]
                         ]
                     ]
-                ),
-                rtol=1e-20,
-                atol=1e-10,
-            )
+                ]
+            ),
+            rtol=1e-20,
+            atol=1e-10,
+        )
