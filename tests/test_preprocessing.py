@@ -603,7 +603,7 @@ def test_ce_from_chunk_reductionerror(tmp_path):
     )
 
     with pytest.raises(NotImplementedError) as excinfo:
-        out_actual = ce_from_chunk(
+        ce_from_chunk(
             in_chunk,
             filepath="/",
             reduction="",
