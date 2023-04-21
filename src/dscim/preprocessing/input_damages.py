@@ -704,11 +704,18 @@ def prep_mortality_damages(
             scaling_costs=scaling_costs,
             valuation=valuation,
         ):
-            return ds.sel(
-                gcm=gcm,
-                scaling=[scaling_deaths, scaling_costs],
-                valuation=valuation,
-            ).drop(["gcm", "valuation"])
+            if scaling_deaths == scaling_costs:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
+            else:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths, scaling_costs],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
 
         data = xr.open_mfdataset(paths, preprocess=prep, parallel=True, engine="zarr")
 
@@ -747,15 +754,13 @@ def prep_mortality_damages(
 
         if i == 0:
             damages.to_zarr(
-                outpath
-                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 mode="w",
             )
         else:
             damages.to_zarr(
-                outpath
-                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 append_dim="gcm",
             )
