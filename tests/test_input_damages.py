@@ -19,6 +19,7 @@ from dscim.preprocessing.input_damages import (
     concatenate_energy_damages,
     calculate_energy_batch_damages,
     calculate_energy_damages,
+    prep_mortality_damages,
     coastal_inputs,
 )
 
@@ -47,7 +48,7 @@ def test_parse_projection_filesys(tmp_path):
         "ssp": ["SSP2", "SSP3"] * 16,
         "path": [
             os.path.join(tmp_path, b, r, g, m, s)
-            for b in ["batch9", "batch6"]
+            for b in ["batch6", "batch9"]
             for r in rcp
             for g in gcm
             for m in model
@@ -58,7 +59,9 @@ def test_parse_projection_filesys(tmp_path):
     }
     df_out_expected = pd.DataFrame(out_expected)
 
-    df_out_actual = _parse_projection_filesys(input_path=tmp_path)
+    df_out_actual = _parse_projection_filesys(input_path=tmp_path).sel(
+        batch=["batch6", "batch9"]
+    )
     df_out_actual.reset_index(drop=True, inplace=True)
 
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
@@ -405,7 +408,7 @@ def test_compute_ag_damages(
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
             "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
             "ssp": (["ssp"], ["SSP2", "SSP3"]),
-            "year": ([2010, 2099]),
+            "year": (["year"], [2010, 2099]),
         },
     )
 
@@ -836,6 +839,137 @@ def test_calculate_energy_batch_damages(
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
+@pytest.mark.parametrize("version_test", [0, 1, 4, 5])
+def test_prep_mortality_damages(tmp_path, version_test, econvars):
+    for b in ["6", "9"]:
+        ds_in = xr.Dataset(
+            {
+                "monetized_costs": (
+                    [
+                        "gcm",
+                        "batch",
+                        "ssp",
+                        "rcp",
+                        "model",
+                        "year",
+                        "region",
+                        "scaling",
+                        "valuation",
+                    ],
+                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 0),
+                ),
+                "monetized_deaths": (
+                    [
+                        "gcm",
+                        "batch",
+                        "ssp",
+                        "rcp",
+                        "model",
+                        "year",
+                        "region",
+                        "scaling",
+                        "valuation",
+                    ],
+                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 1),
+                ),
+                "monetized_histclim_deaths": (
+                    [
+                        "gcm",
+                        "batch",
+                        "ssp",
+                        "rcp",
+                        "model",
+                        "year",
+                        "region",
+                        "scaling",
+                        "valuation",
+                    ],
+                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 2),
+                ),
+            },
+            coords={
+                "batch": (["batch"], [b]),
+                "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                "scaling": (
+                    ["scaling"],
+                    ["epa_scaled", "epa_iso_scaled", "epa_popavg", "epa_row"],
+                ),
+                "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                "valuation": (["valuation"], ["vsl", "vly"]),
+                "year": (["year"], [2010, 2099]),
+            },
+        )
+
+        d = os.path.join(tmp_path, "mortality_in")
+        if not os.path.exists(d):
+            os.makedirs(d)
+        infile = os.path.join(d, f"mortality_damages_batch{b}.zarr")
+
+        ds_in.to_zarr(infile)
+
+    prep_mortality_damages(
+        gcms=["ACCESS1-0", "GFDL-CM3"],
+        paths=[
+            os.path.join(tmp_path, f"mortality_in/mortality_damages_batch{b}.zarr")
+            for b in [6, 9]
+        ],
+        vars={
+            "delta_costs": "monetized_costs",
+            "delta_deaths": "monetized_deaths",
+            "histclim_deaths": "monetized_histclim_deaths",
+        },
+        outpath=os.path.join(tmp_path, "mortality_out"),
+        mortality_version=version_test,
+        path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
+    )
+
+    ds_out_actual = xr.open_zarr(
+        os.path.join(
+            tmp_path,
+            "mortality_out",
+            f"impacts-darwin-montecarlo-damages-v{version_test}.zarr",
+        )
+    )
+
+    ds_out_expected = xr.Dataset(
+        {
+            "delta": (
+                ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
+                np.full(
+                    (
+                        2,
+                        2,
+                        2,
+                        2,
+                        2,
+                        2,
+                        2,
+                    ),
+                    -0.90681089,
+                ),
+            ),
+            "histclim": (
+                ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
+                np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089),
+            ),
+        },
+        coords={
+            "batch": (["batch"], ["batch6", "batch9"]),
+            "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
+            "year": (["year"], [2010, 2099]),
+        },
+    )
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
 @pytest.mark.parametrize("version_test", ["v0.21", "v0.20"])
 def test_coastal_inputs(tmp_path, version_test):
     if version_test == "v0.21":
@@ -876,7 +1010,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
                 "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-                "year": ([2020, 2090]),
+                "year": (["year"], [2020, 2090]),
             },
         )
 
@@ -915,7 +1049,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
-                "year": ([2020, 2090]),
+                "year": (["year"], [2020, 2090]),
             },
         )
 
@@ -967,8 +1101,66 @@ def test_coastal_inputs(tmp_path, version_test):
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "slr": (["slr"], [0, 9]),
             "ssp": (["ssp"], ["SSP3"]),
-            "year": ([2020, 2090]),
+            "year": (["year"], [2020, 2090]),
         },
     )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_error_coastal_inputs(tmp_path, caplog):
+    ds_in = xr.Dataset(
+        {
+            "delta": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 0),
+            ),
+            "histclim": (
+                [
+                    "vsl_valuation",
+                    "region",
+                    "year",
+                    "batch",
+                    "slr",
+                    "model",
+                    "ssp",
+                    "adapt_type",
+                ],
+                np.full((3, 2, 2, 2, 2, 2, 1, 3), 1),
+            ),
+        },
+        coords={
+            "adapt_type": (["adapt_type"], ["optimal", "noAdapt", "meanAdapt"]),
+            "batch": (["batch"], ["batch3", "batch6"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+            "slr": (["slr"], [0, 9]),
+            "ssp": (["ssp"], ["SSP3"]),
+            "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
+            "year": (["year"], [2020, 2090]),
+        },
+    )
+
+    d = os.path.join(tmp_path, "coastal_in")
+    if not os.path.exists(d):
+        os.makedirs(d)
+    infile = os.path.join(d, f"coastal_damages_v0.22.zarr")
+
+    ds_in.to_zarr(infile)
+
+    coastal_inputs(
+        version="v0.22",
+        adapt_type="optimal",
+        path=os.path.join(tmp_path, "coastal_in"),
+    )
+
+    assert "ValueError" in caplog.text
