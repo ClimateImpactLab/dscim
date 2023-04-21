@@ -396,7 +396,7 @@ def test_compute_ag_damages(
         {
             "delta": (
                 ["gcm", "model", "rcp", "ssp", "batch", "region", "year"],
-                np.full((2, 2, 2, 2, 2, 2, 2), 2 * -1 * 1.273526),
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), 2 * -1 * 1.273526)),
             ),
         },
         coords={
@@ -1008,7 +1008,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
                 "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-                "year": ([2020, 2090]),
+                "year": (["year"], [2020, 2090]),
             },
         )
 
@@ -1047,7 +1047,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
-                "year": ([2020, 2090]),
+                "year": (["year"], [2020, 2090]),
             },
         )
 
@@ -1099,7 +1099,7 @@ def test_coastal_inputs(tmp_path, version_test):
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "slr": (["slr"], [0, 9]),
             "ssp": (["ssp"], ["SSP3"]),
-            "year": ([2020, 2090]),
+            "year": (["year"], [2020, 2090]),
         },
     )
 
@@ -1144,7 +1144,7 @@ def test_error_coastal_inputs(tmp_path, caplog):
             "slr": (["slr"], [0, 9]),
             "ssp": (["ssp"], ["SSP3"]),
             "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-            "year": ([2020, 2090]),
+            "year": (["year"], [2020, 2090]),
         },
     )
 
