@@ -48,7 +48,7 @@ def test_parse_projection_filesys(tmp_path):
         "ssp": ["SSP2", "SSP3"] * 16,
         "path": [
             os.path.join(tmp_path, b, r, g, m, s)
-            for b in ["batch6", "batch9"]
+            for b in ["batch9", "batch6"]
             for r in rcp
             for g in gcm
             for m in model
@@ -59,9 +59,7 @@ def test_parse_projection_filesys(tmp_path):
     }
     df_out_expected = pd.DataFrame(out_expected)
 
-    df_out_actual = _parse_projection_filesys(input_path=tmp_path).sel(
-        batch=["batch6", "batch9"]
-    )
+    df_out_actual = _parse_projection_filesys(input_path=tmp_path)
     df_out_actual.reset_index(drop=True, inplace=True)
 
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
@@ -1010,7 +1008,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
                 "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-                "year": (["year"], [2020, 2090]),
+                "year": ([2020, 2090]),
             },
         )
 
@@ -1049,7 +1047,7 @@ def test_coastal_inputs(tmp_path, version_test):
                 "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
                 "slr": (["slr"], [0, 9]),
                 "ssp": (["ssp"], ["SSP3"]),
-                "year": (["year"], [2020, 2090]),
+                "year": ([2020, 2090]),
             },
         )
 
@@ -1101,7 +1099,7 @@ def test_coastal_inputs(tmp_path, version_test):
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "slr": (["slr"], [0, 9]),
             "ssp": (["ssp"], ["SSP3"]),
-            "year": (["year"], [2020, 2090]),
+            "year": ([2020, 2090]),
         },
     )
 
@@ -1146,21 +1144,24 @@ def test_error_coastal_inputs(tmp_path, caplog):
             "slr": (["slr"], [0, 9]),
             "ssp": (["ssp"], ["SSP3"]),
             "vsl_valuation": (["vsl_valuation"], ["iso", "row", "global"]),
-            "year": (["year"], [2020, 2090]),
+            "year": ([2020, 2090]),
         },
     )
 
     d = os.path.join(tmp_path, "coastal_in")
     if not os.path.exists(d):
         os.makedirs(d)
-    infile = os.path.join(d, f"coastal_damages_v0.22.zarr")
+    infile = os.path.join(d, "coastal_damages_v0.22.zarr")
 
     ds_in.to_zarr(infile)
 
-    coastal_inputs(
-        version="v0.22",
-        adapt_type="optimal",
-        path=os.path.join(tmp_path, "coastal_in"),
+    with pytest.raises(ValueError) as excinfo:
+        coastal_inputs(
+            version="v0.22",
+            adapt_type="optimal",
+            path=os.path.join(tmp_path, "coastal_in"),
+        )
+    assert (
+        str(excinfo.value)
+        == "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
     )
-
-    assert "ValueError" in caplog.text
