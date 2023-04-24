@@ -4,6 +4,7 @@ import xarray as xr
 import pandas as pd
 import pytest
 import logging
+import shutil
 from itertools import chain, repeat
 from dscim.menu.simple_storage import EconVars
 from dscim.preprocessing.input_damages import (
@@ -241,7 +242,7 @@ def test_error_concatenate_labor_damages(
     )
     assert "Error in batchbatch6" in caplog.text
 
-    os.rmdir(
+    shutil.rmtree(
         os.path.join(tmp_path, "labor_in", "batch6", "rcp45", "CCSM4", "high", "SSP3")
     )
 
@@ -338,7 +339,7 @@ def test_compute_ag_damages(
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
     ssp = ["SSP2", "SSP3"]
-    batch = ["batch6", "batch9"]
+    batch = ["batch3", "batch6", "batch9"]
 
     for r in rcp:
         for g in gcm:
@@ -418,6 +419,7 @@ def test_compute_ag_damages(
         varname="delta",
         save_path=os.path.join(tmp_path, "ag_in", "agriculture_test_output.zarr"),
         scalar=1,
+        batches=[6, 9],
     )
 
     ds_out_actual = xr.open_zarr(
@@ -552,6 +554,31 @@ def test_read_energy_files(
                         )
 
                         xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_error_read_energy_files(
+    caplog,
+    tmp_path,
+    energy_in_csv,
+):
+    os.makedirs(
+        os.path.join(
+            tmp_path, "energy_in_csv", "batch6", "rcp45", "CCSM4", "high", "SSP4"
+        )
+    )
+    read_energy_files(
+        df=_parse_projection_filesys(
+            input_path=os.path.join(tmp_path, "energy_in_csv")
+        ),
+        seed="TINV_clim_integration_total_energy_delta",
+    )
+    assert "Error in file" in caplog.text
+
+    shutil.rmtree(
+        os.path.join(
+            tmp_path, "energy_in_csv", "batch6", "rcp45", "CCSM4", "high", "SSP4"
+        )
+    )
 
 
 def test_read_energy_files_parallel(
@@ -966,6 +993,28 @@ def test_prep_mortality_damages(tmp_path, version_test, econvars):
     )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_exception_prep_mortality_damages(tmp_path):
+    with pytest.raises(ValueError) as excinfo:
+        prep_mortality_damages(
+            gcms=["ACCESS1-0", "GFDL-CM3"],
+            paths=[
+                os.path.join(tmp_path, f"mortality_in/mortality_damages_batch{b}.zarr")
+                for b in [6, 9]
+            ],
+            vars={
+                "delta_costs": "monetized_costs",
+                "delta_deaths": "monetized_deaths",
+                "histclim_deaths": "monetized_histclim_deaths",
+            },
+            outpath=os.path.join(tmp_path, "mortality_out"),
+            mortality_version=6,
+            path_econ=os.path.join(
+                tmp_path, "econvars_for_test", "econvars_for_test.zarr"
+            ),
+        )
+    assert "Mortality version not valid: " in str(excinfo.value)
 
 
 @pytest.mark.parametrize("version_test", ["v0.21", "v0.20"])
