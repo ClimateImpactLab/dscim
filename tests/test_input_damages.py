@@ -432,23 +432,9 @@ def test_compute_ag_damages(
 @pytest.fixture
 def energy_in_csv(tmp_path):
     rcp = ["rcp45", "rcp85"]
-    gcm = [
-        "ACCESS1-0",
-        "CCSM4",
-        "GFDL-CM3",
-        "IPSL-CM5A-LR",
-        "MIROC-ESM-CHEM",
-        "bcc-csm1-1",
-        "CESM1-BGC",
-        "GFDL-ESM2G",
-        "IPSL-CM5A-MR",
-        "MPI-ESM-LR",
-        "BNU-ESM",
-        "CNRM-CM5",
-        "GFDL-ESM2M",
-    ]
+    gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
-    ssp = ["SSP3"]
+    ssp = ["SSP2", "SSP3"]
     batch = ["batch" + str(i) for i in range(0, 15)]
 
     for var in ["delta", "histclim"]:
@@ -489,23 +475,9 @@ def test_read_energy_files(
     )
 
     rcp = ["rcp45", "rcp85"]
-    gcm = [
-        "ACCESS1-0",
-        "CCSM4",
-        "GFDL-CM3",
-        "IPSL-CM5A-LR",
-        "MIROC-ESM-CHEM",
-        "bcc-csm1-1",
-        "CESM1-BGC",
-        "GFDL-ESM2G",
-        "IPSL-CM5A-MR",
-        "MPI-ESM-LR",
-        "BNU-ESM",
-        "CNRM-CM5",
-        "GFDL-ESM2M",
-    ]
+    gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
-    ssp = ["SSP3"]
+    ssp = ["SSP2", "SSP3"]
     batch = ["batch" + str(i) for i in range(0, 15)]
 
     model_trans = {
@@ -591,23 +563,9 @@ def test_read_energy_files_parallel(
     )
 
     rcp = ["rcp45", "rcp85"]
-    gcm = [
-        "ACCESS1-0",
-        "CCSM4",
-        "GFDL-CM3",
-        "IPSL-CM5A-LR",
-        "MIROC-ESM-CHEM",
-        "bcc-csm1-1",
-        "CESM1-BGC",
-        "GFDL-ESM2G",
-        "IPSL-CM5A-MR",
-        "MPI-ESM-LR",
-        "BNU-ESM",
-        "CNRM-CM5",
-        "GFDL-ESM2M",
-    ]
+    gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
-    ssp = ["SSP3"]
+    ssp = ["SSP2", "SSP3"]
     batch = ["batch" + str(i) for i in range(0, 15)]
 
     model_trans = {
@@ -667,7 +625,7 @@ def energy_in_netcdf(tmp_path):
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
-    ssp = ["SSP3"]
+    ssp = ["SSP2", "SSP3"]
     batch = ["batch" + str(i) for i in range(0, 15)]
 
     for var in ["delta", "histclim"]:
@@ -766,11 +724,11 @@ def test_concatenate_energy_damages(
         {
             "histclim_rebased": (
                 ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * 1.273526)),
+                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
             ),
             "delta_rebased": (
                 ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * 1.273526)),
+                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
             ),
         },
         coords={
@@ -778,7 +736,7 @@ def test_concatenate_energy_damages(
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
             "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-            "ssp": (["ssp"], ["SSP3"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "year": (["year"], [2010, 2099]),
         },
@@ -834,11 +792,11 @@ def test_calculate_energy_batch_damages(
         {
             "histclim_rebased": (
                 ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * 1.273526)),
+                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
             ),
             "delta_rebased": (
                 ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * 1.273526)),
+                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
             ),
         },
         coords={
@@ -846,7 +804,7 @@ def test_calculate_energy_batch_damages(
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
             "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-            "ssp": (["ssp"], ["SSP3"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "year": (["year"], [2010, 2099]),
         },
@@ -862,6 +820,44 @@ def test_calculate_energy_batch_damages(
     ds_out_actual = xr.open_zarr(os.path.join(tmp_path, "rebased_batch6.zarr"))
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
+def test_calculate_energy_damages(tmp_path, econvars, energy_in_csv):
+    calculate_energy_damages(
+        re_calculate=True,
+        path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
+        input_path=os.path.join(tmp_path, "energy_in_csv"),
+        save_path=os.path.join(tmp_path, "energy_out"),
+    )
+    batch = ["batch" + str(i) for i in range(0, 15)]
+    for b in batch:
+        ds_out_expected = xr.Dataset(
+            {
+                "delta_rebased": (
+                    ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
+                    np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
+                ),
+                "histclim_rebased": (
+                    ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
+                    np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
+                ),
+            },
+            coords={
+                "batch": (["batch"], [b]),
+                "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                "year": (["year"], [2010, 2099]),
+            },
+        )
+
+        ds_out_actual = xr.open_zarr(
+            os.path.join(tmp_path, f"energy_out/rebased_batch{b}.zarr")
+        )
+
+        xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
 @pytest.mark.parametrize("version_test", [0, 1, 4, 5])
@@ -963,18 +959,7 @@ def test_prep_mortality_damages(tmp_path, version_test, econvars):
         {
             "delta": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.full(
-                    (
-                        2,
-                        2,
-                        2,
-                        2,
-                        2,
-                        2,
-                        2,
-                    ),
-                    -0.90681089,
-                ),
+                np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089),
             ),
             "histclim": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
