@@ -368,6 +368,7 @@ def compute_ag_damages(
     batches = p_map(
         process_batch, [g for i, g in paths.groupby("batch")], num_cpus=num_cpus
     )
+    batches = [ds for ds in batches if ds is not None]
     chunkies = {
         "rcp": 1,
         "region": 24378,
