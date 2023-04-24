@@ -476,6 +476,8 @@ def read_energy_files_parallel(input_path, **kwargs):
         # Calculate the chunk size as an integer
         num_processes = multiprocessing.cpu_count()
         chunk_size = int(df.shape[0] / num_processes)
+        if chunk_size < 1:
+            chunk_size = 1
         logger.info(
             f"Starting multiprocessing in {num_processes} cores with {chunk_size} rows each"
         )
