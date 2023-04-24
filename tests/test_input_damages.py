@@ -854,7 +854,7 @@ def test_calculate_energy_damages(tmp_path, econvars, energy_in_csv):
         )
 
         ds_out_actual = xr.open_zarr(
-            os.path.join(tmp_path, f"energy_out/rebased_batch{b}.zarr")
+            os.path.join(tmp_path, f"energy_out/rebased_{b}.zarr")
         )
 
         xr.testing.assert_equal(ds_out_expected, ds_out_actual)
