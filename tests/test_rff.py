@@ -19,6 +19,9 @@ import xarray as xr
 
 @pytest.fixture
 def ssp_df_in(tmp_path):
+    """
+    Create fake SSP input data for tests
+    """
     HEADER = """test
     header
     -
@@ -59,6 +62,9 @@ def test_solve_optimization(
     tmp_path,
     ssp_df_in,
 ):
+    """
+    Test that solve optimization correctly applies the emulation scheme to produce a set of SSP-growth model weights and country-level errors
+    """
     rff_df_in = pd.DataFrame(
         data={
             "iso": ["USA"],
@@ -97,6 +103,9 @@ def test_solve_optimization_exception(
     ssp_df_in,
     capsys,
 ):
+    """
+    Test that solve optimization returns an exception when countires with missing value for any SSP-growth model occured in the loop
+    """
     rff_df_in = pd.DataFrame(
         data={
             "iso": ["USA", "ZWE"],
@@ -119,6 +128,9 @@ def test_process_ssp_sample(
     tmp_path,
     ssp_df_in,
 ):
+    """
+    Test that process ssp sample correctly cleans GDP per capita out of the SSP input file
+    """
     ds_out_expected = pd.DataFrame(
         data={
             "year": [2015] * 3 + [2020] * 4 + [2015] * 4 + [2020] * 4,
@@ -152,6 +164,9 @@ def test_process_rff_sample(
     tmp_path,
     ssp_df_in,
 ):
+    """
+    Test that process rff sample correctly cleans RFF input data and passes the cleaned data to the emulation scheme to produce a set of SSP-growth model weights and country-level errors
+    """
     rff_raw_in = pd.DataFrame(
         data={
             "Country": ["ZWE", "USA"],
