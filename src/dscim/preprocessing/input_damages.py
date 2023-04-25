@@ -662,7 +662,7 @@ def prep_mortality_damages(
     vars,
     outpath,
     mortality_version,
-    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+    path_econ,
 ):
     ec = EconVars(path_econ=path_econ)
 
@@ -696,25 +696,21 @@ def prep_mortality_damages(
         print(gcm, i + 1, "/", len(gcms))
 
         data = {}
-        for var, name in vars.items():
 
-            def prep(
-                ds,
+        def prep(
+            ds,
+            gcm=gcm,
+            scaling_deaths=scaling_deaths,
+            scaling_costs=scaling_costs,
+            valuation=valuation,
+        ):
+            return ds.sel(
                 gcm=gcm,
-                scaling_deaths=scaling_deaths,
-                scaling_costs=scaling_costs,
+                scaling=[scaling_deaths, scaling_costs],
                 valuation=valuation,
-                name=name,
-            ):
-                return ds.sel(
-                    gcm=gcm,
-                    scaling=[scaling_deaths, scaling_costs],
-                    valuation=valuation,
-                ).drop(["gcm", "valuation"])
+            ).drop(["gcm", "valuation"])
 
-            data = xr.open_mfdataset(
-                paths, preprocess=prep, parallel=True, engine="zarr"
-            )
+        data = xr.open_mfdataset(paths, preprocess=prep, parallel=True, engine="zarr")
 
         damages = xr.Dataset(
             {
@@ -751,13 +747,15 @@ def prep_mortality_damages(
 
         if i == 0:
             damages.to_zarr(
-                outpath,
+                outpath
+                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 mode="w",
             )
         else:
             damages.to_zarr(
-                outpath,
+                outpath
+                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 append_dim="gcm",
             )
