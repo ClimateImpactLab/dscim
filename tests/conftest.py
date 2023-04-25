@@ -116,7 +116,7 @@ def menu_instance(menu_class, discount_types, econ, climate):
 
 
 @pytest.fixture
-def weights_unclean(tmp_path):
+def weights_unclean_fixture(tmp_path):
     d = Path(tmp_path) / "clean_root"
     d.mkdir()
 

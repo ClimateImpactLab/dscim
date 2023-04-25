@@ -18,9 +18,9 @@ import xarray as xr
 
 
 @pytest.fixture
-def ssp_df_in(tmp_path):
+def ssp_df_in_fixture(tmp_path):
     """
-    Create fake SSP input data for tests
+    Create fake SSP input data for tests and save to csv
     """
     HEADER = """test
     header
@@ -60,7 +60,7 @@ def ssp_df_in(tmp_path):
 
 def test_solve_optimization(
     tmp_path,
-    ssp_df_in,
+    ssp_df_in_fixture,
 ):
     """
     Test that solve optimization correctly applies the emulation scheme to produce a set of SSP-growth model weights and country-level errors
@@ -100,7 +100,7 @@ def test_solve_optimization(
 
 def test_solve_optimization_exception(
     tmp_path,
-    ssp_df_in,
+    ssp_df_in_fixture,
     capsys,
 ):
     """
@@ -126,7 +126,7 @@ def test_solve_optimization_exception(
 
 def test_process_ssp_sample(
     tmp_path,
-    ssp_df_in,
+    ssp_df_in_fixture,
 ):
     """
     Test that process ssp sample correctly cleans GDP per capita out of the SSP input file
@@ -162,7 +162,7 @@ def test_process_ssp_sample(
 
 def test_process_rff_sample(
     tmp_path,
-    ssp_df_in,
+    ssp_df_in_fixture,
 ):
     """
     Test that process rff sample correctly cleans RFF input data and passes the cleaned data to the emulation scheme to produce a set of SSP-growth model weights and country-level errors
@@ -211,7 +211,7 @@ def test_process_rff_sample(
     )
 
 
-def test_clean_weights_alpha(tmp_path, weights_unclean):
+def test_clean_weights_alpha(tmp_path, weights_unclean_fixture):
     """
     Test that clean weights correctly cleans alpha and error out of the weights file
     """
@@ -236,7 +236,7 @@ def test_clean_weights_alpha(tmp_path, weights_unclean):
     xr.testing.assert_equal(out_actual, out_expected)
 
 
-def test_clean_weights_error(tmp_path, weights_unclean):
+def test_clean_weights_error(tmp_path, weights_unclean_fixture):
     """
     Test that clean weights correctly cleans alpha and error out of the weights file
     """
@@ -300,37 +300,36 @@ def test_weight_df(tmp_path):
     )
     df_in.to_netcdf(df_in_file)
 
+    # Relative gdp of 2100-2300 as a portion of 2099 gdp to extrapolate damage functions
     factors = xr.Dataset(
         {
             "anomaly": (
-                ["discount_type", "ssp", "model", "year"],
-                np.ones((1, 2, 2, 3)),
+                ["discount_type", "runid", "year"],
+                np.ones((1, 2, 3)),
             ),
         },
         coords={
             "discount_type": (["discount_type"], ["euler_ramsey"]),
-            "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "runid": (["runid"], [5000, 9999]),
             "year": (["year"], [2100, 2101, 2102]),
         },
     )
-    df_in.to_netcdf(df_in_file)
 
     out_expected = xr.Dataset(
         {
             "anomaly": (
-                ["discount_type", "year", "ssp", "model"],
-                np.ones((1, 6, 2, 2)),
+                ["discount_type", "year", "runid"],
+                np.ones((1, 6, 2)),
             ),
         },
         coords={
             "discount_type": (["discount_type"], ["euler_ramsey"]),
             "year": (["year"], [2021, 2022, 2099, 2100, 2101, 2102]),
-            "ssp": (["ssp"], ["SSP3", "SSP4"]),
-            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "runid": (["runid"], [5000, 9999]),
         },
     )
 
+    # Dataset of damage functions as a fraction of gdp
     out_expected_fractional = xr.Dataset(
         {
             "anomaly": (["discount_type", "year"], np.ones((1, 3))),
@@ -358,10 +357,8 @@ def test_weight_df(tmp_path):
         mask="unmasked",
     )
 
-    xr.testing.assert_allclose(out_expected, xr.open_dataset(outfile_path))
-    xr.testing.assert_allclose(
-        out_expected_fractional, xr.open_dataset(fractional_path)
-    )
+    xr.testing.assert_equal(out_expected, xr.open_dataset(outfile_path))
+    xr.testing.assert_equal(out_expected_fractional, xr.open_dataset(fractional_path))
 
 
 def test_rff_damage_functions(tmp_path, save_ssprff_econ):
@@ -470,7 +467,7 @@ def test_rff_damage_functions(tmp_path, save_ssprff_econ):
         },
     )
 
-    xr.testing.assert_allclose(out_actual, out_expected)
+    xr.testing.assert_equal(out_actual, out_expected)
 
 
 @pytest.mark.parametrize("USA", [True, False])
@@ -535,4 +532,4 @@ def test_prep_rff_socioeconomics(tmp_path, USA):
         year=[2021, 2022, 2023, 2099, 2100]
     )
 
-    xr.testing.assert_allclose(out_expected, out_actual)
+    xr.testing.assert_equal(out_expected, out_actual)
