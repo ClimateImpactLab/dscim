@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 - Removed incomplete "time_trend" extrapolation option from `dscim.utils.utils.model_outputs()`, along with unused function arguments. This is a breaking change. ([PR #53](https://github.com/ClimateImpactLab/dscim/pull/53), [@brews](https://github.com/brews))
+- Remove old/unnecessary files. ([PR #57](https://github.com/ClimateImpactLab/dscim/pull/57), [@JMGilbert](https://github.com/JMGilbert))
+- Remove unused “save_path” and “ec_cls” from `read_energy_files_parallel()`. ([PR #56](https://github.com/ClimateImpactLab/dscim/pull/56), [@davidrzhdu](https://github.com/davidrzhdu))
+### Added
+- Add functions used for producing RFF weights. ([PR #66](https://github.com/ClimateImpactLab/dscim/pull/66), [@davidrzhdu](https://github.com/davidrzhdu))
 
 ## [0.3.0] - 2022-09-29
 ### Added
