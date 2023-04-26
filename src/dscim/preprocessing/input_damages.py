@@ -438,7 +438,7 @@ def read_energy_files(df, seed="TINV_clim_price014_total_energy_fulladapt-histcl
     return None
 
 
-def read_energy_files_parallel(input_path, **kwargs):
+def read_energy_files_parallel(input_path, save_path, ec_cls, **kwargs):
     """Concatenate energy results from CSV to NetCDF by batches using
     multiprocessing
 
@@ -456,6 +456,9 @@ def read_energy_files_parallel(input_path, **kwargs):
     input_path : str
         Path to root folder organized by batch containing all projection system
         files
+    save_path : str
+        Path to saved damages by batch files
+    ec_cls : ``dscim.menu.simple_storage.EconVars``
     **kwargs
         Other elements too the ``read_energy_files`` damages
 
@@ -633,10 +636,14 @@ def calculate_energy_damages(
     if re_calculate:
         read_energy_files_parallel(
             input_path=input_path,
+            save_path=save_path,
+            ec_cls=ec,
             seed="TINV_clim_integration_total_energy_delta",
         )
         read_energy_files_parallel(
             input_path=input_path,
+            save_path=save_path,
+            ec_cls=ec,
             seed="TINV_clim_integration_total_energy_histclim",
         )
 
