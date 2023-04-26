@@ -536,15 +536,12 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function = model_outputs(
                     damage_function=fit_subset,
                     formula=self.formula,
-                    extrap_formula=self.extrap_formula,
                     type_estimation=self.fit_type,
                     global_c=global_c_subset,
                     extrapolation_type=self.ext_method,
                     quantiles=self.quantreg_quantiles,
                     year_range=yrs,
-                    extrap_year=self.ext_subset_start_year,
                     year_start_pred=self.ext_subset_end_year + 1,
-                    year_end_pred=self.ext_end_year,
                 )
 
                 # Add variables
@@ -588,15 +585,12 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function = model_outputs(
                     damage_function=fit_subset,
                     formula=self.formula,
-                    extrap_formula=self.extrap_formula,
                     type_estimation=self.fit_type,
                     global_c=global_c_subset,
                     extrapolation_type=self.ext_method,
                     quantiles=self.quantreg_quantiles,
                     year_range=yrs,
-                    extrap_year=self.ext_subset_start_year,
                     year_start_pred=self.ext_subset_end_year + 1,
-                    year_end_pred=self.ext_end_year,
                 )
 
                 # Add variables
@@ -625,14 +619,11 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function=fit_subset,
                 type_estimation=self.fit_type,
                 formula=self.formula,
-                extrap_formula=self.extrap_formula,
                 global_c=global_consumption,
                 extrapolation_type=self.ext_method,
                 quantiles=self.quantreg_quantiles,
                 year_range=yrs,
-                extrap_year=self.ext_subset_start_year,
                 year_start_pred=self.ext_subset_end_year + 1,
-                year_end_pred=self.ext_end_year,
             )
 
             # Add variables

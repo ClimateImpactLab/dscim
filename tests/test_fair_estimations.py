@@ -190,12 +190,9 @@ def run_model_outputs(conf):
         formula=conf["formula"],
         year_range=conf["year_range"],
         year_start_pred=conf["year_start_pre"],
-        year_end_pred=conf["year_end_pre"],
         quantiles=conf["quantiles"],
         global_c=conf["global_c"],
         type_estimation=conf["type_estimation"],
-        extrap_formula="",  # deprecated when this test was written
-        extrap_year="",  # same
     )
 
     return out
