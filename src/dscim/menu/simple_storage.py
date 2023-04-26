@@ -337,7 +337,6 @@ class StackedDamages:
         ce_path=None,
         subset_dict=None,
     ):
-
         self.sector_path = sector_path
         self.save_path = save_path
         self.gdppc_bottom_code = gdppc_bottom_code
