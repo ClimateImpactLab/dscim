@@ -230,7 +230,7 @@ def test_concatenate_labor_damages(
     ds_out_actual = concatenate_labor_damages(
         input_path=os.path.join(tmp_path, "labor_in"),
         save_path=tmp_path,
-        ec_cls=econvars,
+        ec_cls=econvars_fixture,
     )
 
     if out_format == "return":
@@ -259,7 +259,7 @@ def test_error_concatenate_labor_damages(
     concatenate_labor_damages(
         input_path=os.path.join(tmp_path, "labor_in"),
         save_path=tmp_path,
-        ec_cls=econvars,
+        ec_cls=econvars_fixture,
     )
     assert "Error in batchbatch6" in caplog.text
 
@@ -301,7 +301,7 @@ def test_calculate_labor_batch_damages(
 
     calculate_labor_batch_damages(
         batch=6,
-        ec=econvars,
+        ec=econvars_fixture,
         input_path=os.path.join(tmp_path, "labor_in"),
         save_path=tmp_path,
     )
@@ -443,7 +443,7 @@ def test_compute_ag_damages(
 
     compute_ag_damages(
         input_path=os.path.join(tmp_path, "ag_in"),
-        pop=econvars.econ_vars.pop,
+        pop=econvars_fixture.econ_vars.pop,
         topcode="agshare_10",
         integration=True,
         varname="delta",
@@ -796,7 +796,7 @@ def test_concatenate_energy_damages(
     ds_out_actual = concatenate_energy_damages(
         input_path=os.path.join(tmp_path, "energy_in_netcdf"),
         save_path=tmp_path,
-        ec_cls=econvars,
+        ec_cls=econvars_fixture,
     )
 
     if out_format == "return":
@@ -826,7 +826,7 @@ def test_error_concatenate_energy_damages(
     concatenate_energy_damages(
         input_path=os.path.join(tmp_path, "energy_in_netcdf"),
         save_path=tmp_path,
-        ec_cls=econvars,
+        ec_cls=econvars_fixture,
     )
     assert "Error in batchbatch6" in caplog.text
 
@@ -869,7 +869,7 @@ def test_calculate_energy_batch_damages(
 
     calculate_energy_batch_damages(
         batch=6,
-        ec=econvars,
+        ec=econvars_fixture,
         input_path=os.path.join(tmp_path, "energy_in_netcdf"),
         save_path=tmp_path,
     )
