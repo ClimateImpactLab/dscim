@@ -2,6 +2,7 @@ from dscim.menu.simple_storage import Climate, EconVars
 import dscim.menu.baseline
 import dscim.menu.risk_aversion
 import dscim.menu.equity
+from pathlib import Path
 
 import os
 import gc
@@ -36,6 +37,7 @@ def run_ssps(
     masks=None,
     fair_dims_list=None,
     order="damage_function",
+    regenerate_sccs=True,
 ):
     if masks is None:
         masks = [None]
@@ -46,9 +48,8 @@ def run_ssps(
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho, mask, fair_dims in product(
-        sectors, pulse_years, menu_discs, eta_rhos.items(), masks, fair_dims_list
+        sectors, pulse_years, menu_discs, eta_rhos, masks, fair_dims_list
     ):
-
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths'][f'AR{AR}_ssp_results']}/{sector}/{pulse_year}/"
 
@@ -56,6 +57,16 @@ def run_ssps(
             save_path = save_path + "/" + mask
         else:
             save_path = save_path + "/" + "unmasked"
+
+        if not regenerate_sccs:
+            scc_path = (
+                Path(save_path)
+                / "unmasked"
+                / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
+            )
+            if scc_path.is_file():
+                print("sccs found")
+                continue
 
         if fair_dims != ["simulation"]:
             save_path = (
@@ -119,17 +130,26 @@ def run_rff(
     config,
     USA,
     order="scc",
+    regenerate_sccs=True,
 ):
-
     with open(config, "r") as stream:
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(
-        sectors, pulse_years, menu_discs, eta_rhos.items()
+        sectors, pulse_years, menu_discs, eta_rhos
     ):
-
         menu_option, discount_type = menu_disc
         save_path = f"{conf['paths']['rff_results']}/{sector}/{pulse_year}/unmasked"
+
+        if not regenerate_sccs:
+            scc_path = (
+                Path(save_path)
+                / "unmasked"
+                / f"{menu_option}_{discount_type}_eta{eta_rho[0]}_rho{eta_rho[1]}_sccs.nc4"
+            )
+            if scc_path.is_file():
+                print("sccs found")
+                continue
 
         if USA:
             econ = EconVars(

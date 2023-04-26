@@ -9,7 +9,6 @@ from p_tqdm import p_map
 
 
 def stack(file, itr):
-
     ds = xr.open_dataset(file)
     ds = ds.rename({"simulation": "rff_sp"}).expand_dims({"simulation": [itr]})
 
