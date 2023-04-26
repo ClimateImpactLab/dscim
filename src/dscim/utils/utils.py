@@ -413,47 +413,7 @@ def model_outputs(
     y_hat_df = pd.concat(list_y_hats)
 
 
-    if extrapolation_type == "time_trends":
-        raise NotImplementedError(
-            "This has not been tested since adding quantregs option."
-        )
-
-        # Linear-extrapolation for post-2100 years
-        df_extrap = damage_function[damage_function.year >= extrap_year]
-        df_extrap = df_extrap.assign(year_rebase=df_extrap.year - base_year)
-
-        extrap_params, extrap_y_hat = modeler(
-            df=df_extrap,
-            formula=extrap_formula,
-            type_estimation=type_estimation,
-            exog=extrap_exog,
-        )
-        extrap_y_hat = extrap_y_hat.drop(columns="year_rebase")
-        extrap_y_hat["year"] = extrap_X.values[:, 1]
-
-        # Reformulating parameters
-        extrapolation_year = []
-        for year in extrap_years:
-            params_df = extrap_params.copy(deep=True)
-            unint_terms = int(len(params_df.columns) / 2)
-
-            # sum uninteracted terms with matching (interacted term * rebased year)
-            for i in range(0, unint_terms):
-                params_df.iloc[:, i] = params_df.iloc[:, i] + params_df.iloc[
-                    :, (unint_terms + i)
-                ] * (year - base_year)
-
-            params_df = params_df.iloc[:, range(0, unint_terms)]
-
-            params_df = params_df.assign(year=year)
-            extrapolation_year.append(params_df)
-
-        extrapolation_results = pd.concat(extrapolation_year)
-
-        parameters = pd.concat([param_df, extrapolation_results]).to_xarray()
-        preds = pd.concat([y_hat_df, extrap_y_hat]).to_xarray()
-
-    elif extrapolation_type == "global_c_ratio":
+    if extrapolation_type == "global_c_ratio":
         # convert to xarray immediately
         index = ["year", "q"] if type_estimation == "quantreg" else ["year"]
         y_hat_df = y_hat_df.set_index(
