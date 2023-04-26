@@ -76,6 +76,7 @@ def test_calculate_discount_factors(menu_instance):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_calculate_stream_discount_factors(menu_instance):
+
     """
     `   input cases
 
@@ -169,6 +170,7 @@ def test_calculate_stream_discount_factors(menu_instance):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_discounted_damages(menu_instance):
+
     """
     using as template damages [1, 1, 1, 1]
 
@@ -226,6 +228,7 @@ def test_discounted_damages(menu_instance):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_weitzman_min(menu_instance):
+
     """
     testing four behaviors with a template of consumption values including negative values :
 
@@ -269,6 +272,7 @@ def test_weitzman_min(menu_instance):
 
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_damage_function_calculation(menu_instance):
+
     """
     The dimensions of the returned arrays depend therefore on the discounting type :
     - params should be (discount_type: 1, ssp: *, model: *, year: 281)
@@ -316,6 +320,7 @@ def test_damage_function_calculation(menu_instance):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_marginal_damages(menu_instance):
+
     """
     simply check it has a fair aggregation types dimension and coords of that dimension match menu_instance.fair_aggregation
     """
@@ -330,6 +335,7 @@ def test_marginal_damages(menu_instance):
 
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_collapse_pop(menu_instance):
+
     if (menu_instance.discounting_type == "constant") or (
         "ramsey" in menu_instance.discounting_type
     ):
@@ -350,6 +356,7 @@ def test_collapse_pop(menu_instance):
 
 
 def test_global_consumption_calculation(menu_instance):
+
     global_cons = menu_instance.global_consumption_calculation(
         menu_instance.discounting_type
     )

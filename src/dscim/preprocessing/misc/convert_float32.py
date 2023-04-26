@@ -85,6 +85,7 @@ def process_csv(f):
 
 
 if convert_csv:
+
     i_csv = p_uimap(process_csv, files_csv)
     with open(f"{output_root}/log_csv.csv", "w", newline="") as write_file:
         write = csv.writer(write_file)
@@ -92,12 +93,14 @@ if convert_csv:
 
 
 if convert_zarr:
+
     i_zarr = p_uimap(process_zarr, files_zarr)
     with open(f"{output_root}/log_zarr.csv", "w", newline="") as write_file:
         write = csv.writer(write_file)
         write.writerows([r] for r in i_zarr)
 
 if convert_nc4:
+
     i_nc4 = p_uimap(process_nc4, files_nc4, num_cpus=8)
     with open(f"{output_root}/log_nc4.csv", "w", newline="") as write_file:
         write = csv.writer(write_file)

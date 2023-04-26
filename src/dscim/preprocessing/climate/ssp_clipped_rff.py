@@ -14,6 +14,7 @@ years = range(2020, 2081, 10)
 
 
 def mask_year(args):
+
     year, q = args
 
     ssp_climate = "/shares/gcp/integration/float32/dscim_input_data/climate/AR6/ar6_fair162_sim_and_medianparams_control_pulse_2020-2030-2040-2050-2060-2070-2080_emis_conc_rf_temp_lambdaeff_emissions-driven_naturalfix_v4.0_Jan212022.nc"
@@ -42,6 +43,7 @@ def mask_year(args):
     )
 
     for var in rff.keys():
+
         # index of sim-rff_sps which are out of bounds
         index = (
             rff[var]

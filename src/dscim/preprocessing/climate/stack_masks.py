@@ -15,6 +15,7 @@ dir = "/shares/gcp/integration/rff/climate/masks/CO2_Fossil"
 stack_list = [["gdppc", "emissions"], ["gdppc", "emissions", "climate"]]
 
 for stack in stack_list:
+
     # open all the relevant masks
     masks = p_map(xr.open_dataset, [f"{dir}/{s}_based_masks.nc4" for s in stack])
 

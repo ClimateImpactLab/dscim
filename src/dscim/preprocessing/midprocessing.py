@@ -15,6 +15,7 @@ def update_damage_function_library(
     rho,
     fit=True,
 ):
+
     os.makedirs(output, exist_ok=True)
     shutil.copy2(
         f"{input}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4",
@@ -40,6 +41,7 @@ def combine_CAMEL_coefs(
     pulse_year=2020,
     fit=True,
 ):
+
     print(f"Creating {recipe} {disc} for {CAMEL}...")
     os.makedirs(f"{input_dir}/{CAMEL}/{pulse_year}/{mask}", exist_ok=True)
 
@@ -71,6 +73,7 @@ def combine_CAMEL_coefs(
     )
 
     if fit:
+
         for sector in [coastal, AMEL]:
             fit[
                 sector

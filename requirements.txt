@@ -1,6 +1,6 @@
-xarray==2022.11.0
+xarray
 pandas
-numpy==1.23.3
+numpy
 matplotlib
 dask
 distributed
@@ -19,6 +19,3 @@ netcdf4
 h5netcdf
 impactlab-tools
 p_tqdm
-pyarrow
-gurobipy
-ipywidgets

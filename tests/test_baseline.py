@@ -77,4 +77,5 @@ def test_adding_scc(menu_instance, discount_types):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [Baseline], indirect=True)
 def test_global_damages_calculation(menu_instance):
+
     assert isinstance(menu_instance.global_damages_calculation(), pandas.DataFrame)

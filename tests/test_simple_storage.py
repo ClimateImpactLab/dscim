@@ -37,6 +37,7 @@ def stacked_damages(econ, climate):
 
 
 def test_adding_up_damages(stacked_damages):
+
     """
     checks that does the only single thing it's supposed to be doing (no parameters)
     """
