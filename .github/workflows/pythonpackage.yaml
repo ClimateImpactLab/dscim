@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.x"]
+        python-version: ["3.10"]
     defaults:
       run:
         shell: bash
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.x"]
+        python-version: ["3.10"]
     defaults:
       run:
         shell: bash
@@ -64,3 +64,5 @@ jobs:
       - name: Test with pytest
         run: |
           pytest -v --cov dscim --cov-report term-missing --cov-report xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3

@@ -412,7 +412,6 @@ def model_outputs(
     param_df = pd.concat(list_params)
     y_hat_df = pd.concat(list_y_hats)
 
-
     if extrapolation_type == "global_c_ratio":
         # convert to xarray immediately
         index = ["year", "q"] if type_estimation == "quantreg" else ["year"]
