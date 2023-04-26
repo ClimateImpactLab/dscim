@@ -117,6 +117,9 @@ def menu_instance(menu_class, discount_types, econ, climate):
 
 @pytest.fixture
 def weights_unclean_fixture(tmp_path):
+    """
+    Create and save out a dummy uncleaned weights file
+    """
     d = Path(tmp_path) / "clean_root"
     d.mkdir()
 
@@ -155,6 +158,9 @@ def weights_unclean_fixture(tmp_path):
 
 @pytest.fixture
 def save_ssprff_econ(tmp_path):
+    """
+    Create and save dummy ssp/rff socioeconomics files
+    """
     d = tmp_path / "econ"
     d.mkdir(exist_ok=True)
 
