@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 def test_parse_projection_filesys(tmp_path):
+    """
+    Test that parse_projection_filesys correctly retrieves projection system output structure
+    """
     rcp = ["rcp85", "rcp45"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["high", "low"]
@@ -67,7 +70,10 @@ def test_parse_projection_filesys(tmp_path):
 
 
 @pytest.fixture
-def labor_in_val(tmp_path):
+def labor_in_val_fixture(tmp_path):
+    """
+    Create fake labor input data for tests and save to netcdf
+    """
     ds_in_val = xr.Dataset(
         {
             "regions": (["region"], np.array(["ZWE.test_region", "USA.test_region"])),
@@ -99,7 +105,10 @@ def labor_in_val(tmp_path):
 
 
 @pytest.fixture
-def labor_in_histclim(tmp_path):
+def labor_in_histclim_fixture(tmp_path):
+    """
+    Create fake labor input data for tests and save to netcdf
+    """
     ds_in_histclim = xr.Dataset(
         {
             "regions": (["region"], np.array(["ZWE.test_region", "USA.test_region"])),
@@ -131,7 +140,10 @@ def labor_in_histclim(tmp_path):
 
 
 @pytest.fixture
-def econvars(tmp_path):
+def econvars_fixture(tmp_path):
+    """
+    Create fake socioeconomics input data for tests and save to zarr
+    """
     econvars = xr.Dataset(
         {
             "gdp": (["ssp", "region", "model", "year"], np.full((2, 2, 2, 2), 1)),
@@ -154,12 +166,15 @@ def econvars(tmp_path):
 
 def test_calculate_labor_impacts(
     tmp_path,
-    labor_in_val,
-    labor_in_histclim,
+    labor_in_val_fixture,
+    labor_in_histclim_fixture,
     file_prefix="uninteracted_main_model",
     variable="rebased",
     val_type="wage-levels",
 ):
+    """
+    Test that calculate_labor_impacts correctly calculates the impacts for labor results
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (["year", "region"], np.full((2, 2), 2)),
@@ -182,11 +197,14 @@ def test_calculate_labor_impacts(
 @pytest.mark.parametrize("out_format", ["return", "save"])
 def test_concatenate_labor_damages(
     tmp_path,
-    econvars,
-    labor_in_val,
-    labor_in_histclim,
+    econvars_fixture,
+    labor_in_val_fixture,
+    labor_in_histclim_fixture,
     out_format,
 ):
+    """
+    Test that concatenate_labor_damages correctly concatenates damages across batches
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (
@@ -227,11 +245,14 @@ def test_concatenate_labor_damages(
 
 def test_error_concatenate_labor_damages(
     caplog,
-    econvars,
+    econvars_fixture,
     tmp_path,
-    labor_in_val,
-    labor_in_histclim,
+    labor_in_val_fixture,
+    labor_in_histclim_fixture,
 ):
+    """
+    Test that concatenate_labor_damages returns an exception when any batch cannot be processed succesfully
+    """
     os.makedirs(
         os.path.join(tmp_path, "labor_in", "batch6", "rcp45", "CCSM4", "high", "SSP3")
     )
@@ -249,10 +270,13 @@ def test_error_concatenate_labor_damages(
 
 def test_calculate_labor_batch_damages(
     tmp_path,
-    econvars,
-    labor_in_val,
-    labor_in_histclim,
+    econvars_fixture,
+    labor_in_val_fixture,
+    labor_in_histclim_fixture,
 ):
+    """
+    Test that calculate_labor_batch_damages correctly concatenates damages across batches when single batch is passed
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (
@@ -291,10 +315,13 @@ def test_calculate_labor_batch_damages(
 
 def test_calculate_labor_damages(
     tmp_path,
-    labor_in_val,
-    labor_in_histclim,
-    econvars,
+    labor_in_val_fixture,
+    labor_in_histclim_fixture,
+    econvars_fixture,
 ):
+    """
+    Test that calculate_labor_damages correctly concatenates damages across batches using multiprocessing
+    """
     calculate_labor_damages(
         path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
         input_path=os.path.join(tmp_path, "labor_in"),
@@ -333,8 +360,11 @@ def test_calculate_labor_damages(
 
 def test_compute_ag_damages(
     tmp_path,
-    econvars,
+    econvars_fixture,
 ):
+    """
+    Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system
+    """
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
@@ -430,7 +460,10 @@ def test_compute_ag_damages(
 
 
 @pytest.fixture
-def energy_in_csv(tmp_path):
+def energy_in_csv_fixture(tmp_path):
+    """
+    Create fake energy input data for tests and save to csv
+    """
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
@@ -465,8 +498,11 @@ def energy_in_csv(tmp_path):
 
 def test_read_energy_files(
     tmp_path,
-    energy_in_csv,
+    energy_in_csv_fixture,
 ):
+    """
+    Test that read_energy_files correctly reads energy csv files and trasnforms them to Xarray object
+    """
     read_energy_files(
         df=_parse_projection_filesys(
             input_path=os.path.join(tmp_path, "energy_in_csv")
@@ -531,8 +567,11 @@ def test_read_energy_files(
 def test_error_read_energy_files(
     caplog,
     tmp_path,
-    energy_in_csv,
+    energy_in_csv_fixture,
 ):
+    """
+    Test that read_energy_files correctly returns an exception when any file cannot be processed successfully
+    """
     os.makedirs(
         os.path.join(
             tmp_path, "energy_in_csv", "batch6", "rcp45", "CCSM4", "high", "SSP4"
@@ -555,8 +594,11 @@ def test_error_read_energy_files(
 
 def test_read_energy_files_parallel(
     tmp_path,
-    energy_in_csv,
+    energy_in_csv_fixture,
 ):
+    """
+    Test that read_energy_files_parallel correctly concatenates energy results from csv to netcdf by batches using multiprocessing
+    """
     read_energy_files_parallel(
         input_path=os.path.join(tmp_path, "energy_in_csv"),
         seed="TINV_clim_integration_total_energy_delta",
@@ -617,7 +659,10 @@ def test_read_energy_files_parallel(
 
 
 @pytest.fixture
-def energy_in_netcdf(tmp_path):
+def energy_in_netcdf_fixture(tmp_path):
+    """
+    Create fake energy input data for tests and save to netcdf
+    """
     model_trans = {
         "low": "IIASA GDP",
         "high": "OECD Env-Growth",
@@ -677,8 +722,11 @@ def energy_in_netcdf(tmp_path):
 
 def test_calculate_energy_impacts(
     tmp_path,
-    energy_in_netcdf,
+    energy_in_netcdf_fixture,
 ):
+    """
+    Test that calculate_energy_impacts correctly calculates impacts for energy results for individual modeling unit
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (
@@ -716,10 +764,13 @@ def test_calculate_energy_impacts(
 @pytest.mark.parametrize("out_format", ["return", "save"])
 def test_concatenate_energy_damages(
     tmp_path,
-    econvars,
-    energy_in_netcdf,
+    econvars_fixture,
+    energy_in_netcdf_fixture,
     out_format,
 ):
+    """
+    Test that concatenate_energy_damages correctly concatenates damages across batches and either returns results or saves to netcdf
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (
@@ -760,10 +811,13 @@ def test_concatenate_energy_damages(
 
 def test_error_concatenate_energy_damages(
     caplog,
-    econvars,
+    econvars_fixture,
     tmp_path,
-    energy_in_netcdf,
+    energy_in_netcdf_fixture,
 ):
+    """
+    Test that concatenate_energy_damages returns an exception when any batch cannot be processed succesfully
+    """
     os.makedirs(
         os.path.join(
             tmp_path, "energy_in_netcdf", "batch6", "rcp45", "CCSM4", "high", "SSP3"
@@ -785,9 +839,12 @@ def test_error_concatenate_energy_damages(
 
 def test_calculate_energy_batch_damages(
     tmp_path,
-    econvars,
-    energy_in_netcdf,
+    econvars_fixture,
+    energy_in_netcdf_fixture,
 ):
+    """
+    Test that calculate_energy_batch_damages correctly concatenates damages across batches when single batch is passed
+    """
     ds_out_expected = xr.Dataset(
         {
             "histclim_rebased": (
@@ -822,7 +879,14 @@ def test_calculate_energy_batch_damages(
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-def test_calculate_energy_damages(tmp_path, econvars, energy_in_csv):
+def test_calculate_energy_damages(
+    tmp_path,
+    econvars_fixture,
+    energy_in_csv_fixture,
+):
+    """
+    Test that calculate_energy_damages correctly concatenates damages across batches using multiprocessing
+    """
     calculate_energy_damages(
         re_calculate=True,
         path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
@@ -861,7 +925,14 @@ def test_calculate_energy_damages(tmp_path, econvars, energy_in_csv):
 
 
 @pytest.mark.parametrize("version_test", [0, 1, 4, 5])
-def test_prep_mortality_damages(tmp_path, version_test, econvars):
+def test_prep_mortality_damages(
+    tmp_path,
+    version_test,
+    econvars_fixture,
+):
+    """
+    Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system
+    """
     for b in ["6", "9"]:
         ds_in = xr.Dataset(
             {
@@ -980,7 +1051,10 @@ def test_prep_mortality_damages(tmp_path, version_test, econvars):
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-def test_exception_prep_mortality_damages(tmp_path):
+def test_error_prep_mortality_damages(tmp_path):
+    """
+    Test that prep_mortality_damages complains when invalid mortality version is passed
+    """
     with pytest.raises(ValueError) as excinfo:
         prep_mortality_damages(
             gcms=["ACCESS1-0", "GFDL-CM3"],
@@ -1003,7 +1077,13 @@ def test_exception_prep_mortality_damages(tmp_path):
 
 
 @pytest.mark.parametrize("version_test", ["v0.21", "v0.20"])
-def test_coastal_inputs(tmp_path, version_test):
+def test_coastal_inputs(
+    tmp_path,
+    version_test,
+):
+    """
+    Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system
+    """
     if version_test == "v0.21":
         ds_in = xr.Dataset(
             {
@@ -1140,7 +1220,13 @@ def test_coastal_inputs(tmp_path, version_test):
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-def test_error_coastal_inputs(tmp_path, caplog):
+def test_error_coastal_inputs(
+    tmp_path,
+    caplog,
+):
+    """
+    Test that coastal_inputs complains when vsl_valuation is a coordinate in the coastal input file but is set to None
+    """
     ds_in = xr.Dataset(
         {
             "delta": (
