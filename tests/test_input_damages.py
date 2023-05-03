@@ -202,16 +202,16 @@ def test_concatenate_labor_damages(
     out_format,
 ):
     """
-    Test that concatenate_labor_damages correctly concatenates damages across batches
+    Test that concatenate_labor_damages correctly concatenates separate labor damages by batches across SSP-RCP-GCM-IAMs and saves to separate netcdf file by batches
     """
-    ds_out_actual = concatenate_labor_damages(
+    concatenate_labor_damages(
         input_path=os.path.join(tmp_path, "labor_in"),
         save_path=tmp_path,
         ec_cls=econvars_fixture,
     )
-
+    
     batch = ["batch" + str(i) for i in range(0, 15)]
-
+    
     for b in batch:
         ds_out_expected = xr.Dataset(
             {
@@ -234,7 +234,7 @@ def test_concatenate_labor_damages(
                 "batch": (["batch"], [b]),
             },
         )
-
+        
         xr.testing.assert_equal(
             ds_out_expected,
             xr.open_dataset(os.path.join(tmp_path, f"rebased_wage-levels_{b}.nc4")),
@@ -273,7 +273,7 @@ def test_calculate_labor_batch_damages(
     labor_in_histclim_fixture,
 ):
     """
-    Test that calculate_labor_batch_damages correctly concatenates damages across batches when single batch is passed
+    Test that calculate_labor_batch_damages correctly concatenates labor damages for a single batch across SSP-RCP-GCM-IAMs and saves to zarr file
     """
     ds_out_expected = xr.Dataset(
         {
@@ -318,7 +318,7 @@ def test_calculate_labor_damages(
     econvars_fixture,
 ):
     """
-    Test that calculate_labor_damages correctly concatenates damages across batches using multiprocessing
+    Test that calculate_labor_damages correctly concatenates separate labor damages by batches across SSP-RCP-GCM-IAMs using multiprocessing and saves to separate zarr file by batches
     """
     calculate_labor_damages(
         path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
@@ -361,7 +361,7 @@ def test_compute_ag_damages(
     econvars_fixture,
 ):
     """
-    Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system
+    Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system and saves to zarr file
     """
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
@@ -499,7 +499,7 @@ def test_read_energy_files(
     energy_in_csv_fixture,
 ):
     """
-    Test that read_energy_files correctly reads energy csv files and trasnforms them to Xarray object
+    Test that read_energy_files correctly reads energy csv files, trasnforms them to Xarray object, and saves to netcdf file
     """
     read_energy_files(
         df=_parse_projection_filesys(
@@ -759,7 +759,6 @@ def test_calculate_energy_impacts(
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-@pytest.mark.parametrize("out_format", ["return", "save"])
 def test_concatenate_energy_damages(
     tmp_path,
     econvars_fixture,
@@ -767,44 +766,49 @@ def test_concatenate_energy_damages(
     out_format,
 ):
     """
-    Test that concatenate_energy_damages correctly concatenates damages across batches and either returns results or saves to netcdf
+    Test that concatenate_energy_damages correctly concatenates separate energy damages by batches across SSP-RCP-GCM-IAMs and saves to separate netcdf file by batches
     """
-    ds_out_expected = xr.Dataset(
-        {
-            "histclim_rebased": (
-                ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
-            ),
-            "delta_rebased": (
-                ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
-                np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
-            ),
-        },
-        coords={
-            "batch": (["batch"], ["batch9"]),
-            "rcp": (["rcp"], ["rcp45", "rcp85"]),
-            "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
-            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-            "ssp": (["ssp"], ["SSP2", "SSP3"]),
-            "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
-            "year": (["year"], [2010, 2099]),
-        },
-    )
-
-    ds_out_actual = concatenate_energy_damages(
+    concatenate_energy_damages(
         input_path=os.path.join(tmp_path, "energy_in_netcdf"),
         save_path=tmp_path,
         ec_cls=econvars_fixture,
     )
-
-    if out_format == "return":
-        xr.testing.assert_equal(ds_out_expected, ds_out_actual)
-
-    elif out_format == "save":
+    
+    batch = ["batch" + str(i) for i in range(0, 15)]
+    
+    for b in batch:
+        ds_out_expected = xr.Dataset(
+            {
+                "histclim_rebased": (
+                    ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
+                    np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
+                ),
+                "delta_rebased": (
+                    ["batch", "rcp", "gcm", "model", "ssp", "region", "year"],
+                    np.float32(np.full((1, 2, 2, 2, 2, 2, 2), 2 * 1.273526)),
+                ),
+            },
+            coords={
+                "batch": (["batch"], [b]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                "year": (["year"], [2010, 2099]),
+            },
+        )
+        
         xr.testing.assert_equal(
             ds_out_expected,
             xr.open_dataset(os.path.join(tmp_path, "rebased_batch9.nc4")),
         )
+
+    concatenate_energy_damages(
+        input_path=os.path.join(tmp_path, "energy_in_netcdf"),
+        save_path=tmp_path,
+        ec_cls=econvars_fixture,
+    )
 
 
 def test_error_concatenate_energy_damages(
@@ -841,7 +845,7 @@ def test_calculate_energy_batch_damages(
     energy_in_netcdf_fixture,
 ):
     """
-    Test that calculate_energy_batch_damages correctly concatenates damages across batches when single batch is passed
+    Test that calculate_energy_batch_damages correctly concatenates energy damages for a single batch across SSP-RCP-GCM-IAMs and saves to zarr file
     """
     ds_out_expected = xr.Dataset(
         {
@@ -883,7 +887,7 @@ def test_calculate_energy_damages(
     energy_in_csv_fixture,
 ):
     """
-    Test that calculate_energy_damages correctly concatenates damages across batches using multiprocessing
+    Test that calculate_energy_damages correctly concatenates separate energy damages by batches across SSP-RCP-GCM-IAMs using multiprocessing and saves to separate zarr file by batches
     """
     calculate_energy_damages(
         re_calculate=True,
@@ -929,7 +933,7 @@ def test_prep_mortality_damages(
     econvars_fixture,
 ):
     """
-    Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system
+    Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
     """
     for b in ["6", "9"]:
         ds_in = xr.Dataset(
@@ -1080,7 +1084,7 @@ def test_coastal_inputs(
     version_test,
 ):
     """
-    Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system
+    Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system and saves to zarr file (v0.21 and v0.22 have exactly the same structure, so testing either one should be sufficient)
     """
     if version_test == "v0.21":
         ds_in = xr.Dataset(
