@@ -368,6 +368,7 @@ def compute_ag_damages(
     batches = p_map(
         process_batch, [g for i, g in paths.groupby("batch")], num_cpus=num_cpus
     )
+    batches = [ds for ds in batches if ds is not None]
     chunkies = {
         "rcp": 1,
         "region": 24378,
@@ -704,11 +705,18 @@ def prep_mortality_damages(
             scaling_costs=scaling_costs,
             valuation=valuation,
         ):
-            return ds.sel(
-                gcm=gcm,
-                scaling=[scaling_deaths, scaling_costs],
-                valuation=valuation,
-            ).drop(["gcm", "valuation"])
+            if scaling_deaths == scaling_costs:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
+            else:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths, scaling_costs],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
 
         data = xr.open_mfdataset(paths, preprocess=prep, parallel=True, engine="zarr")
 
@@ -747,15 +755,13 @@ def prep_mortality_damages(
 
         if i == 0:
             damages.to_zarr(
-                outpath
-                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 mode="w",
             )
         else:
             damages.to_zarr(
-                outpath
-                / f"impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 append_dim="gcm",
             )
