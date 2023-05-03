@@ -209,9 +209,9 @@ def test_concatenate_labor_damages(
         save_path=tmp_path,
         ec_cls=econvars_fixture,
     )
-    
+
     batch = ["batch" + str(i) for i in range(0, 15)]
-    
+
     for b in batch:
         ds_out_expected = xr.Dataset(
             {
@@ -234,7 +234,7 @@ def test_concatenate_labor_damages(
                 "batch": (["batch"], [b]),
             },
         )
-        
+
         xr.testing.assert_equal(
             ds_out_expected,
             xr.open_dataset(os.path.join(tmp_path, f"rebased_wage-levels_{b}.nc4")),
@@ -773,9 +773,9 @@ def test_concatenate_energy_damages(
         save_path=tmp_path,
         ec_cls=econvars_fixture,
     )
-    
+
     batch = ["batch" + str(i) for i in range(0, 15)]
-    
+
     for b in batch:
         ds_out_expected = xr.Dataset(
             {
@@ -798,7 +798,7 @@ def test_concatenate_energy_damages(
                 "year": (["year"], [2010, 2099]),
             },
         )
-        
+
         xr.testing.assert_equal(
             ds_out_expected,
             xr.open_dataset(os.path.join(tmp_path, "rebased_batch9.nc4")),
