@@ -799,7 +799,7 @@ def test_concatenate_energy_damages(
 
         xr.testing.assert_equal(
             ds_out_expected,
-            xr.open_dataset(os.path.join(tmp_path, "rebased_batch9.nc4")),
+            xr.open_dataset(os.path.join(tmp_path, f"rebased_{b}.nc4")),
         )
 
     concatenate_energy_damages(
