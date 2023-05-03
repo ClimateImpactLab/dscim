@@ -194,7 +194,6 @@ def test_calculate_labor_impacts(
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-@pytest.mark.parametrize("out_format", ["return", "save"])
 def test_concatenate_labor_damages(
     tmp_path,
     econvars_fixture,
@@ -205,41 +204,40 @@ def test_concatenate_labor_damages(
     """
     Test that concatenate_labor_damages correctly concatenates damages across batches
     """
-    ds_out_expected = xr.Dataset(
-        {
-            "histclim_rebased": (
-                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * -1 * 1.273526)),
-            ),
-            "delta_rebased": (
-                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
-                np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 0)),
-            ),
-        },
-        coords={
-            "year": (["year"], [2010, 2099]),
-            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
-            "ssp": (["ssp"], ["SSP3"]),
-            "rcp": (["rcp"], ["rcp45", "rcp85"]),
-            "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
-            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-            "batch": (["batch"], ["batch9"]),
-        },
-    )
-
     ds_out_actual = concatenate_labor_damages(
         input_path=os.path.join(tmp_path, "labor_in"),
         save_path=tmp_path,
         ec_cls=econvars_fixture,
     )
 
-    if out_format == "return":
-        xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+    batch = ["batch" + str(i) for i in range(0, 15)]
 
-    elif out_format == "save":
+    for b in batch:
+        ds_out_expected = xr.Dataset(
+            {
+                "histclim_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 2 * -1 * 1.273526)),
+                ),
+                "delta_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.float32(np.full((1, 2, 2, 2, 1, 2, 2), 0)),
+                ),
+            },
+            coords={
+                "year": (["year"], [2010, 2099]),
+                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+                "ssp": (["ssp"], ["SSP3"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "batch": (["batch"], [b]),
+            },
+        )
+
         xr.testing.assert_equal(
             ds_out_expected,
-            xr.open_dataset(os.path.join(tmp_path, "rebased_wage-levels_batch9.nc4")),
+            xr.open_dataset(os.path.join(tmp_path, f"rebased_wage-levels_{b}.nc4")),
         )
 
 
