@@ -199,7 +199,6 @@ def test_concatenate_labor_damages(
     econvars_fixture,
     labor_in_val_fixture,
     labor_in_histclim_fixture,
-    out_format,
 ):
     """
     Test that concatenate_labor_damages correctly concatenates separate labor damages by batches across SSP-RCP-GCM-IAMs and saves to separate netcdf file by batches
@@ -763,7 +762,6 @@ def test_concatenate_energy_damages(
     tmp_path,
     econvars_fixture,
     energy_in_netcdf_fixture,
-    out_format,
 ):
     """
     Test that concatenate_energy_damages correctly concatenates separate energy damages by batches across SSP-RCP-GCM-IAMs and saves to separate netcdf file by batches
