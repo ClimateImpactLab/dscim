@@ -31,7 +31,7 @@ def test_parse_projection_filesys(tmp_path):
     """
     Test that parse_projection_filesys correctly retrieves projection system output structure
     """
-    rcp = ["rcp85", "rcp45"]
+    rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["high", "low"]
     ssp = [f"SSP{n}" for n in range(2, 4)]
@@ -45,14 +45,14 @@ def test_parse_projection_filesys(tmp_path):
                         os.makedirs(os.path.join(tmp_path, b, r, g, m, s))
 
     out_expected = {
-        "batch": list(chain(repeat("batch9", 16), repeat("batch6", 16))),
-        "rcp": list(chain(repeat("rcp85", 8), repeat("rcp45", 8))) * 2,
+        "batch": list(chain(repeat("batch6", 16), repeat("batch9", 16))),
+        "rcp": list(chain(repeat("rcp45", 8), repeat("rcp85", 8))) * 2,
         "gcm": list(chain(repeat("ACCESS1-0", 4), repeat("GFDL-CM3", 4))) * 4,
         "model": list(chain(repeat("high", 2), repeat("low", 2))) * 8,
         "ssp": ["SSP2", "SSP3"] * 16,
         "path": [
             os.path.join(tmp_path, b, r, g, m, s)
-            for b in ["batch9", "batch6"]
+            for b in ["batch6", "batch9"]
             for r in rcp
             for g in gcm
             for m in model
@@ -65,6 +65,9 @@ def test_parse_projection_filesys(tmp_path):
 
     df_out_actual = _parse_projection_filesys(input_path=tmp_path)
     df_out_actual.reset_index(drop=True, inplace=True)
+    df_out_actual = df_out_actual.sort_values(
+        by=["batch", "rcp", "gcm", "model", "ssp"]
+    )
 
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
 
