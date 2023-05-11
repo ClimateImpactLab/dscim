@@ -128,7 +128,6 @@ def reduce_damages(
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = chunkies
 
     template = xr.DataArray(
         da.empty(ce_shapes),
