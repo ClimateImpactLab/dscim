@@ -102,6 +102,24 @@ def reduce_damages(
                 xr.open_zarr(damages).chunks["batch"][0] == 15
             ), "'batch' dim on damages does not have chunksize of 15. Please rechunk."
 
+            if "coastal" not in sector:
+                chunkies = {
+                    "rcp": 1,
+                    "region": -1,
+                    "gcm": 1,
+                    "year": 10,
+                    "model": 1,
+                    "ssp": 1,
+                }
+            else:
+                chunkies = {
+                    "region": -1,
+                    "slr": 1,
+                    "year": 10,
+                    "model": 1,
+                    "ssp": 1,
+                }
+
             ce_batch_dims = [i for i in gdppc.dims] + [
                 i for i in ds.dims if i not in gdppc.dims and i != "batch"
             ]
@@ -110,15 +128,15 @@ def reduce_damages(
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = [xr.open_zarr(damages).chunks[c][0] for c in ce_batch_dims]
+            ce_chunks = chunkies
 
     template = xr.DataArray(
-        da.empty(ce_shapes, chunks=ce_chunks),
+        da.empty(ce_shapes),
         dims=ce_batch_dims,
         coords=ce_batch_coords,
-    )
+    ).chunk(chunkies)
 
-    other = xr.open_zarr(damages)
+    other = xr.open_zarr(damages).chunk(chunkies)
 
     out = other.map_blocks(
         ce_from_chunk,
@@ -205,7 +223,21 @@ def sum_AMEL(
         for sector in sectors:
             print(f"Opening {sector},{params[sector]['sector_path']}")
             ds = xr.open_zarr(params[sector]["sector_path"], consolidated=True)
-            ds = ds[params[sector][var]].rename(var)
+            ds = (
+                ds[params[sector][var]]
+                .rename(var)
+                .chunk(
+                    {
+                        "batch": 15,
+                        "ssp": 1,
+                        "model": 1,
+                        "rcp": 1,
+                        "gcm": 1,
+                        "year": 10,
+                        "region": -1,
+                    }
+                )
+            )
             ds = xr.where(np.isinf(ds), np.nan, ds)
             datasets.append(ds)
 
