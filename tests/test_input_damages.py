@@ -64,10 +64,10 @@ def test_parse_projection_filesys(tmp_path):
     df_out_expected = pd.DataFrame(out_expected)
 
     df_out_actual = _parse_projection_filesys(input_path=tmp_path)
-    df_out_actual.reset_index(drop=True, inplace=True)
     df_out_actual = df_out_actual.sort_values(
         by=["batch", "rcp", "gcm", "model", "ssp"]
     )
+    df_out_actual.reset_index(drop=True, inplace=True)
 
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
 
