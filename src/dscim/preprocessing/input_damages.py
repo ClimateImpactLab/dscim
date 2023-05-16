@@ -738,7 +738,15 @@ def prep_mortality_damages(
         ).expand_dims({"gcm": [gcm]})
 
         damages = damages.chunk(
-            {"batch": 15, "ssp": 1, "model": 1, "rcp": 1, "gcm": 1, "year": 10}
+            {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": -1,
+            }
         )
         damages.coords.update({"batch": [f"batch{i}" for i in damages.batch.values]})
 
