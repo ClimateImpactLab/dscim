@@ -95,6 +95,31 @@ def _parse_projection_filesys(input_path, query="exists==True"):
     return df.query(query)
 
 
+def concatenate_damage_output(damage_dir, basename, save_path):
+    """Concatenate labor/energy damage output across batches.
+
+    Parameters
+    ----------
+    damage_dir str
+        Directory containing separate labor/energy damage output files by batches.
+    basename str
+        Prefix of the damage output filenames (ex. {basename}_batch0.zarr)
+    save_path str
+        Path to save concatenated file in .zarr format
+    """
+    paths = glob.glob(f"{damage_dir}/{basename}*")
+    data = xr.open_mfdataset(paths=paths, engine="zarr")
+
+    for v in list(data.coords.keys()):
+        if data.coords[v].dtype == object:
+            data.coords[v] = data.coords[v].astype("unicode")
+    for v in list(data.variables.keys()):
+        if data[v].dtype == object:
+            data[v] = data[v].astype("unicode")
+
+    data.to_zarr(save_path, mode="w")
+
+
 def calculate_labor_impacts(input_path, file_prefix, variable, val_type):
     """Calculate impacts for labor results.
 
