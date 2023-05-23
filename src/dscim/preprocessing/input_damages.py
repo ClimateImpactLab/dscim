@@ -396,7 +396,7 @@ def compute_ag_damages(
     batches = [ds for ds in batches if ds is not None]
     chunkies = {
         "rcp": 1,
-        "region": 24378,
+        "region": -1,
         "gcm": 1,
         "year": 10,
         "model": 1,
@@ -823,6 +823,15 @@ def coastal_inputs(
             )
         else:
             d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
+            chunkies = {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "slr": 1,
+                "year": 10,
+                "region": -1,
+            }
+            d = d.chunk(chunkies)
             d.to_zarr(
                 f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
                 consolidated=True,
