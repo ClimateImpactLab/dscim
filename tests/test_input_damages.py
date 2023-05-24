@@ -9,6 +9,7 @@ from itertools import chain, repeat
 from dscim.menu.simple_storage import EconVars
 from dscim.preprocessing.input_damages import (
     _parse_projection_filesys,
+    concatenate_damage_output,
     calculate_labor_impacts,
     concatenate_labor_damages,
     calculate_labor_batch_damages,
