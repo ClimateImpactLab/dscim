@@ -72,6 +72,73 @@ def test_parse_projection_filesys(tmp_path):
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
 
 
+def test_concatenate_damage_output(tmp_path):
+    """
+    Test that concatenate_damage_output correctly concatenates damages across batches and saves to a single zarr file
+    """
+    d = os.path.join(tmp_path, "concatenate_in")
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+    for b in ["batch6", "batch9"]:
+        ds_in = xr.Dataset(
+            {
+                "delta_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.full((2, 2, 2, 2, 1, 2, 2), 1),
+                ),
+                "histclim_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.full((2, 2, 2, 2, 1, 2, 2), 2),
+                ),
+            },
+            coords={
+                "batch": (["batch"], [b]),
+                "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+                "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                "year": (["year"], [2020, 2099]),
+            },
+        )
+
+        infile = os.path.join(d, f"test_insuffix_{b}.zarr")
+
+        ds_in.to_zarr(infile)
+
+    ds_out_expected = xr.Dataset(
+        {
+            "delta_rebased": (
+                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                np.full((2, 2, 2, 2, 2, 2, 2), 1),
+            ),
+            "histclim_rebased": (
+                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                np.full((2, 2, 2, 2, 2, 2, 2), 2),
+            ),
+        },
+        coords={
+            "batch": (["batch"], ["batch6", "batch9"]),
+            "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
+            "year": (["year"], [2020, 2099]),
+        },
+    )
+
+    concatenate_damage_output(
+        damage_dir=d,
+        basename="test_insuffix",
+        save_path=os.path.join(d, "concatenate.zarr"),
+    )
+    ds_out_actual = xr.open_zarr(os.path.join(d, "concatenate.zarr"))
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+
+
 @pytest.fixture
 def labor_in_val_fixture(tmp_path):
     """
