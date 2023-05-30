@@ -792,7 +792,7 @@ def prep_mortality_damages(
 
         # convert to EPA VSL
         damages = damages * 0.90681089
-        damages.astype(np.float32)
+        damages = damages.astype(np.float32)
 
         for v in list(damages.coords.keys()):
             if damages.coords[v].dtype == object:
