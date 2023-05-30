@@ -110,6 +110,21 @@ def concatenate_damage_output(damage_dir, basename, save_path):
     paths = glob.glob(f"{damage_dir}/{basename}*")
     data = xr.open_mfdataset(paths=paths, engine="zarr")
 
+    for v in data:
+        del data[v].encoding["chunks"]
+
+    chunkies = {
+        "batch": 15,
+        "rcp": 1,
+        "gcm": 1,
+        "model": 1,
+        "ssp": 1,
+        "region": -1,
+        "year": 10,
+    }
+
+    data = data.chunk(chunkies)
+
     for v in list(data.coords.keys()):
         if data.coords[v].dtype == object:
             data.coords[v] = data.coords[v].astype("unicode")
@@ -777,6 +792,7 @@ def prep_mortality_damages(
 
         # convert to EPA VSL
         damages = damages * 0.90681089
+        damages.astype(np.float32)
 
         for v in list(damages.coords.keys()):
             if damages.coords[v].dtype == object:
