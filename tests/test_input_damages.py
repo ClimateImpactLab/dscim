@@ -1101,11 +1101,11 @@ def test_prep_mortality_damages(
         {
             "delta": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089),
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089)),
             ),
             "histclim": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089),
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
             ),
         },
         coords={
