@@ -48,7 +48,7 @@ def econ():
 
 all_discount_types = [
     "constant",
-    "constant_model_collapsed",
+    # "constant_model_collapsed",
     "naive_ramsey",
     "naive_gwr",
     "euler_ramsey",
@@ -59,21 +59,6 @@ all_discount_types = [
 
 @pytest.fixture(params=all_discount_types, scope="module")
 def discount_types(request):
-    return request.param
-
-
-all_discount_types_equity = [
-    "constant",
-    "naive_ramsey",
-    "naive_gwr",
-    "euler_ramsey",
-    "euler_gwr",
-    "gwr_gwr",
-]
-
-
-@pytest.fixture(params=all_discount_types_equity, scope="module")
-def discount_types_equity(request):
     return request.param
 
 

@@ -9,8 +9,8 @@ from dscim.menu.equity import EquityRecipe
 
 
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
-def test_equity_points(menu_instance, discount_types_equity):
-    path = f"equity_{discount_types_equity}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
+def test_equity_points(menu_instance, discount_types):
+    path = f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
     expected = open_zipped_results(path)
     actual = menu_instance.damage_function_points
     assert_frame_equal(
@@ -22,8 +22,8 @@ def test_equity_points(menu_instance, discount_types_equity):
 
 
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
-def test_equity_coefficients(menu_instance, discount_types_equity):
-    path = f"equity_{discount_types_equity}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_coefficients.nc4"
+def test_equity_coefficients(menu_instance, discount_types):
+    path = f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_coefficients.nc4"
     expected = open_zipped_results(path)
     actual = menu_instance.damage_function_coefficients
     assert_allclose(
@@ -33,8 +33,8 @@ def test_equity_coefficients(menu_instance, discount_types_equity):
 
 
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
-def test_equity_fit(menu_instance, discount_types_equity):
-    path = f"equity_{discount_types_equity}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_fit.nc4"
+def test_equity_fit(menu_instance, discount_types):
+    path = f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_fit.nc4"
     expected = open_zipped_results(path)
     actual = menu_instance.damage_function_fit
     assert_allclose(
@@ -44,8 +44,8 @@ def test_equity_fit(menu_instance, discount_types_equity):
 
 
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
-def test_equity_global_consumption(menu_instance, discount_types_equity):
-    path = f"equity_{discount_types_equity}_eta{menu_instance.eta}_rho{menu_instance.rho}_global_consumption.nc4"
+def test_equity_global_consumption(menu_instance, discount_types):
+    path = f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_global_consumption.nc4"
     expected = open_zipped_results(path)
     actual = menu_instance.global_consumption.squeeze()
     # Small format hack from I/O
@@ -59,8 +59,10 @@ def test_equity_global_consumption(menu_instance, discount_types_equity):
 
 
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
-def test_equity_scc(menu_instance, discount_types_equity):
-    path = f"equity_{discount_types_equity}_eta{menu_instance.eta}_rho{menu_instance.rho}_scc.nc4"
+def test_equity_scc(menu_instance, discount_types):
+    path = (
+        f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_scc.nc4"
+    )
     expected = open_zipped_results(path)
     actual = menu_instance.calculate_scc.squeeze()
 
