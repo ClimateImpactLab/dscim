@@ -4,6 +4,7 @@ import pytest
 from dscim.menu.simple_storage import Climate, EconVars
 from dscim.menu.baseline import Baseline
 from dscim.menu.risk_aversion import RiskAversionRecipe
+from dscim.menu.equity import EquityRecipe
 from pathlib import Path
 from itertools import product
 import numpy as np
@@ -60,8 +61,22 @@ all_discount_types = [
 def discount_types(request):
     return request.param
 
+all_discount_types_equity = [
+    "constant",
+    "naive_ramsey",
+    "naive_gwr",
+    "euler_ramsey",
+    "euler_gwr",
+    "gwr_gwr",
+]
 
-all_menu_classes = [Baseline, RiskAversionRecipe]
+
+@pytest.fixture(params=all_discount_types_equity, scope="module")
+def discount_types(request):
+    return request.param
+
+
+all_menu_classes = [Baseline, RiskAversionRecipe, EquityRecipe]
 
 
 @pytest.fixture(params=all_menu_classes, scope="module")
