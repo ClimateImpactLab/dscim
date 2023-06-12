@@ -48,7 +48,7 @@ def econ():
 
 all_discount_types = [
     "constant",
-    # "constant_model_collapsed",
+    "constant_model_collapsed",
     "naive_ramsey",
     "naive_gwr",
     "euler_ramsey",
