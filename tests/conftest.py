@@ -73,7 +73,7 @@ all_discount_types_equity = [
 
 
 @pytest.fixture(params=all_discount_types_equity, scope="module")
-def discount_types(request):
+def discount_types_equity(request):
     return request.param
 
 
