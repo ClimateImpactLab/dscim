@@ -61,6 +61,7 @@ all_discount_types = [
 def discount_types(request):
     return request.param
 
+
 all_discount_types_equity = [
     "constant",
     "naive_ramsey",
