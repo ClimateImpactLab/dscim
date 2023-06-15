@@ -12,7 +12,6 @@ from dscim.preprocessing.preprocessing import (
     reduce_damages,
     ce_from_chunk,
 )
-import dscim
 from pathlib import Path
 import yaml
 
@@ -294,7 +293,9 @@ def test_reduce_damages(tmp_path, recipe, eta, monkeypatch):
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """
 
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
+    monkeypatch.setattr(
+        "dscim.preprocessing.preprocessing.validate_damages", lambda *args: True
+    )
 
     d = tmp_path / "reduction"
     d.mkdir()
@@ -427,10 +428,15 @@ def test_reduce_damages(tmp_path, recipe, eta, monkeypatch):
     )
 
 
-def test_reduce_damages_batchsize_error(tmp_path):
+def test_reduce_damages_batchsize_error(tmp_path, monkeypatch):
     """
     Test that reduce_damages with batchsize not equal to 15 returns an error
     """
+
+    monkeypatch.setattr(
+        "dscim.preprocessing.preprocessing.validate_damages", lambda *args: True
+    )
+
     d = tmp_path / "reduction"
     d.mkdir()
     dummy_sector1_dir = d / "dummy_sector1"

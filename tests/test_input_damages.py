@@ -80,7 +80,9 @@ def test_concatenate_damage_output(tmp_path, monkeypatch):
     """
     Test that concatenate_damage_output correctly concatenates damages across batches and saves to a single zarr file
     """
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
+    monkeypatch.setattr(
+        "dscim.preprocessing.input_damages.validate_damages", lambda *args: True
+    )
 
     d = os.path.join(tmp_path, "concatenate_in")
     if not os.path.exists(d):
@@ -440,7 +442,9 @@ def test_compute_ag_damages(
     Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system and saves to zarr file
     """
 
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
+    monkeypatch.setattr(
+        "dscim.preprocessing.input_damages.validate_damages", lambda *args: True
+    )
 
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
@@ -1015,7 +1019,9 @@ def test_prep_mortality_damages(
     Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
     """
 
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
+    monkeypatch.setattr(
+        "dscim.preprocessing.input_damages.validate_damages", lambda *args: True
+    )
 
     for b in ["6", "9"]:
         ds_in = xr.Dataset(
@@ -1170,7 +1176,9 @@ def test_coastal_inputs(
     Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system and saves to zarr file (v0.21 and v0.22 have exactly the same structure, so testing either one should be sufficient)
     """
 
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
+    monkeypatch.setattr(
+        "dscim.preprocessing.input_damages.validate_damages", lambda *args: True
+    )
 
     if version_test == "v0.21":
         ds_in = xr.Dataset(
