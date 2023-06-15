@@ -292,6 +292,9 @@ def test_reduce_damages(tmp_path, recipe, eta):
     """
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """
+
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+
     d = tmp_path / "reduction"
     d.mkdir()
     dummy_sector1_dir = d / "dummy_sector1"

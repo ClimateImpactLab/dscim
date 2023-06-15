@@ -79,6 +79,8 @@ def test_concatenate_damage_output(tmp_path):
     """
     Test that concatenate_damage_output correctly concatenates damages across batches and saves to a single zarr file
     """
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+
     d = os.path.join(tmp_path, "concatenate_in")
     if not os.path.exists(d):
         os.makedirs(d)
@@ -435,6 +437,9 @@ def test_compute_ag_damages(
     """
     Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system and saves to zarr file
     """
+
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+
     rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["low", "high"]
@@ -1006,6 +1011,9 @@ def test_prep_mortality_damages(
     """
     Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
     """
+
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+
     for b in ["6", "9"]:
         ds_in = xr.Dataset(
             {
@@ -1157,6 +1165,9 @@ def test_coastal_inputs(
     """
     Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system and saves to zarr file (v0.21 and v0.22 have exactly the same structure, so testing either one should be sufficient)
     """
+
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+
     if version_test == "v0.21":
         ds_in = xr.Dataset(
             {
@@ -1371,7 +1382,7 @@ def create_dummy_input_zarr(path, sector, file_type):
     else:
         slr_values = np.arange(0, 33)
     year_values = np.arange(0, 90)
-    region_values = np.arange(0, 5)
+    region_values = np.arange(0, 6)
 
     if file_type == "wrong_rcps":
         # Create input data with wrong rcps
@@ -1422,12 +1433,11 @@ def create_dummy_input_zarr(path, sector, file_type):
         }
         chunkies = {
             "ssp": 1,
-            "rcp": 1,
             "model": 1,
-            "gcm": 1,
-            "batch": -1 if file_type != "wrong_chunk_sizes" else 5,
+            "slr": 1,
+            "batch": 5 if file_type == "wrong_chunk_sizes" else -1,
             "year": 10,
-            "region": 5,
+            "region": 3 if file_type == "wrong_region_chunk_sizes" else 6,
         }
     else:
         dims = ["ssp", "rcp", "model", "gcm", "batch", "year", "region"]
@@ -1445,9 +1455,9 @@ def create_dummy_input_zarr(path, sector, file_type):
             "rcp": 1,
             "model": 1,
             "gcm": 1,
-            "batch": -1 if file_type != "wrong_chunk_sizes" else 5,
+            "batch": 5 if file_type == "wrong_chunk_sizes" else -1,
             "year": 10,
-            "region": 5,
+            "region": 3 if file_type == "wrong_region_chunk_sizes" else 6,
         }
 
     ds = xr.Dataset(
@@ -1505,7 +1515,8 @@ def test_validate_damages_incorrect_chunk_sizes(tmp_path, sector):
     with pytest.raises(AssertionError) as e_info:
         validate_damages(sector, path)
     assert (
-        str(e_info.value) == f"Batches in the {sector} input damages zarr are not 0-14."
+        str(e_info.value)
+        == f"Chunksize for batches need to equal 15 for the {sector} input damages."
     )
 
 

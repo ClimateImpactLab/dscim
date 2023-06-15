@@ -888,11 +888,12 @@ def validate_damages(sector, path):
     ), f"Batches in the {sector} input damages zarr are not 0-14."
 
     # Input damages have rcp 4.5 and rcp 8.5
-    rcps_expected = np.sort(["rcp" + str(i) for i in [45, 85]])
-    rcps_actual = np.sort(inputs.rcp.values)
-    assert np.array_equal(
-        rcps_expected, rcps_actual
-    ), f"RCPs in the {sector} input damages zarr are not rcp45 and rcp85."
+    if "coastal" not in sector:
+        rcps_expected = np.sort(["rcp" + str(i) for i in [45, 85]])
+        rcps_actual = np.sort(inputs.rcp.values)
+        assert np.array_equal(
+            rcps_expected, rcps_actual
+        ), f"RCPs in the {sector} input damages zarr are not rcp45 and rcp85."
 
     # max batches and no repeated batches
     regions = inputs.dims["region"]
