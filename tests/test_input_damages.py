@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import xarray as xr
 import pandas as pd
@@ -23,6 +24,7 @@ from dscim.preprocessing.input_damages import (
     calculate_energy_damages,
     prep_mortality_damages,
     coastal_inputs,
+    validate_damages,
 )
 
 logger = logging.getLogger(__name__)
@@ -1356,3 +1358,131 @@ def test_error_coastal_inputs(
         str(excinfo.value)
         == "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
     )
+
+def create_dummy_input_zarr(path, sector, file_type):
+    # Create dummy input data
+    batch_values = np.sort(['batch' + str(i) for i in np.arange(0, 15)])
+    rcp_values = np.sort(['rcp' + str(i) for i in [45, 85]])
+    ssp_values = np.arange(0, 2)
+    model_values = np.arange(0, 2)
+    if sector == "coastal":
+        slr_values = np.arange(0, 10)
+    else:
+        slr_values = np.arange(0, 33)
+    year_values = np.arange(0, 90)
+    region_values = np.arange(0, 5)
+
+    if file_type == "wrong_rcps":
+        # Create input data with wrong rcps
+        rcp_values = np.sort(['rcp' + str(i) for i in [45, 65, 85]])
+    elif file_type == "wrong_batches":
+        # Create input data with wrong batches
+        batch_values = np.sort(['batch' + str(i) for i in np.arange(0, 14)] + ["batch1",])
+        
+    if sector == "coastal":
+        data = np.ones((len(ssp_values), len(model_values), len(slr_values), len(batch_values), len(year_values), len(region_values)))
+    else:
+        data = np.ones((len(ssp_values), len(rcp_values), len(model_values), len(slr_values), len(batch_values), len(year_values), len(region_values)))
+
+    # Create xarray dataset
+    if "coastal" in sector:
+        dims = ['ssp', 'model', 'slr', 'batch', 'year', 'region']
+        coords={
+                "ssp": (["ssp"], ssp_values),
+                "model": (["model"], model_values),
+                "slr": (["slr"], slr_values),
+                "batch": (["batch"], batch_values),
+                "year": (["year"], year_values),
+                "region": (["region"], region_values),
+            }
+        chunkies = {
+                "ssp": 1,
+                "rcp": 1,
+                "model": 1,
+                "gcm": 1,
+                "batch": -1 if file_type != "wrong_chunk_sizes" else 5,
+                "year": 10,
+                "region": 5,
+            }
+    else:
+        dims = ['ssp', 'rcp', 'model', 'gcm', 'batch', 'year', 'region']
+        coords={
+                "ssp": (["ssp"], ssp_values),
+                "rcp": (["rcp"], rcp_values),
+                "model": (["model"], model_values),
+                "gcm": (["gcm"], slr_values),
+                "batch": (["batch"], batch_values),
+                "year": (["year"], year_values),
+                "region": (["region"], region_values),
+            }
+        chunkies = {
+                "ssp": 1,
+                "rcp": 1,
+                "model": 1,
+                "gcm": 1,
+                "batch": -1 if file_type != "wrong_chunk_sizes" else 5,
+                "year": 10,
+                "region": 5,
+            }
+
+    
+    ds = xr.Dataset(
+            {
+                "data": (
+                    dims,
+                    data,
+                ),
+            },
+            coords = coords,
+        ).chunk(chunkies)
+
+    # Save xarray dataset as Zarr
+    ds.to_zarr(path, mode='w')
+
+
+@pytest.mark.parametrize("sector", ["mortality", "coastal"])
+def test_validate_damages_correct(tmp_path, sector):
+    path = str(tmp_path / f"damages_correct_{sector}.zarr")
+    file_type = "correct"
+    create_dummy_input_zarr(path, sector, file_type)
+    validate_damages(sector, path)  # No assertion error should be raised
+
+def test_validate_damages_incorrect_batches(tmp_path):
+    sector = "mortality"
+    path = str(tmp_path / f"damages_incorrect_batches_{sector}.zarr")
+    file_type = "wrong_batches"
+    create_dummy_input_zarr(path, sector, file_type)
+    with pytest.raises(AssertionError) as e_info:
+        validate_damages(sector, path)
+    assert str(e_info.value) == f"Batches in the {sector} input damages zarr are not 0-14."
+
+def test_validate_damages_incorrect_rcps(tmp_path):
+    sector = "mortality"
+    path = str(tmp_path / f"damages_incorrect_rcps_{sector}.zarr")
+    file_type = "wrong_rcps"
+    create_dummy_input_zarr(path, sector, file_type)
+    with pytest.raises(AssertionError) as e_info:
+        validate_damages(sector, path)
+    assert str(e_info.value) == f"RCPs in the {sector} input damages zarr are not rcp45 and rcp85."
+
+
+@pytest.mark.parametrize("sector", ["mortality", "coastal"])
+def test_validate_damages_incorrect_chunk_sizes(tmp_path, sector):
+    path = str(tmp_path / f"damages_incorrect_chunk_sizes_{sector}.zarr")
+    file_type = "wrong_chunk_sizes"
+    create_dummy_input_zarr(path, sector, file_type)
+    with pytest.raises(AssertionError) as e_info:
+        validate_damages(sector, path)
+    assert str(e_info.value) == f"Batches in the {sector} input damages zarr are not 0-14."
+
+
+
+@pytest.mark.parametrize("sector", ["mortality", "coastal"])
+def test_validate_damages_incorrect_region_chunk_sizes(tmp_path, sector):
+    path = str(tmp_path / f"damages_incorrect_region_chunk_sizes_{sector}.zarr")
+    file_type = "wrong_region_chunk_sizes"
+    create_dummy_input_zarr(path, sector, file_type)
+    with pytest.warns(UserWarning) as warnings_info:
+        validate_damages(sector, path)
+    assert len(warnings_info) == 1
+    assert str(warnings_info[0].message) == "Non fatal: chunk sizes are different from expected."

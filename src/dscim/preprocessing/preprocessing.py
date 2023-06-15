@@ -96,6 +96,8 @@ def reduce_damages(
     delta = params["delta"]
     outpath = f"{c['paths']['reduced_damages_library']}/{sector}"
 
+    validate_damages(sector, damages)
+
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
             assert (

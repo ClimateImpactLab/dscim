@@ -133,6 +133,7 @@ def concatenate_damage_output(damage_dir, basename, save_path):
             data[v] = data[v].astype("unicode")
 
     data.to_zarr(save_path, mode="w")
+    validate_damages("energy", save_path)
 
 
 def calculate_labor_impacts(input_path, file_prefix, variable, val_type):
@@ -430,6 +431,8 @@ def compute_ag_damages(
     batches.rename({"wc_reallocation": varname})[varname].to_dataset().to_zarr(
         store=save_path, mode="a", consolidated=True
     )
+
+    validate_damages("agriculture", save_path)
 
 
 def read_energy_files(df, seed="TINV_clim_price014_total_energy_fulladapt-histclim"):
@@ -818,6 +821,7 @@ def prep_mortality_damages(
         for v in data.values():
             v.close()
         damages.close()
+        validate_damages("mortality", f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr")
 
 
 def coastal_inputs(
@@ -853,6 +857,7 @@ def coastal_inputs(
                 consolidated=True,
                 mode="w",
             )
+            validate_damages("coastal", f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr")
     else:
         print(
             "vsl_valuation is not a dimension of the input dataset, subset adapt_type only"
@@ -863,3 +868,45 @@ def coastal_inputs(
             consolidated=True,
             mode="w",
         )
+        
+
+
+def validate_damages(sector, path):
+    inputs = xr.open_zarr(path)
+    inputs.close()
+    
+    # No repeated batch labels
+    batches_expected = np.sort([ 'batch' + str(i) for i in np.arange(0,15)])
+    batches_actual = np.sort(inputs.batch.values)
+    assert np.array_equal(batches_expected, batches_actual), f"Batches in the {sector} input damages zarr are not 0-14."
+
+    # Input damages have rcp 4.5 and rcp 8.5
+    rcps_expected = np.sort([ 'rcp' + str(i) for i in [45,85]])
+    rcps_actual = np.sort(inputs.rcp.values)
+    assert np.array_equal(rcps_expected, rcps_actual), f"RCPs in the {sector} input damages zarr are not rcp45 and rcp85."
+
+    # max batches and no repeated batches
+    regions = inputs.dims['region']
+    ssps = inputs.dims['ssp']
+    if "coastal" in sector:
+        dims = ['ssp','model','slr','batch','year','region']
+        chunk_sizes = [1,1,1,15,10,regions]
+        total_sizes = [ssps,2,10,15,90,regions]
+    else:
+        dims = ['ssp', 'rcp','model','gcm','batch','year','region']
+        chunk_sizes = [1,1,1,1,15,10,regions]
+        total_sizes = [ssps,2,2,33,15,90,regions]
+
+
+    chunk_len = np.arange(0,len(chunk_sizes))
+    chunks = [(chunk_sizes[i],) * int(total_sizes[i]/chunk_sizes[i]) for i in chunk_len]
+    dims_expected = dict(zip(dims, total_sizes))
+    chunks_expected = dict(zip(dims, chunks))  
+
+
+    assert(dims_expected == dict(inputs.dims))
+    for i in list(inputs.keys()):
+        assert chunks_expected['batch'] == dict(inputs[i].chunksizes)['batch'], f"Chunksize for batches need to equal 15 for the {sector} input damages."
+        if chunks_expected != dict(inputs[i].chunksizes):
+            warnings.warn("Non fatal: chunk sizes are different from expected.")
+
