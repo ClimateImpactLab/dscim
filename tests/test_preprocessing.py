@@ -288,7 +288,7 @@ def test_reduce_damages_error_eta():
         ("risk_aversion", 10),
     ],
 )
-def test_reduce_damages(tmp_path, recipe, eta):
+def test_reduce_damages(tmp_path, recipe, eta, monkeypatch):
     """
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """

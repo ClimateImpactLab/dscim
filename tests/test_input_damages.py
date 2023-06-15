@@ -75,7 +75,7 @@ def test_parse_projection_filesys(tmp_path):
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
 
 
-def test_concatenate_damage_output(tmp_path):
+def test_concatenate_damage_output(tmp_path, monkeypatch):
     """
     Test that concatenate_damage_output correctly concatenates damages across batches and saves to a single zarr file
     """
@@ -433,6 +433,7 @@ def test_calculate_labor_damages(
 def test_compute_ag_damages(
     tmp_path,
     econvars_fixture,
+    monkeypatch,
 ):
     """
     Test that compute_ag_damages correctly reshapes ag estimate runs for use in integration system and saves to zarr file
@@ -1007,6 +1008,7 @@ def test_prep_mortality_damages(
     tmp_path,
     version_test,
     econvars_fixture,
+    monkeypatch,
 ):
     """
     Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
@@ -1161,6 +1163,7 @@ def test_error_prep_mortality_damages(tmp_path):
 def test_coastal_inputs(
     tmp_path,
     version_test,
+    monkeypatch,
 ):
     """
     Test that coastal_inputs correctly reshapes different versions of coastal results for use in integration system and saves to zarr file (v0.21 and v0.22 have exactly the same structure, so testing either one should be sufficient)
