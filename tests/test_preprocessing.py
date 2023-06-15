@@ -12,6 +12,7 @@ from dscim.preprocessing.preprocessing import (
     reduce_damages,
     ce_from_chunk,
 )
+import dscim
 from pathlib import Path
 import yaml
 
@@ -293,7 +294,7 @@ def test_reduce_damages(tmp_path, recipe, eta, monkeypatch):
     Test that reduce_damages returns a Zarr file with damages reduced according to the expected file structure
     """
 
-    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", 1 + 1)
+    monkeypatch.setattr(dscim.preprocessing.input_damages, "validate_damages", True)
 
     d = tmp_path / "reduction"
     d.mkdir()
