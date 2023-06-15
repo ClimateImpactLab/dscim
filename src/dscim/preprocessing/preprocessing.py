@@ -11,6 +11,7 @@ import numpy as np
 import xarray as xr
 from dask.distributed import Client, progress
 from dscim.utils.functions import ce_func, mean_func
+from dscim.preprocessing.input_damages import validate_damages 
 import yaml
 import time
 import argparse
