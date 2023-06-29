@@ -107,7 +107,10 @@ def concatenate_damage_output(damage_dir, basename, save_path):
     save_path str
         Path to save concatenated file in .zarr format
     """
-    paths = glob.glob(f"{damage_dir}/{basename}*")
+    paths = [
+        f"{damage_dir}/{basename}_{b}.zarr"
+        for b in ["batch" + str(i) for i in range(0, 15)]
+    ]
     data = xr.open_mfdataset(paths=paths, engine="zarr")
 
     for v in data:
