@@ -768,7 +768,7 @@ def energy_in_netcdf_fixture(tmp_path):
                                             "region",
                                             "year",
                                         ],
-                                        np.full((1, 1, 1, 1, 1, 2, 2), 2),
+                                        np.full((1, 1, 1, 1, 1, 2, 2), 2).astype(object),
                                     ),
                                 },
                                 coords={
