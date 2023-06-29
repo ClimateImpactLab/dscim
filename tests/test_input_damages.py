@@ -81,7 +81,7 @@ def test_concatenate_damage_output(tmp_path):
     if not os.path.exists(d):
         os.makedirs(d)
 
-    for b in ["batch6", "batch9"]:
+    for b in ["batch" + str(i) for i in range(0, 15)]:
         ds_in = xr.Dataset(
             {
                 "delta_rebased": (
@@ -120,7 +120,7 @@ def test_concatenate_damage_output(tmp_path):
             ),
         },
         coords={
-            "batch": (["batch"], ["batch6", "batch9"]),
+            "batch": (["batch"], ["batch" + str(i) for i in range(0, 15)]),
             "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
@@ -768,7 +768,9 @@ def energy_in_netcdf_fixture(tmp_path):
                                             "region",
                                             "year",
                                         ],
-                                        np.full((1, 1, 1, 1, 1, 2, 2), 2).astype(object),
+                                        np.full((1, 1, 1, 1, 1, 2, 2), 2).astype(
+                                            object
+                                        ),
                                     ),
                                 },
                                 coords={
