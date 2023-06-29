@@ -94,8 +94,8 @@ def test_concatenate_damage_output(tmp_path):
                 ),
             },
             coords={
-                "batch": (["batch"], np.array([b], dtype=object)),
-                "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
+                "batch": (["batch"], [b]),
+                "gcm": (["gcm"], np.array(["ACCESS1-0", "BNU-ESM"], dtype=object)),
                 "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
                 "rcp": (["rcp"], ["rcp45", "rcp85"]),
                 "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
