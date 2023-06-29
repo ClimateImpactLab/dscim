@@ -112,11 +112,11 @@ def test_concatenate_damage_output(tmp_path):
         {
             "delta_rebased": (
                 ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), 1),
+                np.full((2, 2, 2, 2, 15, 2, 2), 1),
             ),
             "histclim_rebased": (
                 ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), 2),
+                np.full((2, 2, 2, 2, 15, 2, 2), 2),
             ),
         },
         coords={
@@ -135,7 +135,9 @@ def test_concatenate_damage_output(tmp_path):
         basename="test_insuffix",
         save_path=os.path.join(d, "concatenate.zarr"),
     )
-    ds_out_actual = xr.open_zarr(os.path.join(d, "concatenate.zarr"))
+    ds_out_actual = xr.open_zarr(os.path.join(d, "concatenate.zarr")).sel(
+        batch=["batch" + str(i) for i in range(0, 15)]
+    )
 
     xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
