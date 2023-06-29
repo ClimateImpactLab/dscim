@@ -86,7 +86,7 @@ def test_concatenate_damage_output(tmp_path):
             {
                 "delta_rebased": (
                     ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
-                    np.full((2, 2, 2, 2, 1, 2, 2), 1),
+                    np.full((2, 2, 2, 2, 1, 2, 2), 1).astype(object),
                 ),
                 "histclim_rebased": (
                     ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
@@ -94,7 +94,7 @@ def test_concatenate_damage_output(tmp_path):
                 ),
             },
             coords={
-                "batch": (["batch"], [b]),
+                "batch": (["batch"], np.array([b], dtype=object)),
                 "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
                 "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
                 "rcp": (["rcp"], ["rcp45", "rcp85"]),
