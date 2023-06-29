@@ -3,7 +3,6 @@ Calculate damages from the projection system using VSL
 """
 
 import os
-import glob
 import re
 import logging
 import warnings
@@ -131,6 +130,7 @@ def concatenate_damage_output(damage_dir, basename, save_path):
     for v in list(data.coords.keys()):
         if data.coords[v].dtype == object:
             data.coords[v] = data.coords[v].astype("unicode")
+    data.coords["batch"] = data.coords["batch"].astype("unicode")
     for v in list(data.variables.keys()):
         if data[v].dtype == object:
             data[v] = data[v].astype("unicode")
