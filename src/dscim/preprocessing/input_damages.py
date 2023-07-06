@@ -3,7 +3,6 @@ Calculate damages from the projection system using VSL
 """
 
 import os
-import glob
 import re
 import logging
 import warnings
@@ -93,6 +92,50 @@ def _parse_projection_filesys(input_path, query="exists==True"):
     df["iam"] = df["model"].replace(moddict)
 
     return df.query(query)
+
+
+def concatenate_damage_output(damage_dir, basename, save_path):
+    """Concatenate labor/energy damage output across batches.
+
+    Parameters
+    ----------
+    damage_dir str
+        Directory containing separate labor/energy damage output files by batches.
+    basename str
+        Prefix of the damage output filenames (ex. {basename}_batch0.zarr)
+    save_path str
+        Path to save concatenated file in .zarr format
+    """
+    paths = [
+        f"{damage_dir}/{basename}_{b}.zarr"
+        for b in ["batch" + str(i) for i in range(0, 15)]
+    ]
+    data = xr.open_mfdataset(paths=paths, engine="zarr")
+
+    for v in data:
+        del data[v].encoding["chunks"]
+
+    chunkies = {
+        "batch": 15,
+        "rcp": 1,
+        "gcm": 1,
+        "model": 1,
+        "ssp": 1,
+        "region": -1,
+        "year": 10,
+    }
+
+    data = data.chunk(chunkies)
+
+    for v in list(data.coords.keys()):
+        if data.coords[v].dtype == object:
+            data.coords[v] = data.coords[v].astype("unicode")
+    data.coords["batch"] = data.coords["batch"].astype("unicode")
+    for v in list(data.variables.keys()):
+        if data[v].dtype == object:
+            data[v] = data[v].astype("unicode")
+
+    data.to_zarr(save_path, mode="w")
 
 
 def calculate_labor_impacts(input_path, file_prefix, variable, val_type):
@@ -371,7 +414,7 @@ def compute_ag_damages(
     batches = [ds for ds in batches if ds is not None]
     chunkies = {
         "rcp": 1,
-        "region": 24378,
+        "region": -1,
         "gcm": 1,
         "year": 10,
         "model": 1,
@@ -738,12 +781,21 @@ def prep_mortality_damages(
         ).expand_dims({"gcm": [gcm]})
 
         damages = damages.chunk(
-            {"batch": 15, "ssp": 1, "model": 1, "rcp": 1, "gcm": 1, "year": 10}
+            {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": -1,
+            }
         )
         damages.coords.update({"batch": [f"batch{i}" for i in damages.batch.values]})
 
         # convert to EPA VSL
         damages = damages * 0.90681089
+        damages = damages.astype(np.float32)
 
         for v in list(damages.coords.keys()):
             if damages.coords[v].dtype == object:
@@ -790,6 +842,15 @@ def coastal_inputs(
             )
         else:
             d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
+            chunkies = {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "slr": 1,
+                "year": 10,
+                "region": -1,
+            }
+            d = d.chunk(chunkies)
             d.to_zarr(
                 f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
                 consolidated=True,

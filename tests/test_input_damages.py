@@ -9,6 +9,7 @@ from itertools import chain, repeat
 from dscim.menu.simple_storage import EconVars
 from dscim.preprocessing.input_damages import (
     _parse_projection_filesys,
+    concatenate_damage_output,
     calculate_labor_impacts,
     concatenate_labor_damages,
     calculate_labor_batch_damages,
@@ -31,7 +32,7 @@ def test_parse_projection_filesys(tmp_path):
     """
     Test that parse_projection_filesys correctly retrieves projection system output structure
     """
-    rcp = ["rcp85", "rcp45"]
+    rcp = ["rcp45", "rcp85"]
     gcm = ["ACCESS1-0", "GFDL-CM3"]
     model = ["high", "low"]
     ssp = [f"SSP{n}" for n in range(2, 4)]
@@ -45,14 +46,14 @@ def test_parse_projection_filesys(tmp_path):
                         os.makedirs(os.path.join(tmp_path, b, r, g, m, s))
 
     out_expected = {
-        "batch": list(chain(repeat("batch9", 16), repeat("batch6", 16))),
-        "rcp": list(chain(repeat("rcp85", 8), repeat("rcp45", 8))) * 2,
+        "batch": list(chain(repeat("batch6", 16), repeat("batch9", 16))),
+        "rcp": list(chain(repeat("rcp45", 8), repeat("rcp85", 8))) * 2,
         "gcm": list(chain(repeat("ACCESS1-0", 4), repeat("GFDL-CM3", 4))) * 4,
         "model": list(chain(repeat("high", 2), repeat("low", 2))) * 8,
         "ssp": ["SSP2", "SSP3"] * 16,
         "path": [
             os.path.join(tmp_path, b, r, g, m, s)
-            for b in ["batch9", "batch6"]
+            for b in ["batch6", "batch9"]
             for r in rcp
             for g in gcm
             for m in model
@@ -64,9 +65,81 @@ def test_parse_projection_filesys(tmp_path):
     df_out_expected = pd.DataFrame(out_expected)
 
     df_out_actual = _parse_projection_filesys(input_path=tmp_path)
+    df_out_actual = df_out_actual.sort_values(
+        by=["batch", "rcp", "gcm", "model", "ssp"]
+    )
     df_out_actual.reset_index(drop=True, inplace=True)
 
     pd.testing.assert_frame_equal(df_out_expected, df_out_actual)
+
+
+def test_concatenate_damage_output(tmp_path):
+    """
+    Test that concatenate_damage_output correctly concatenates damages across batches and saves to a single zarr file
+    """
+    d = os.path.join(tmp_path, "concatenate_in")
+    if not os.path.exists(d):
+        os.makedirs(d)
+
+    for b in ["batch" + str(i) for i in range(0, 15)]:
+        ds_in = xr.Dataset(
+            {
+                "delta_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.full((2, 2, 2, 2, 1, 2, 2), 1).astype(object),
+                ),
+                "histclim_rebased": (
+                    ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                    np.full((2, 2, 2, 2, 1, 2, 2), 2),
+                ),
+            },
+            coords={
+                "batch": (["batch"], [b]),
+                "gcm": (["gcm"], np.array(["ACCESS1-0", "BNU-ESM"], dtype=object)),
+                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+                "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                "year": (["year"], [2020, 2099]),
+            },
+        )
+
+        infile = os.path.join(d, f"test_insuffix_{b}.zarr")
+
+        ds_in.to_zarr(infile)
+
+    ds_out_expected = xr.Dataset(
+        {
+            "delta_rebased": (
+                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                np.full((2, 2, 2, 2, 15, 2, 2), 1),
+            ),
+            "histclim_rebased": (
+                ["ssp", "rcp", "model", "gcm", "batch", "year", "region"],
+                np.full((2, 2, 2, 2, 15, 2, 2), 2),
+            ),
+        },
+        coords={
+            "batch": (["batch"], ["batch" + str(i) for i in range(0, 15)]),
+            "gcm": (["gcm"], ["ACCESS1-0", "BNU-ESM"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "rcp": (["rcp"], ["rcp45", "rcp85"]),
+            "region": (["region"], ["ZWE.test_region", "USA.test_region"]),
+            "ssp": (["ssp"], ["SSP2", "SSP3"]),
+            "year": (["year"], [2020, 2099]),
+        },
+    )
+
+    concatenate_damage_output(
+        damage_dir=d,
+        basename="test_insuffix",
+        save_path=os.path.join(d, "concatenate.zarr"),
+    )
+    ds_out_actual = xr.open_zarr(os.path.join(d, "concatenate.zarr")).sel(
+        batch=["batch" + str(i) for i in range(0, 15)]
+    )
+
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
 @pytest.fixture
@@ -697,7 +770,9 @@ def energy_in_netcdf_fixture(tmp_path):
                                             "region",
                                             "year",
                                         ],
-                                        np.full((1, 1, 1, 1, 1, 2, 2), 2),
+                                        np.full((1, 1, 1, 1, 1, 2, 2), 2).astype(
+                                            object
+                                        ),
                                     ),
                                 },
                                 coords={
@@ -1030,11 +1105,11 @@ def test_prep_mortality_damages(
         {
             "delta": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089),
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089)),
             ),
             "histclim": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089),
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
             ),
         },
         coords={
