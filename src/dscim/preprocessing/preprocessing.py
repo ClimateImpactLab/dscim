@@ -11,6 +11,7 @@ import numpy as np
 import xarray as xr
 from dask.distributed import Client, progress
 from dscim.utils.functions import ce_func, mean_func
+from dscim.preprocessing.input_damages import validate_damages
 import yaml
 import time
 import argparse
@@ -95,6 +96,8 @@ def reduce_damages(
     histclim = params["histclim"]
     delta = params["delta"]
     outpath = f"{c['paths']['reduced_damages_library']}/{sector}"
+
+    validate_damages(sector, damages)
 
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
