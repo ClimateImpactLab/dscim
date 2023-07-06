@@ -29,7 +29,6 @@ def ce_from_chunk(
     socioec,
     ce_batch_coords,
 ):
-
     year = chunk.year.values
     ssp = chunk.ssp.values
     model = chunk.model.values
@@ -99,10 +98,27 @@ def reduce_damages(
 
     with xr.open_zarr(damages, chunks=None)[histclim] as ds:
         with xr.open_zarr(socioec, chunks=None) as gdppc:
-
             assert (
                 xr.open_zarr(damages).chunks["batch"][0] == 15
             ), "'batch' dim on damages does not have chunksize of 15. Please rechunk."
+
+            if "coastal" not in sector:
+                chunkies = {
+                    "rcp": 1,
+                    "region": -1,
+                    "gcm": 1,
+                    "year": 10,
+                    "model": 1,
+                    "ssp": 1,
+                }
+            else:
+                chunkies = {
+                    "region": -1,
+                    "slr": 1,
+                    "year": 10,
+                    "model": 1,
+                    "ssp": 1,
+                }
 
             ce_batch_dims = [i for i in gdppc.dims] + [
                 i for i in ds.dims if i not in gdppc.dims and i != "batch"
@@ -112,15 +128,14 @@ def reduce_damages(
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
             ]
             ce_shapes = [len(ce_batch_coords[c]) for c in ce_batch_dims]
-            ce_chunks = [xr.open_zarr(damages).chunks[c][0] for c in ce_batch_dims]
 
     template = xr.DataArray(
-        da.empty(ce_shapes, chunks=ce_chunks),
+        da.empty(ce_shapes),
         dims=ce_batch_dims,
         coords=ce_batch_coords,
-    )
+    ).chunk(chunkies)
 
-    other = xr.open_zarr(damages)
+    other = xr.open_zarr(damages).chunk(chunkies)
 
     out = other.map_blocks(
         ce_from_chunk,
@@ -193,7 +208,6 @@ def sum_AMEL(
     config,
     AMEL,
 ):
-
     # load config
     with open(config, "r") as stream:
         loaded_config = yaml.safe_load(stream)
@@ -203,13 +217,26 @@ def sum_AMEL(
 
     # save summed variables to zarr one by one
     for i, var in enumerate(["delta", "histclim"]):
-
         datasets = []
 
         for sector in sectors:
             print(f"Opening {sector},{params[sector]['sector_path']}")
             ds = xr.open_zarr(params[sector]["sector_path"], consolidated=True)
-            ds = ds[params[sector][var]].rename(var)
+            ds = (
+                ds[params[sector][var]]
+                .rename(var)
+                .chunk(
+                    {
+                        "batch": 15,
+                        "ssp": 1,
+                        "model": 1,
+                        "rcp": 1,
+                        "gcm": 1,
+                        "year": 10,
+                        "region": -1,
+                    }
+                )
+            )
             ds = xr.where(np.isinf(ds), np.nan, ds)
             datasets.append(ds)
 
@@ -252,7 +279,6 @@ def subset_USA_reduced_damages(
     eta,
     input_path,
 ):
-
     if recipe == "adding_up":
         ds = xr.open_zarr(
             f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
@@ -262,7 +288,25 @@ def subset_USA_reduced_damages(
             f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
         )
 
-    subset = ds.sel(region=[i for i in ds.region.values if "USA" in i])
+    US_territories = [
+        "USA",
+        "XBK",
+        "GUM",
+        "XHO",
+        "XJV",
+        "XJA",
+        "XKR",
+        "XMW",
+        "XNV",
+        "MNP",
+        "XPL",
+        "PRI",
+        "VIR",
+        "XWK",
+    ]
+    subset = ds.sel(
+        region=[i for i in ds.region.values if any(j in i for j in US_territories)]
+    )
 
     for var in subset.variables:
         subset[var].encoding.clear()
@@ -285,13 +329,30 @@ def subset_USA_ssp_econ(
     in_path,
     out_path,
 ):
-
     zarr = xr.open_zarr(
         in_path,
         consolidated=True,
     )
 
-    zarr = zarr.sel(region=[i for i in zarr.region.values if "USA" in i])
+    US_territories = [
+        "USA",
+        "XBK",
+        "GUM",
+        "XHO",
+        "XJV",
+        "XJA",
+        "XKR",
+        "XMW",
+        "XNV",
+        "MNP",
+        "XPL",
+        "PRI",
+        "VIR",
+        "XWK",
+    ]
+    zarr = zarr.sel(
+        region=[i for i in zarr.region.values if any(j in i for j in US_territories)]
+    )
 
     for var in zarr.variables:
         zarr[var].encoding.clear()
@@ -335,7 +396,6 @@ def clip_damages(
 
     with xr.open_zarr(sector_path, chunks=None)[delta] as ds:
         with xr.open_zarr(econ_path, chunks=None) as gdppc:
-
             ce_batch_dims = [i for i in ds.dims]
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
@@ -354,7 +414,6 @@ def clip_damages(
     def chunk_func(
         damages,
     ):
-
         year = damages.year.values
         ssp = damages.ssp.values
         model = damages.model.values

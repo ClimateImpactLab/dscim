@@ -79,7 +79,6 @@ def test_risk_scc(menu_instance, discount_types):
 @pytest.mark.parametrize("discount_types", ["euler_ramsey"], indirect=True)
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_global_damages_calculation(menu_instance):
-
     global_damages = menu_instance.global_damages_calculation()
     assert (
         isinstance(global_damages, pandas.DataFrame)

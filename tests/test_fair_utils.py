@@ -41,7 +41,6 @@ def test_modeler():
 
 
 def test_get_weights():
-
     """
     input cases covered :
     quantiles :

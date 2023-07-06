@@ -299,15 +299,21 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
         )
 
     if func is None:
-        exp = 1 / (1 - eta)
-        utility = np.true_divide(array ** (1 - eta), (1 - eta))
+        if eta == 1:
+            utility = np.log(array)
+        else:
+            exp = 1 / (1 - eta)
+            utility = np.true_divide(array ** (1 - eta), (1 - eta))
 
         if weights is None:
             exp_utility = utility.mean(dim=dims)
         else:
             exp_utility = utility.weighted(weights).mean(dim=dims)
 
-        ce_array = (exp_utility * (1 - eta)) ** exp
+        if eta == 1:
+            ce_array = np.exp(exp_utility)
+        else:
+            ce_array = (exp_utility * (1 - eta)) ** exp
 
     else:
         try:
@@ -322,14 +328,10 @@ def model_outputs(
     damage_function,
     extrapolation_type,
     formula,
-    extrap_formula,
     year_range,
-    extrap_year,
     year_start_pred,
-    year_end_pred,
     quantiles,
     global_c=None,
-    base_year=2010,
     min_anomaly=0,
     max_anomaly=20,
     step_anomaly=0.2,
@@ -353,24 +355,12 @@ def model_outputs(
     type_estimation: str
         Type of model use for damage function fitting: `ols`, `quantreg`
     extrapolation_type : str
-        Type of extrapolation: `global_c_ratio`, `time_trends`
+        Type of extrapolation: `global_c_ratio`
     global_c : xr.DataArray
         Array with global consumption extrapolated to 2300. This is only used
         when ``extrapolation_type`` is ``global_c_ratio``.
-    fix_global_c : int
-        Year to fix damages and use as base to the ``global_c_ratio``
-        extrapolation. Default value is 2099.
-    base_year: int
-        Base year for `time_trends` rebasing.
-    interp_year: int
-        Year pre-2100 to fit damages used for linear extrapolation.
-        i.e. If `interp_year=2085`, data from years 2085 to 2099 will be
-        used to extrapolate data to years post-2100. 2085 is the default.
-        Only used in `time_trends` rebasing.
     year_start_pred: int
         Start of extrapolation
-    year_end_pred: int
-        End of extrapolation
     year_range: sequence, lst, tuple, range
         Range of years to estimate over. Default is 2010 to 2100
 
@@ -389,32 +379,14 @@ def model_outputs(
     # set exogenous variables for predictions
     gmsl = np.arange(min_gmsl, max_gmsl, step_gmsl)
     temps = np.arange(min_anomaly, max_anomaly, step_anomaly)
-    extrap_years = range(year_start_pred, year_end_pred + 1)
 
     if ("anomaly" in damage_function.columns) and ("gmsl" in damage_function.columns):
         exog_X = pd.DataFrame(product(temps, gmsl))
         exog = dict(anomaly=exog_X.values[:, 0], gmsl=exog_X.values[:, 1])
-
-        extrap_X = pd.DataFrame(product(temps, extrap_years, gmsl))
-        extrap_exog = dict(
-            anomaly=extrap_X.values[:, 0],
-            year_rebase=extrap_X.values[:, 1] - base_year,
-            gmsl=extrap_X.values[:, 2],
-        )
     elif "anomaly" in damage_function.columns:
         exog = dict(anomaly=temps)
-
-        extrap_X = pd.DataFrame(product(temps, extrap_years))
-        extrap_exog = dict(
-            anomaly=extrap_X.values[:, 0], year_rebase=extrap_X.values[:, 1] - base_year
-        )
     elif "gmsl" in damage_function.columns:
         exog = dict(gmsl=gmsl)
-
-        extrap_X = pd.DataFrame(product(gmsl, extrap_years))
-        extrap_exog = dict(
-            gmsl=extrap_X.values[:, 0], year_rebase=extrap_X.values[:, 1] - base_year
-        )
     else:
         print("Independent variables not found.")
 
@@ -440,50 +412,7 @@ def model_outputs(
     param_df = pd.concat(list_params)
     y_hat_df = pd.concat(list_y_hats)
 
-    if extrapolation_type == "time_trends":
-
-        raise NotImplementedError(
-            "This has not been tested since adding quantregs option."
-        )
-
-        # Linear-extrapolation for post-2100 years
-        df_extrap = damage_function[damage_function.year >= extrap_year]
-        df_extrap = df_extrap.assign(year_rebase=df_extrap.year - base_year)
-
-        extrap_params, extrap_y_hat = modeler(
-            df=df_extrap,
-            formula=extrap_formula,
-            type_estimation=type_estimation,
-            exog=extrap_exog,
-        )
-        extrap_y_hat = extrap_y_hat.drop(columns="year_rebase")
-        extrap_y_hat["year"] = extrap_X.values[:, 1]
-
-        # Reformulating parameters
-        extrapolation_year = []
-        for year in extrap_years:
-
-            params_df = extrap_params.copy(deep=True)
-            unint_terms = int(len(params_df.columns) / 2)
-
-            # sum uninteracted terms with matching (interacted term * rebased year)
-            for i in range(0, unint_terms):
-                params_df.iloc[:, i] = params_df.iloc[:, i] + params_df.iloc[
-                    :, (unint_terms + i)
-                ] * (year - base_year)
-
-            params_df = params_df.iloc[:, range(0, unint_terms)]
-
-            params_df = params_df.assign(year=year)
-            extrapolation_year.append(params_df)
-
-        extrapolation_results = pd.concat(extrapolation_year)
-
-        parameters = pd.concat([param_df, extrapolation_results]).to_xarray()
-        preds = pd.concat([y_hat_df, extrap_y_hat]).to_xarray()
-
-    elif extrapolation_type == "global_c_ratio":
-
+    if extrapolation_type == "global_c_ratio":
         # convert to xarray immediately
         index = ["year", "q"] if type_estimation == "quantreg" else ["year"]
         y_hat_df = y_hat_df.set_index(
@@ -594,7 +523,6 @@ def compute_damages(anomaly, betas, formula):
         formula
         == "damages ~ -1 + anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)"
     ):
-
         damages_fair = (
             betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
@@ -604,7 +532,6 @@ def compute_damages(anomaly, betas, formula):
     elif (
         formula == "damages ~ anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)"
     ):
-
         damages_fair = (
             betas["Intercept"]
             + betas["anomaly"] * anomaly.temperature
@@ -613,7 +540,6 @@ def compute_damages(anomaly, betas, formula):
             + betas["np.power(gmsl, 2)"] * np.power(anomaly.gmsl, 2)
         )
     elif formula == "damages ~ -1 + gmsl + anomaly + np.power(anomaly, 2)":
-
         damages_fair = (
             betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
@@ -621,32 +547,27 @@ def compute_damages(anomaly, betas, formula):
         )
 
     elif formula == "damages ~ -1 + anomaly + np.power(anomaly, 2)":
-
         damages_fair = betas["anomaly"] * anomaly.temperature + betas[
             "np.power(anomaly, 2)"
         ] * np.power(anomaly.temperature, 2)
 
     elif formula == "damages ~ anomaly + np.power(anomaly, 2)":
-
         damages_fair = (
             betas["Intercept"]
             + betas["anomaly"] * anomaly.temperature
             + betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
         )
     elif formula == "damages ~ gmsl + np.power(gmsl, 2)":
-
         damages_fair = (
             betas["Intercept"]
             + betas["gmsl"] * anomaly.gmsl
             + betas["np.power(gmsl, 2)"] * np.power(anomaly.gmsl, 2)
         )
     elif formula == "damages ~ -1 + gmsl + np.power(gmsl, 2)":
-
         damages_fair = betas["gmsl"] * anomaly.gmsl + betas[
             "np.power(gmsl, 2)"
         ] * np.power(anomaly.gmsl, 2)
     elif formula == "damages ~ -1 + gmsl":
-
         damages_fair = betas["gmsl"] * anomaly.gmsl
 
     elif formula == "damages ~ -1 + np.power(anomaly, 2)":

@@ -3,7 +3,6 @@ Calculate damages from the projection system using VSL
 """
 
 import os
-import glob
 import re
 import logging
 import warnings
@@ -93,6 +92,50 @@ def _parse_projection_filesys(input_path, query="exists==True"):
     df["iam"] = df["model"].replace(moddict)
 
     return df.query(query)
+
+
+def concatenate_damage_output(damage_dir, basename, save_path):
+    """Concatenate labor/energy damage output across batches.
+
+    Parameters
+    ----------
+    damage_dir str
+        Directory containing separate labor/energy damage output files by batches.
+    basename str
+        Prefix of the damage output filenames (ex. {basename}_batch0.zarr)
+    save_path str
+        Path to save concatenated file in .zarr format
+    """
+    paths = [
+        f"{damage_dir}/{basename}_{b}.zarr"
+        for b in ["batch" + str(i) for i in range(0, 15)]
+    ]
+    data = xr.open_mfdataset(paths=paths, engine="zarr")
+
+    for v in data:
+        del data[v].encoding["chunks"]
+
+    chunkies = {
+        "batch": 15,
+        "rcp": 1,
+        "gcm": 1,
+        "model": 1,
+        "ssp": 1,
+        "region": -1,
+        "year": 10,
+    }
+
+    data = data.chunk(chunkies)
+
+    for v in list(data.coords.keys()):
+        if data.coords[v].dtype == object:
+            data.coords[v] = data.coords[v].astype("unicode")
+    data.coords["batch"] = data.coords["batch"].astype("unicode")
+    for v in list(data.variables.keys()):
+        if data[v].dtype == object:
+            data[v] = data[v].astype("unicode")
+
+    data.to_zarr(save_path, mode="w")
 
 
 def calculate_labor_impacts(input_path, file_prefix, variable, val_type):
@@ -208,7 +251,9 @@ def concatenate_labor_damages(
         conversion_value = 1.273526
         concat_ds = xr.combine_by_coords(list_damages_batch)
         for v in [f"histclim_{variable}", f"delta_{variable}"]:
-            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop) * -1 * conversion_value
+            concat_ds[v] = (
+                (concat_ds[v] / ec_cls.econ_vars.pop.load()) * -1 * conversion_value
+            )
 
         # Save file
         file_name = f"{variable}_{val_type}_{i}"
@@ -324,7 +369,6 @@ def compute_ag_damages(
     def process_batch(g):
         i = g.batch.values[0]
         if i in [f"batch{j}" for j in batches]:
-
             print(f"Processing damages in {i}")
             ds = xr.open_mfdataset(g.path, preprocess=prep, parallel=True)[vars]
             attrs = ds.attrs
@@ -344,13 +388,12 @@ def compute_ag_damages(
                     "market_level",
                     "demand_topcode",
                 ]:
-
                     if var in ds.coords:
                         attrs[var] = ds[var].values
                         ds = ds.drop(var)
 
             # get in per capita 2019 PPP-adjusted USD damages
-            ds = (ds / pop) * -1 * 1.273526
+            ds = (ds / pop.load()) * -1 * 1.273526
 
             # replace infinite values with missings
             for var in ds.keys():
@@ -368,9 +411,10 @@ def compute_ag_damages(
     batches = p_map(
         process_batch, [g for i, g in paths.groupby("batch")], num_cpus=num_cpus
     )
+    batches = [ds for ds in batches if ds is not None]
     chunkies = {
         "rcp": 1,
-        "region": 24378,
+        "region": -1,
         "gcm": 1,
         "year": 10,
         "model": 1,
@@ -384,9 +428,10 @@ def compute_ag_damages(
         .squeeze()
     )
     batches = xr.where(np.isinf(batches), np.nan, batches)
+    batches = batches.astype(np.float32)
 
-    batches.rename({"wc_reallocation": varname})[varname].to_zarr(
-        save_path, mode="a", consolidated=True
+    batches.rename({"wc_reallocation": varname})[varname].to_dataset().to_zarr(
+        store=save_path, mode="a", consolidated=True
     )
 
 
@@ -586,7 +631,9 @@ def concatenate_energy_damages(
         conversion_value = 1.273526
         concat_ds = xr.combine_by_coords(list_damages_batch)
         for v in [f"histclim_{variable}", f"delta_{variable}"]:
-            concat_ds[v] = (concat_ds[v] / ec_cls.econ_vars.pop) * conversion_value
+            concat_ds[v] = (
+                concat_ds[v] / ec_cls.econ_vars.pop.load()
+            ) * conversion_value
 
         # Save file
         file_name = f"{variable}_{i}"
@@ -658,57 +705,115 @@ def prep_mortality_damages(
     paths,
     vars,
     outpath,
-    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
+    mortality_version,
+    path_econ,
 ):
-
-    print(
-        "This function only works on mortality_v4 and mortality_v5 damages from the mortality repo's valuation. Earlier versions of mortality contain different variable definitions (per capita, not per capita, with or without histclim subtracted off."
-    )
-
     ec = EconVars(path_econ=path_econ)
 
     # longest-string gcm has to be processed first so the coordinate is the right str length
     gcms = sorted(gcms, key=len, reverse=True)
 
-    for i, gcm in enumerate(gcms):
-        print(gcm, i, "/", len(gcms))
+    if mortality_version == 0:
+        scaling_deaths = "epa_scaled"
+        scaling_costs = "epa_scaled"
+        valuation = "vly"
+    elif mortality_version == 1:
+        scaling_deaths = "epa_iso_scaled"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+    elif mortality_version == 4:
+        scaling_deaths = "epa_popavg"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+    elif mortality_version == 5:
+        scaling_deaths = "epa_row"
+        scaling_costs = "epa_scaled"
+        valuation = "vsl"
+    else:
+        raise ValueError("Mortality version not valid: ", str(mortality_version))
 
-        def prep(ds, gcm=gcm):
-            return ds.sel(gcm=gcm).drop("gcm")
+    # We set 0 population to infinity so that per capita damages are 0 in locations with 0 population
+    pop = ec.econ_vars.pop.load()
+    pop = xr.where(pop == 0, np.Inf, pop)
+
+    for i, gcm in enumerate(gcms):
+        print(gcm, i + 1, "/", len(gcms))
 
         data = {}
-        for var, name in vars.items():
-            data[var] = xr.open_mfdataset(paths[var], preprocess=prep, parallel=True)[
-                name
-            ]
+
+        def prep(
+            ds,
+            gcm=gcm,
+            scaling_deaths=scaling_deaths,
+            scaling_costs=scaling_costs,
+            valuation=valuation,
+        ):
+            if scaling_deaths == scaling_costs:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
+            else:
+                return ds.sel(
+                    gcm=gcm,
+                    scaling=[scaling_deaths, scaling_costs],
+                    valuation=valuation,
+                ).drop(["gcm", "valuation"])
+
+        data = xr.open_mfdataset(paths, preprocess=prep, parallel=True, engine="zarr")
 
         damages = xr.Dataset(
             {
                 "delta": (
-                    data["delta_deaths"] - data["histclim_deaths"] + data["delta_costs"]
+                    data[vars["delta_deaths"]].sel(scaling=scaling_deaths, drop=True)
+                    - data[vars["histclim_deaths"]].sel(
+                        scaling=scaling_deaths, drop=True
+                    )
+                    + data[vars["delta_costs"]].sel(scaling=scaling_costs, drop=True)
                 )
-                / ec.econ_vars.pop.load(),
-                "histclim": data["histclim_deaths"] / ec.econ_vars.pop.load(),
+                / pop,
+                "histclim": data[vars["histclim_deaths"]].sel(
+                    scaling=scaling_deaths, drop=True
+                )
+                / pop,
             }
         ).expand_dims({"gcm": [gcm]})
 
         damages = damages.chunk(
-            {"batch": 15, "ssp": 1, "model": 1, "rcp": 1, "gcm": 1, "year": 10}
+            {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "rcp": 1,
+                "gcm": 1,
+                "year": 10,
+                "region": -1,
+            }
         )
         damages.coords.update({"batch": [f"batch{i}" for i in damages.batch.values]})
 
         # convert to EPA VSL
         damages = damages * 0.90681089
+        damages = damages.astype(np.float32)
+
+        for v in list(damages.coords.keys()):
+            if damages.coords[v].dtype == object:
+                damages.coords[v] = damages.coords[v].astype("unicode")
+
+        for v in list(damages.variables.keys()):
+            if damages[v].dtype == object:
+                damages[v] = damages[v].astype("unicode")
 
         if i == 0:
             damages.to_zarr(
-                outpath,
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 mode="w",
             )
         else:
             damages.to_zarr(
-                outpath,
+                f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",
                 consolidated=True,
                 append_dim="gcm",
             )
@@ -720,21 +825,44 @@ def prep_mortality_damages(
 
 def coastal_inputs(
     version,
-    adapt_type,
-    vsl_valuation,
     path,
+    adapt_type,
+    vsl_valuation=None,
 ):
-
     try:
         d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
     except GroupNotFoundError:
         print(f"Zarr not found: {path}/coastal_damages_{version}.zarr")
         exit()
 
-    d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
-
-    d.to_zarr(
-        f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
-        consolidated=True,
-        mode="w",
-    )
+    if "vsl_valuation" in d.coords:
+        if vsl_valuation is None:
+            raise ValueError(
+                "vsl_valuation is a coordinate in the input dataset but is set to None. Please provide a value for vsl_valuation by which to subset the input dataset."
+            )
+        else:
+            d = d.sel(adapt_type=adapt_type, vsl_valuation=vsl_valuation, drop=True)
+            chunkies = {
+                "batch": 15,
+                "ssp": 1,
+                "model": 1,
+                "slr": 1,
+                "year": 10,
+                "region": -1,
+            }
+            d = d.chunk(chunkies)
+            d.to_zarr(
+                f"{path}/coastal_damages_{version}-{adapt_type}-{vsl_valuation}.zarr",
+                consolidated=True,
+                mode="w",
+            )
+    else:
+        print(
+            "vsl_valuation is not a dimension of the input dataset, subset adapt_type only"
+        )
+        d = d.sel(adapt_type=adapt_type, drop=True)
+        d.to_zarr(
+            f"{path}/coastal_damages_{version}-{adapt_type}.zarr",
+            consolidated=True,
+            mode="w",
+        )

@@ -526,7 +526,6 @@ class MainRecipe(StackedDamages, ABC):
 
         if self.discounting_type == "constant_model_collapsed":
             for ssp in damage_function_points["ssp"].unique():
-
                 # Subset dataframe to specific SSP
                 fit_subset = damage_function_points[
                     damage_function_points["ssp"] == ssp
@@ -537,15 +536,12 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function = model_outputs(
                     damage_function=fit_subset,
                     formula=self.formula,
-                    extrap_formula=self.extrap_formula,
                     type_estimation=self.fit_type,
                     global_c=global_c_subset,
                     extrapolation_type=self.ext_method,
                     quantiles=self.quantreg_quantiles,
                     year_range=yrs,
-                    extrap_year=self.ext_subset_start_year,
                     year_start_pred=self.ext_subset_end_year + 1,
-                    year_end_pred=self.ext_end_year,
                 )
 
                 # Add variables
@@ -577,7 +573,6 @@ class MainRecipe(StackedDamages, ABC):
                     damage_function_points.model.unique(),
                 )
             ):
-
                 # Subset dataframe to specific SSP-IAM combination.
                 fit_subset = damage_function_points[
                     (damage_function_points["ssp"] == ssp)
@@ -590,15 +585,12 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function = model_outputs(
                     damage_function=fit_subset,
                     formula=self.formula,
-                    extrap_formula=self.extrap_formula,
                     type_estimation=self.fit_type,
                     global_c=global_c_subset,
                     extrapolation_type=self.ext_method,
                     quantiles=self.quantreg_quantiles,
                     year_range=yrs,
-                    extrap_year=self.ext_subset_start_year,
                     year_start_pred=self.ext_subset_end_year + 1,
-                    year_end_pred=self.ext_end_year,
                 )
 
                 # Add variables
@@ -627,14 +619,11 @@ class MainRecipe(StackedDamages, ABC):
                 damage_function=fit_subset,
                 type_estimation=self.fit_type,
                 formula=self.formula,
-                extrap_formula=self.extrap_formula,
                 global_c=global_consumption,
                 extrapolation_type=self.ext_method,
                 quantiles=self.quantreg_quantiles,
                 year_range=yrs,
-                extrap_year=self.ext_subset_start_year,
                 year_start_pred=self.ext_subset_end_year + 1,
-                year_end_pred=self.ext_end_year,
             )
 
             # Add variables
@@ -680,7 +669,6 @@ class MainRecipe(StackedDamages, ABC):
                 year and anomaly
         """
         if self.scenario_dimensions is None:
-
             # this only occurs for global discounting
             # with a single scenario passed
             damage_function = self.damage_function_calculation(
@@ -694,7 +682,6 @@ class MainRecipe(StackedDamages, ABC):
             damage_function, dict_list = {}, []
 
             for name, dt in subset:
-
                 # turn single-dim into a tuple to make indexing easier later
                 if len(self.scenario_dimensions) == 1:
                     name = tuple([name])
@@ -816,7 +803,6 @@ class MainRecipe(StackedDamages, ABC):
         ) / self.collapsed_pop.sum("region")
 
         if self.NAME == "equity":
-
             # equity recipe's growth is capped to
             # risk aversion recipe's growth rates
             extrapolated = extrapolate(
@@ -848,11 +834,9 @@ class MainRecipe(StackedDamages, ABC):
 
         # rff simulation means that GDP already exists out to 2300
         if 2300 in self.gdp.year:
-
             self.logger.debug("Global consumption found up to 2300.")
             global_cons = self.gdp.sum("region").rename("global_consumption")
         else:
-
             self.logger.info("Extrapolating global consumption.")
 
             # holding population constant
@@ -907,15 +891,26 @@ class MainRecipe(StackedDamages, ABC):
         if parameter <= 1:
             parameter = parameter * no_cc_consumption
 
-        w_utility = parameter ** (1 - self.eta) / (1 - self.eta)
-        bottom_utility = parameter ** (-self.eta) * (parameter - cc_consumption)
-        bottom_coded_cons = power(
-            ((1 - self.eta) * (w_utility - bottom_utility)), (1 / (1 - self.eta))
-        )
+        if self.eta == 1:
+            w_utility = np.log(parameter)
+            bottom_utility = np.power(parameter, -1) * (parameter - cc_consumption)
+            bottom_coded_cons = np.exp((w_utility - bottom_utility))
 
-        clipped_cons = xr.where(
-            cc_consumption > parameter, cc_consumption, bottom_coded_cons
-        )
+            clipped_cons = xr.where(
+                cc_consumption > parameter, cc_consumption, bottom_coded_cons
+            )
+        else:
+            w_utility = np.power(parameter, (1 - self.eta)) / (1 - self.eta)
+            bottom_utility = np.power(parameter, -self.eta) * (
+                parameter - cc_consumption
+            )
+            bottom_coded_cons = power(
+                ((1 - self.eta) * (w_utility - bottom_utility)), (1 / (1 - self.eta))
+            )
+
+            clipped_cons = xr.where(
+                cc_consumption > parameter, cc_consumption, bottom_coded_cons
+            )
 
         return clipped_cons
 
@@ -936,7 +931,6 @@ class MainRecipe(StackedDamages, ABC):
             "damages ~ -1 + anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)",
             "damages ~ -1 + gmsl + np.power(gmsl, 2)",
         ]:
-
             gmsl_max = -self.damage_function_coefficients["gmsl"] / (
                 2 * self.damage_function_coefficients["np.power(gmsl, 2)"]
             )
@@ -980,7 +974,6 @@ class MainRecipe(StackedDamages, ABC):
 
         gc_no_pulse = []
         for wp in self.weitzman_parameter:
-
             gc = self.weitzman_min(
                 no_cc_consumption=self.global_consumption,
                 cc_consumption=cc_cons,
@@ -1045,7 +1038,6 @@ class MainRecipe(StackedDamages, ABC):
         marginal_damages = []
 
         for agg in [i for i in self.fair_aggregation if i != "median"]:
-
             if agg == "ce":
                 md = self.ce_fair_no_pulse - self.ce_fair_pulse
             elif agg in ["mean", "gwr_mean"]:
@@ -1277,7 +1269,6 @@ class MainRecipe(StackedDamages, ABC):
             )
 
         elif "euler" in discounting_type:
-
             discount_factors = []
             for agg in [i for i in fair_aggregation if i != "median"]:
                 if agg == "ce":
@@ -1293,7 +1284,6 @@ class MainRecipe(StackedDamages, ABC):
                         self.global_consumption_no_pulse / full_pop
                     ).mean(self.fair_dims)
                 elif agg == "median_params":
-
                     median_params_damages = compute_damages(
                         self.climate.fair_median_params_control,
                         betas=self.damage_function_coefficients,
@@ -1361,7 +1351,6 @@ class MainRecipe(StackedDamages, ABC):
     @cachedproperty
     @save("uncollapsed_marginal_damages")
     def uncollapsed_marginal_damages(self):
-
         md = (
             (
                 (self.global_consumption_no_pulse - self.global_consumption_pulse)
