@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New unit tests for [dscim/dscim/preprocessing.py](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/preprocessing/preprocessing.py). ([PR #67](https://github.com/ClimateImpactLab/dscim/pull/67), [@JMGilbert](https://github.com/JMGilbert))
 - Functions used for producing RFF weights. ([PR #66](https://github.com/ClimateImpactLab/dscim/pull/66), [@davidrzhdu](https://github.com/davidrzhdu))
 ### Changed
+- Re-enable equity menu option tests. ([PR #84](https://github.com/ClimateImpactLab/dscim/pull/84), [@JMGilbert](https://github.com/JMGilbert))
 - Changed `coastal_inputs` function to work with new version of coastal outputs. ([PR #75](https://github.com/ClimateImpactLab/dscim/pull/75), [@davidrzhdu](https://github.com/davidrzhdu))
 - Changed `prep_mortality_damages` function to work with new format mortality outputs. ([PR #74](https://github.com/ClimateImpactLab/dscim/pull/74) and [PR #68](https://github.com/ClimateImpactLab/dscim/pull/68), [@JMGilbert](https://github.com/JMGilbert))
 - Included US territories in damages and economic variable subsetting. ([PR #78](https://github.com/ClimateImpactLab/dscim/pull/78), [@JMGilbert](https://github.com/JMGilbert))
