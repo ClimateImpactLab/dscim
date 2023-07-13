@@ -1,6 +1,6 @@
 xarray==2022.11.0
 pandas
-numpy==1.23.5
+numpy==1.24.0
 matplotlib
 dask
 distributed
