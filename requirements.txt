@@ -13,7 +13,7 @@ zarr==2.15.0
 dask-jobqueue==0.8.2
 seaborn==0.12.2
 geopandas==0.13.2
-black==23.3.0
+black==23.7.0
 flake8==6.0.0
 netcdf4==1.6.4
 h5netcdf==1.2.0
