@@ -8,7 +8,7 @@ requests==2.31.0
 statsmodels==0.14.0
 pytest==7.4.0
 pytest-cov==4.1.0
-click==8.1.4
+click==8.1.5
 zarr==2.15.0
 dask-jobqueue==0.8.2
 seaborn==0.12.2
