@@ -1,7 +1,7 @@
 # from https://github.com/dssg/dickens/blob/master/src/descriptors.py
 
 
-class cachedproperty(object):
+class cachedproperty:
     """Non-data descriptor decorator implementing a read-only property
     which overrides itself on the instance with an entry in the
     instance's data dictionary, caching the result of the decorated

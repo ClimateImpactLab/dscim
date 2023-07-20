@@ -1,11 +1,8 @@
 # Pass a directory, output log files detailing number of nans each file has
 
-import os
-import numpy as np
 import pandas as pd
 import xarray as xr
 import glob
-import shutil
 import csv
 from p_tqdm import p_uimap
 

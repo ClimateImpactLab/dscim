@@ -1,19 +1,12 @@
-from math import ceil
 from pathlib import Path
 import os
-import sys
 
 USER = os.getenv("USER")
-import dask
 import dask.array as da
-import dask.config
 import numpy as np
 import xarray as xr
-from dask.distributed import Client, progress
 from dscim.utils.functions import ce_func, mean_func
 import yaml
-import time
-import argparse
 
 
 def ce_from_chunk(
@@ -87,7 +80,7 @@ def reduce_damages(
         ), "Adding up does not take an eta argument. Please set to None."
     # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
-    with open(config, "r") as stream:
+    with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
 
@@ -209,7 +202,7 @@ def sum_AMEL(
     AMEL,
 ):
     # load config
-    with open(config, "r") as stream:
+    with open(config) as stream:
         loaded_config = yaml.safe_load(stream)
         params = loaded_config["sectors"]
 
@@ -385,7 +378,7 @@ def clip_damages(
     """
 
     # load config
-    with open(config, "r") as stream:
+    with open(config) as stream:
         loaded_config = yaml.safe_load(stream)
         params = loaded_config["sectors"][sector]
 

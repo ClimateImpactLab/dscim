@@ -1,5 +1,4 @@
 import os
-import dask
 import logging
 import subprocess
 from subprocess import CalledProcessError
@@ -10,7 +9,7 @@ import xarray as xr
 from dscim.descriptors import cachedproperty
 from itertools import product
 from dscim.menu.decorators import save
-from dscim.menu.simple_storage import StackedDamages, EconVars
+from dscim.menu.simple_storage import StackedDamages
 from dscim.utils.utils import (
     model_outputs,
     compute_damages,
@@ -399,8 +398,6 @@ class MainRecipe(StackedDamages, ABC):
         ------
             A dict Class metadata
         """
-
-        import dscim
 
         # find machine name
         machine_name = os.getenv("HOSTNAME")
@@ -894,7 +891,7 @@ class MainRecipe(StackedDamages, ABC):
         if self.eta == 1:
             w_utility = np.log(parameter)
             bottom_utility = np.power(parameter, -1) * (parameter - cc_consumption)
-            bottom_coded_cons = np.exp((w_utility - bottom_utility))
+            bottom_coded_cons = np.exp(w_utility - bottom_utility)
 
             clipped_cons = xr.where(
                 cc_consumption > parameter, cc_consumption, bottom_coded_cons
@@ -1048,10 +1045,8 @@ class MainRecipe(StackedDamages, ABC):
                 md = self.median_params_marginal_damages
             else:
                 raise NotImplementedError(
-                    (
-                        f"{agg} is not available. Enter list including"
-                        '["ce", "fair", "median", "median_params"]'
-                    )
+                    f"{agg} is not available. Enter list including"
+                    '["ce", "fair", "median", "median_params"]'
                 )
 
             md = md.assign_coords({"fair_aggregation": agg}).expand_dims(

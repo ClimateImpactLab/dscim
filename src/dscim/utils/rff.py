@@ -5,13 +5,10 @@ from p_tqdm import p_map
 from itertools import product
 from functools import partial
 import os
-import sys
 from numpy.testing import assert_allclose
 from datetime import datetime
 import fsspec
-import pyarrow
 import gurobipy as gp
-import time
 from scipy.sparse import coo_matrix
 from gurobipy import GRB
 
