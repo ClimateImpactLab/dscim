@@ -35,9 +35,9 @@ jobs:
       - name: Format check with black
         run: |
           black --check .
-      - name: Format check with flake8
+      - name: Format ruff check
         run: |
-          flake8
+          ruff check .
 
   test:
     runs-on: ubuntu-latest
