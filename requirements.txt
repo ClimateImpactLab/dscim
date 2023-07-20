@@ -9,7 +9,7 @@ statsmodels==0.14.0
 pytest==7.4.0
 pytest-cov==4.1.0
 click==8.1.6
-zarr==2.15.0
+zarr==2.16.0
 dask-jobqueue==0.8.2
 seaborn==0.12.2
 geopandas==0.13.2
