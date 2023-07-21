@@ -1,11 +1,6 @@
 import xarray as xr
-import pandas as pd
-import numpy as np
 import os
-import sys
-import yaml
 from p_tqdm import p_map
-from itertools import product
 
 USER = os.getenv("USER")
 

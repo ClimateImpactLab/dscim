@@ -5,18 +5,12 @@ import dscim.menu.equity
 from pathlib import Path
 
 import os
-import gc
-import time
 import yaml
 
 USER = os.getenv("USER")
-import numpy as np
-import pandas as pd
-import xarray as xr
 import dask
 
 dask.config.set(**{"array.slicing.split_large_chunks": False})
-from dscim import ProWaiter
 from itertools import product
 
 MENU_OPTIONS = {
@@ -44,7 +38,7 @@ def run_ssps(
     if fair_dims_list is None:
         fair_dims_list = [["simulation"]]
 
-    with open(config, "r") as stream:
+    with open(config) as stream:
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho, mask, fair_dims in product(
@@ -132,7 +126,7 @@ def run_rff(
     order="scc",
     regenerate_sccs=True,
 ):
-    with open(config, "r") as stream:
+    with open(config) as stream:
         conf = yaml.safe_load(stream)
 
     for sector, pulse_year, menu_disc, eta_rho in product(

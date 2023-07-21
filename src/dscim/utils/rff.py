@@ -5,13 +5,10 @@ from p_tqdm import p_map
 from itertools import product
 from functools import partial
 import os
-import sys
 from numpy.testing import assert_allclose
 from datetime import datetime
 import fsspec
-import pyarrow
 import gurobipy as gp
-import time
 from scipy.sparse import coo_matrix
 from gurobipy import GRB
 
@@ -211,8 +208,8 @@ def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
     ) * rff_df.GDP  # Adjust weight measurement from 2011 tp 2005 PPP USD
 
     # print(rff_df.iso[np.isnan(rff_df.weight)])
-    rff_df.weight[np.isnan(rff_df.weight)] = np.exp(
-        np.nanmean(np.log(rff_df.weight))
+    rff_df["weight"] = rff_df["weight"].fillna(
+        np.exp(np.nanmean(np.log(rff_df.weight)))
     )  # Fill missing value weights with sample mean
 
     out_df = solve_optimization(ssp_df, rff_df)

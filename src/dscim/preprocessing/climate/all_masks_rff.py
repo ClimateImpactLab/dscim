@@ -1,9 +1,6 @@
 import xarray as xr
-import pandas as pd
-import numpy as np
 from dscim.menu.simple_storage import Climate
 import os
-import sys
 import yaml
 from p_tqdm import p_map
 

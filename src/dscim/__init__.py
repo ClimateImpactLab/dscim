@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-import imp
 import yaml
 import xarray
 import pathlib

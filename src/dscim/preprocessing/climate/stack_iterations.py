@@ -1,8 +1,5 @@
 import xarray as xr
-import pandas as pd
-import numpy as np
 import os
-import sys
 
 USER = os.getenv("USER")
 from p_tqdm import p_map

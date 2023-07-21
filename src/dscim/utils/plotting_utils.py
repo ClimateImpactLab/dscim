@@ -1,4 +1,4 @@
-from matplotlib.ticker import SymmetricalLogLocator, FuncFormatter
+from matplotlib.ticker import SymmetricalLogLocator
 import numpy as np
 
 

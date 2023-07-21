@@ -28,3 +28,24 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 fallback_version = "999"
+
+[tool.ruff]
+exclude = [
+    ".eggs",
+    "docs",
+]
+# E402: module level import not at top of file
+# E501: line too long - let black worry about that
+ignore = [
+    "E402",
+    "E501",
+]
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # Pyupgrade
+    "UP",
+]

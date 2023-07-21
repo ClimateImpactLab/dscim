@@ -1,7 +1,6 @@
 import os
 import dask
 import zipfile
-import pytest
 import pandas as pd
 import xarray as xr
 

@@ -5,7 +5,6 @@ Calculate damages from the projection system using VSL
 import os
 import re
 import logging
-import warnings
 import multiprocessing
 import numpy as np
 import pandas as pd
