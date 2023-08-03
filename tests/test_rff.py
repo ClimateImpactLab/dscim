@@ -169,6 +169,7 @@ def test_process_ssp_sample(
         ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
     )
 
+
 def test_process_rff_sample(
     tmp_path,
     ssp_df_in_fixture,
