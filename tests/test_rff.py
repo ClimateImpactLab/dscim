@@ -65,6 +65,11 @@ def test_solve_optimization(
     """
     Test that solve optimization correctly applies the emulation scheme to produce a set of SSP-growth model weights and country-level errors
     """
+    _ = pytest.importorskip(
+        "gurobipy",
+        reason="test requires proprietary package gurobipy which is not installed",
+    )
+
     rff_df_in = pd.DataFrame(
         data={
             "iso": ["USA"],
@@ -106,6 +111,11 @@ def test_solve_optimization_exception(
     """
     Test that solve optimization returns an exception when countires with missing value for any SSP-growth model occured in the loop
     """
+    _ = pytest.importorskip(
+        "gurobipy",
+        reason="test requires proprietary package gurobipy which is not installed",
+    )
+
     rff_df_in = pd.DataFrame(
         data={
             "iso": ["USA", "ZWE"],
@@ -159,7 +169,6 @@ def test_process_ssp_sample(
         ds_out_actual.reset_index(drop=True), ds_out_expected.reset_index(drop=True)
     )
 
-
 def test_process_rff_sample(
     tmp_path,
     ssp_df_in_fixture,
@@ -167,6 +176,11 @@ def test_process_rff_sample(
     """
     Test that process rff sample correctly cleans RFF input data and passes the cleaned data to the emulation scheme to produce a set of SSP-growth model weights and country-level errors
     """
+    _ = pytest.importorskip(
+        "gurobipy",
+        reason="test requires proprietary package gurobipy which is not installed",
+    )
+
     rff_raw_in = pd.DataFrame(
         data={
             "Country": ["ZWE", "USA"],

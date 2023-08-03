@@ -8,9 +8,7 @@ import os
 from numpy.testing import assert_allclose
 from datetime import datetime
 import fsspec
-import gurobipy as gp
 from scipy.sparse import coo_matrix
-from gurobipy import GRB
 
 
 ## Solve the optimization problem
@@ -37,6 +35,8 @@ def solve_optimization(ssp_df, rff_df):
         Dataset with a set of SSP-growth model weights and country-level errors in 5-year increments
         for a single RFF-SP
     """
+    # Import gurobipy here so only required for this function rather than entire module.
+    import gurobipy as gp
 
     ssp_df = ssp_df[(ssp_df.scenario != "SSP1") & (ssp_df.scenario != "SSP5")]
 
@@ -134,8 +134,8 @@ def solve_optimization(ssp_df, rff_df):
         env.setParam("OutputFlag", 0)
         env.start()
         mod = gp.Model("gourmet", env=env)
-        xx = mod.addMVar(shape=len(objfunc), vtype=GRB.CONTINUOUS, name="xx")
-        mod.setObjective(objfunc @ xx, GRB.MINIMIZE)
+        xx = mod.addMVar(shape=len(objfunc), vtype=gp.CONTINUOUS, name="xx")
+        mod.setObjective(objfunc @ xx, gp.MINIMIZE)
         bb = np.array(bb)
         mod.addConstr(AA @ xx <= bb)
         mod.optimize()
