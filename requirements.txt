@@ -10,7 +10,7 @@ pytest==7.4.0
 pytest-cov==4.1.0
 zarr==2.16.0
 black==23.7.0
-ruff==0.0.278
+ruff==0.0.282
 netcdf4==1.6.4
 h5netcdf==1.2.0
 impactlab-tools==0.4.0
