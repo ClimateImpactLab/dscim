@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Add naive list of package dependencies to pyproject.toml.([@brews](https://github.com/brews))
+- Add naive list of package dependencies to pyproject.toml.([PR #123](https://github.com/ClimateImpactLab/dscim/pull/123), [@brews](https://github.com/brews))
 
 ### Changed
 
