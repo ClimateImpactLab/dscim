@@ -20,8 +20,7 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "dask",
-    "distributed",
+    "dask[array, distributed]",
     "impactlab-tools",
     "matplotlib",
     "netcdf4",
