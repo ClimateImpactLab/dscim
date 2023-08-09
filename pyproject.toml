@@ -1,11 +1,3 @@
-[build-system]
-requires = [
-    "setuptools>=62.0",
-    "wheel",
-    "setuptools_scm>=7.0",
-]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "dscim"
 description = "Data-Driven Spatial Climate Impact Model core component code"
@@ -42,6 +34,13 @@ Documentation = "https://github.com/ClimateImpactLab/dscim"
 Source = "https://github.com/ClimateImpactLab/dscim"
 "Bug Tracker" = "https://github.com/ClimateImpactLab/dscim/issues"
 
+[build-system]
+requires = [
+    "setuptools>=62.0",
+    "wheel",
+    "setuptools_scm>=7.0",
+]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 fallback_version = "999"
