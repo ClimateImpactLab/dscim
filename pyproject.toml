@@ -28,6 +28,7 @@ dependencies = [
     "numpy",
     "pandas",
     "pyarrow",
+    "pyyaml",
     "p_tqdm",
     "requests",
     "statsmodels",
