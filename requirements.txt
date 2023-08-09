@@ -1,6 +1,6 @@
 xarray==2022.11.0
 pandas==2.0.3
-numpy==1.23.3
+numpy==1.25.2
 matplotlib==3.7.2
 dask[array, distributed]==2023.8.0
 requests==2.31.0
