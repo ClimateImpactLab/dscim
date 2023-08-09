@@ -8,6 +8,7 @@ import inspect
 
 from datetime import datetime
 from itertools import product
+from dscim._version import __version__  # noqa: F401
 from dscim.menu.simple_storage import Climate, EconVars
 from dscim.menu.main_recipe import MainRecipe
 
@@ -25,7 +26,6 @@ MENU_OPTIONS = {
 
 # Make attributes stick
 xarray.set_options(keep_attrs=True)
-
 
 # ERROR = 40, WARNING = 30, INFO = 20, DEBUG = 10
 LOG_LEVEL = int(os.environ.get("LOG_LEVEL", logging.INFO))
