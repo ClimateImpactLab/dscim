@@ -19,15 +19,22 @@ Source = "https://github.com/ClimateImpactLab/dscim"
 "Bug Tracker" = "https://github.com/ClimateImpactLab/dscim/issues"
 
 [build-system]
-requires = [
-    "setuptools>=62.0",
-    "wheel",
-    "setuptools_scm>=7.0",
-]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
 
-[tool.setuptools_scm]
-fallback_version = "999"
+[tool.hatch.build.targets.sdist]
+# Exclude /tests: included test data too large to ship to PyPI.
+exclude = [
+    "/.github",
+    "/tests",
+]
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "999"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/dscim/_version.py"
 
 [tool.ruff]
 exclude = [
