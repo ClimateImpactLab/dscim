@@ -11,6 +11,22 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 requires-python = ">=3.8"
+dependencies = [
+    "dask[array, distributed]",
+    "impactlab-tools",
+    "matplotlib",
+    "netcdf4",
+    "h5netcdf",
+    "numpy",
+    "pandas",
+    "pyarrow",
+    "pyyaml",
+    "p_tqdm",
+    "requests",
+    "statsmodels",
+    "xarray",
+    "zarr",
+]
 
 [project.urls]
 Homepage = "https://github.com/ClimateImpactLab/dscim"
