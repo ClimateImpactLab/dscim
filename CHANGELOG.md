@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Dropped optional/unused dependencies `click`, `dask-jobqueue`, `geopandas`, `gurobipy`, `ipywidgets`, `seaborn`. ([PR #99](https://github.com/ClimateImpactLab/dscim/pull/99), [@brews](https://github.com/brews))
+- Switch build system from `setuptools` to `hatchling`. ([PR #128](https://github.com/ClimateImpactLab/dscim/pull/128), [@brews](https://github.com/brews))
 
 ### Fixed
 
+- Fix DeprecationWarning on import. ([PR #128](https://github.com/ClimateImpactLab/dscim/pull/128), [@brews](https://github.com/brews))
 - Fix write-to-copy warning in `process_rff_sample()`. ([PR #116](https://github.com/ClimateImpactLab/dscim/pull/116), [@brews](https://github.com/brews))
 - Fix bad release header links in CHANGELOG.md. ([PR #105](https://github.com/ClimateImpactLab/dscim/pull/105), [@brews](https://github.com/brews))
 - Fixed broken code quality checks in CI. Now using `ruff` instead of `flake8`. ([PR #107](https://github.com/ClimateImpactLab/dscim/pull/107), [@brews](https://github.com/brews))

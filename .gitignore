@@ -128,3 +128,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Auto-generated during builds
+/src/dscim/_version.py

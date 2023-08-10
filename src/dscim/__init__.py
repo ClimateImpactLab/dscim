@@ -8,7 +8,7 @@ import inspect
 
 from datetime import datetime
 from itertools import product
-import pkg_resources
+from dscim._version import __version__  # noqa: F401
 from dscim.menu.simple_storage import Climate, EconVars
 from dscim.menu.main_recipe import MainRecipe
 
@@ -24,17 +24,8 @@ MENU_OPTIONS = {
     "equity": dscim.menu.equity.EquityRecipe,
 }
 
-
 # Make attributes stick
 xarray.set_options(keep_attrs=True)
-
-# courtesy of https://github.com/pydata/xarray/blob/main/xarray/__init__.py#L32
-try:
-    __version__ = pkg_resources.get_distribution("dscim").version
-except Exception:
-    # Local copy or not installed with setuptools.
-    # Disable minimum version checks on downstream libraries.
-    __version__ = "999"
 
 # ERROR = 40, WARNING = 30, INFO = 20, DEBUG = 10
 LOG_LEVEL = int(os.environ.get("LOG_LEVEL", logging.INFO))
