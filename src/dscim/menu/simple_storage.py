@@ -184,7 +184,9 @@ class Climate:
         masks the data according to the mask passed to self.ecs_mask_path.
         """
         if self.gmsl_fair_path is not None:
-            anomaly = xr.combine_by_coords([self.gmst_anomalies, self.gmsl_anomalies])
+            anomaly = xr.combine_by_coords(
+                [self.gmst_anomalies, self.gmsl_anomalies], combine_attrs="drop"
+            )
         else:
             anomaly = self.gmst_anomalies
 
