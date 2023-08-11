@@ -295,6 +295,9 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
         )
 
     if func is None:
+        # Might recast to get array at least float64 to avoid float precision trouble.
+        array = array.astype(np.promote_types(array.dtype, "float64"))
+
         if eta == 1:
             utility = np.log(array)
         else:
