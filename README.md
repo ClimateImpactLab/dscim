@@ -1,3 +1,7 @@
+[![Python package](https://github.com/ClimateImpactLab/dscim/actions/workflows/pythonpackage.yaml/badge.svg)](https://github.com/ClimateImpactLab/dscim/actions/workflows/pythonpackage.yaml)
+[![Upload Python Package](https://github.com/ClimateImpactLab/dscim/actions/workflows/python-publish.yaml/badge.svg)](https://github.com/ClimateImpactLab/dscim/actions/workflows/python-publish.yaml)
+[![codecov](https://codecov.io/gh/ClimateImpactLab/dscim/graph/badge.svg?token=DQMDSHFEYP)](https://codecov.io/gh/ClimateImpactLab/dscim)
+
 # DSCIM: The Data-driven Spatial Climate Impact Model
 
 This Python library enables the calculation of sector-specific partial social cost of greenhouse gases (SC-GHG) and SCGHGs that are combined across sectors using a variety of valuation methods and assumptions. The main purpose of this
