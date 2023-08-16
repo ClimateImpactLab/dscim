@@ -169,7 +169,6 @@ def test_c_equivalence_notarray():
         c_equivalence("I am not an xarray object", dims=["dim_0", "dim_1"], eta=5.0)
 
 
-
 def run_model_outputs(conf):
     """
     helper function for test_model_outputs
