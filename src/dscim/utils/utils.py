@@ -112,6 +112,10 @@ def quantile_weight_quantilereg(array, quantiles=None):
     if quantiles is None:
         quantiles = [0.01, 0.05, 0.167, 0.25, 0.5, 0.75, 0.833, 0.95, 0.99]
 
+    if "simulation" not in array.coords:
+        array = array.assign_coords(simulation=1)
+        array = array.expand_dims(dim="simulation")
+
     qr_quantiles = array.q.values
     weights = xr.DataArray(get_weights(qr_quantiles), dims=["q"], coords=[qr_quantiles])
 

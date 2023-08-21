@@ -1121,7 +1121,14 @@ class MainRecipe(StackedDamages, ABC):
     def uncollapsed_sccs(self):
         """Calculate full distribution of SCCs without FAIR aggregation"""
 
-        md = self.global_consumption_no_pulse - self.global_consumption_pulse
+        if (self.fit_type == "quantreg") & ("median_params" in self.fair_aggregation):
+            md = (
+                self.median_params_marginal_damages
+            )  # this is for statistical uncertainty
+        else:
+            md = (
+                self.global_consumption_no_pulse - self.global_consumption_pulse
+            )  # this is for full uncertainty
 
         # convert to the marginal damages from a single pulse
         md = md * self.climate.conversion
