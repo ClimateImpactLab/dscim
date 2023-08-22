@@ -1,7 +1,6 @@
 [![DOI](https://zenodo.org/badge/496710628.svg)](https://zenodo.org/badge/latestdoi/496710628)
 [![Python package](https://github.com/ClimateImpactLab/dscim/actions/workflows/pythonpackage.yaml/badge.svg)](https://github.com/ClimateImpactLab/dscim/actions/workflows/pythonpackage.yaml)
 [![Upload Python Package](https://github.com/ClimateImpactLab/dscim/actions/workflows/python-publish.yaml/badge.svg)](https://github.com/ClimateImpactLab/dscim/actions/workflows/python-publish.yaml)
-[![codecov](https://codecov.io/gh/ClimateImpactLab/dscim/graph/badge.svg?token=DQMDSHFEYP)](https://codecov.io/gh/ClimateImpactLab/dscim)
 
 # DSCIM: The Data-driven Spatial Climate Impact Model
 
