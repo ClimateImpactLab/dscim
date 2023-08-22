@@ -127,7 +127,7 @@ def test_extrapolate():
     [
         pytest.param(0, xr.DataArray(np.array(5.0)), id="eta=0"),
         pytest.param(1, xr.DataArray(np.array(4.16179145)), id="eta=1"),
-        pytest.param(10, xr.DataArray(np.array(2.32634448)), id="Normal eta"),
+        pytest.param(10, xr.DataArray(np.array(2.32634448)), id="eta=10"),
     ],
 )
 def test_c_equivalence_etas(eta, expected):
