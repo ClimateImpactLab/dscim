@@ -9,7 +9,7 @@ This Python library enables the calculation of sector-specific partial social co
 library is to parse the monetized spatial damages from different sectors and integrate them
 using different options ("menu options") that encompass different decisions, such as
 discount levels, discount strategies, and different considerations related to
-economic and climate uncertainty.
+economic and climate uncertainty. 
 
 ## Installation
 
