@@ -122,62 +122,51 @@ def test_extrapolate():
     )
 
 
-def test_c_equivalence():
+@pytest.mark.parametrize(
+    "eta, expected",
+    [
+        pytest.param(0, xr.DataArray(np.array(5.0)), id="eta=0"),
+        pytest.param(1, xr.DataArray(np.array(4.16179145)), id="eta=1"),
+        pytest.param(10, xr.DataArray(np.array(2.32634448)), id="eta=10"),
+    ],
+)
+def test_c_equivalence_etas(eta, expected):
     """
-    input cases covered :
-    etas :
-        - 0
-        - 1 : division by zero error
-        - 10
-    weights :
-        - None
-        - not None
-    array :
-        - only positive values
-        - with some negative values : ValueError
-        - not xarray.DataArray or xarray.Dataset
+    Check c_equivalence given special cases of eta.
     """
+    array = xr.DataArray(np.array([[5.0, 10.0], [3.0, 2.0]]))
+    actual = c_equivalence(array, dims=["dim_0", "dim_1"], eta=eta)
+    xr.testing.assert_allclose(actual, expected)
 
-    dims = ["dim1", "dim2"]
-    array = xr.DataArray(
-        data=np.array([[5.0, 10.0], [3.0, 2.0]]),
-        dims=dims,
-        coords=np.array([[1, 2], [3, 4]]),
-    )
+
+def test_c_equivalence_weights():
+    """
+    Test c_equivalence handles a basic case with weighted means.
+    """
+    array = xr.DataArray(np.array([[5.0, 10.0], [3.0, 2.0]]))
     weights = xr.DataArray(
-        data=np.array([[0.4, 0.2], [0.1, 0.3]]),
-        dims=dims,
-        coords=np.array([[1, 2], [3, 4]]),
+        np.array([[0.4, 0.2], [0.1, 0.3]])
     )  # sum of weights equals 1
+    actual = c_equivalence(array, dims=None, eta=10, weights=weights)
+    expected = xr.DataArray(np.array(2.28399051))
+    xr.testing.assert_allclose(actual, expected)
 
-    assert (
-        c_equivalence(array, dims, eta=0, weights=None, func_args=None, func=None)
-        == array.values.mean()
-    )  # most things cancel out with eta=0
-    assert c_equivalence(
-        array, dims, eta=1, weights=None, func_args=None, func=None
-    ) == (np.exp(np.log(array).values.mean()))
-    assert c_equivalence(
-        array, dims, eta=10, weights=None, func_args=None, func=None
-    ) == (np.divide(array ** (1 - 10), 1 - 10).values.mean() * (1 - 10)) ** (
-        1 / (1 - 10)
-    )
-    assert c_equivalence(
-        array, dims, eta=10, weights=weights, func_args=None, func=None
-    ) == ((np.divide(array ** (1 - 10), 1 - 10) * weights).values.sum() * (1 - 10)) ** (
-        1 / (1 - 10)
-    )
+
+def test_c_equivalence_negconsumption():
+    """
+    Test c_equivalence throws exception when input consumption is negative.
+    """
+    array = xr.DataArray(np.array([[5.0, 10.0], [3.0, 2.0]]))
     with pytest.raises(ValueError):
-        c_equivalence(-array, dims, eta=10, weights=None, func_args=None, func=None)
+        c_equivalence(-array, dims=["dim_0", "dim_1"], eta=5.0)
+
+
+def test_c_equivalence_notarray():
+    """
+    Test c_equivalence throws exception when input consumption is not an array.
+    """
     with pytest.raises(TypeError):
-        c_equivalence(
-            "I am not an xarray object",
-            dims,
-            eta=10,
-            weights=None,
-            func_args=None,
-            func=None,
-        )
+        c_equivalence("I am not an xarray object", dims=["dim_0", "dim_1"], eta=5.0)
 
 
 def run_model_outputs(conf):
