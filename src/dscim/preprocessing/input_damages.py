@@ -349,7 +349,7 @@ def compute_ag_damages(
             topcode is not None
         ), "Data is being processed for integration. Please pass a topcode."
 
-    if type(input_path) == str:
+    if isinstance(input_path, str):
         input_path = [input_path]
 
     paths = []
