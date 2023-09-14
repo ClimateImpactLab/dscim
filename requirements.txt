@@ -1,6 +1,6 @@
 # This is used to build the CI test environment and so Github can track dependencies.
-xarray==2022.11.0
-pandas==2.1.0
+xarray==2023.8.0
+pandas==2.0.3
 numpy==1.25.2
 matplotlib==3.7.2
 dask[array, distributed]==2023.8.1
