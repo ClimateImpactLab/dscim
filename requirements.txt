@@ -1,7 +1,7 @@
 # This is used to build the CI test environment and so Github can track dependencies.
 xarray==2023.8.0
 pandas==2.0.3
-numpy==1.25.2
+numpy==1.26.0
 matplotlib==3.8.0
 dask[array, distributed]==2023.8.1
 requests==2.31.0
