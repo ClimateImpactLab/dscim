@@ -3,7 +3,7 @@ xarray==2023.8.0
 pandas==2.0.3
 numpy==1.25.2
 matplotlib==3.8.0
-dask[array, distributed]==2023.8.1
+dask[array, distributed]==2023.9.3
 requests==2.31.0
 statsmodels==0.14.0
 pytest==7.4.2
