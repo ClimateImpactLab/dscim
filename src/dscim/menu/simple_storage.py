@@ -96,7 +96,7 @@ class Climate:
     @property
     def gmsl(self):
         """Cached GMSL anomalies"""
-        gmsl = xr.open_zarr(self.gmsl_path).gmsl.to_dataframe().reset_index()
+        gmsl = xr.open_dataset(self.gmsl_path).gmsl.to_dataframe().reset_index()
 
         return gmsl
 
@@ -131,39 +131,8 @@ class Climate:
         """This function takes coastal sector's GMSL relative to 1991-2009.
         No rebasing occurs, as coastal damages are rebased to the same period.
         """
-        df = xr.open_zarr(self.gmsl_fair_path)
-        df = df.chunk(df.dims)
-
-        datasets = []
-
-        # collapse runtype dimension into two variables, and label
-        # each one (control, pulse) for medians and full simulations
-        for var in df.keys():
-            ds = df[var].to_dataset(dim="runtype")
-            ds = ds.rename({k: f"{k}_{var}" for k in ds.keys()})
-            datasets.append(ds)
-
-        anomaly = xr.combine_by_coords(datasets, combine_attrs="override")
-
-        # drop unnecessary coordinates
-        anomaly = anomaly.drop_vars(
-            ["confidence", "kind", "locations", "workflow_src"],
-            errors="ignore",
-        )
-
-        # rename variables
-        if (
-            "pulse_gmsl_median" in anomaly.keys()
-            and "control_gmsl_median" in anomaly.keys()
-        ):
-            anomaly = anomaly.rename(
-                {
-                    "pulse_gmsl_median": "medianparams_pulse_gmsl",
-                    "control_gmsl_median": "medianparams_control_gmsl",
-                }
-            )
-        else:
-            pass
+        anomaly = xr.open_dataset(self.gmsl_fair_path)
+        anomaly = anomaly.chunk(anomaly.dims)
 
         return anomaly
 
