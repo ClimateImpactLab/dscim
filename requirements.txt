@@ -6,7 +6,7 @@ matplotlib==3.8.0
 dask[array, distributed]==2023.11.0
 requests==2.31.0
 statsmodels==0.14.0
-pytest==7.4.2
+pytest==7.4.3
 pytest-cov==4.1.0
 zarr==2.16.1
 black==23.10.1
