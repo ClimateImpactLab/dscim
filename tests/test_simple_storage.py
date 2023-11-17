@@ -385,18 +385,17 @@ def test_climate_anomalies(tmp_path):
             "control_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "pulse_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "control_gmsl": (
-                ["simulation", "runid", "year", "gas"],
-                np.ones((1, 2, 1, 3)),
+                ["runid", "year",],
+                np.ones((2, 1)),
             ),
             "pulse_gmsl": (
-                ["simulation", "runid", "year", "gas"],
-                np.ones((1, 2, 1, 3)),
+                ["runid", "year", "gas"],
+                np.ones((2, 1, 3)),
             ),
         },
         coords={
             "year": (["year"], [2002]),
             "gas": (["gas"], gases_gmst),
-            "simulation": (["simulation"], [1]),
             "runid": (["runid"], [1, 2]),
         },
     ).chunk({"year": 11})
