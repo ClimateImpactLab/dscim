@@ -359,7 +359,7 @@ def test_climate_anomalies(tmp_path):
     gmsl_infile_path = d / "gmsl_fair.zarr"
     gases_gmsl = ["CO2_Fossil", "CH4", "N2O"]
     gmsl_infile_path = d / "gmsl_fair2.zarr"
-    
+
     gmsl_in = xr.Dataset(
         {
             "pulse_gmsl": (
@@ -385,7 +385,10 @@ def test_climate_anomalies(tmp_path):
             "control_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "pulse_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "control_gmsl": (
-                ["runid", "year",],
+                [
+                    "runid",
+                    "year",
+                ],
                 np.ones((2, 1)),
             ),
             "pulse_gmsl": (
