@@ -159,20 +159,22 @@ def test_climate_gmsl_anomalies(tmp_path):
     d.mkdir()
     infile_path = d / "gmsl_fair.zarr"
     gases = ["CO2_Fossil", "CH4", "N2O"]
-    # This struction might appear weird, but matches that used for initial EPA runs.
+
     ds_in = xr.Dataset(
         {
-            "gmsl": (
-                ["runtype", "pulse_year", "simulation", "runid", "year", "gas"],
-                np.ones((2, 1, 1, 2, 1, 3)),
+            "pulse_gmsl": (
+                ["pulse_year", "runid", "year", "gas"],
+                np.ones((1, 2, 1, 3)),
+            ),
+            "control_gmsl": (
+                ["runid", "year"],
+                np.ones((2, 1)),
             ),
         },
         coords={
             "gas": (["gas"], gases),
             "pulse_year": (["pulse_year"], [2020]),
             "runid": (["runid"], [1, 2]),
-            "runtype": (["runtype"], ["control", "pulse"]),
-            "simulation": (["simulation"], [1]),
             "year": (["year"], [2020]),
         },
     )
@@ -181,19 +183,18 @@ def test_climate_gmsl_anomalies(tmp_path):
     expected = xr.Dataset(
         {
             "pulse_gmsl": (
-                ["pulse_year", "simulation", "runid", "year", "gas"],
-                np.ones((1, 1, 2, 1, 3)),
+                ["pulse_year", "runid", "year", "gas"],
+                np.ones((1, 2, 1, 3)),
             ),
             "control_gmsl": (
-                ["pulse_year", "simulation", "runid", "year", "gas"],
-                np.ones((1, 1, 2, 1, 3)),
+                ["runid", "year"],
+                np.ones((2, 1)),
             ),
         },
         coords={
             "gas": (["gas"], gases),
             "pulse_year": (["pulse_year"], [2020]),
             "runid": (["runid"], [1, 2]),
-            "simulation": (["simulation"], [1]),
             "year": (["year"], [2020]),
         },
     )
@@ -212,66 +213,6 @@ def test_climate_gmsl_anomalies(tmp_path):
     actual = clim.gmsl_anomalies
 
     xr.testing.assert_equal(actual, expected)
-
-
-@pytest.mark.parametrize(
-    "unnecesary_coord", ["confidence", "kind", "locations", "workflow_src"]
-)
-def test_climate_gmsl_anomalies_dropcoords(tmp_path, unnecesary_coord):
-    """
-    Test that Climate instances give "gmsl_anomalies" with "unnecessary coords" dropped
-    """
-    # Set up input data in temporary directory because Climate needs to read
-    # from a magical Zarr Store.
-    d = tmp_path / "climate"
-    d.mkdir()
-    infile_path = d / "gmsl_fair.zarr"
-    gases = ["CO2_Fossil", "CH4", "N2O"]
-    # This struction might appear weird, but matches that used for initial EPA runs.
-    ds_in = xr.Dataset(
-        {
-            "gmsl": (
-                [
-                    unnecesary_coord,
-                    "runtype",
-                    "pulse_year",
-                    "simulation",
-                    "runid",
-                    "year",
-                    "gas",
-                ],
-                np.ones((1, 2, 1, 1, 2, 1, 3)),
-            ),
-        },
-        coords={
-            "gas": (["gas"], gases),
-            "pulse_year": (["pulse_year"], [2020]),
-            "runid": (["runid"], [1, 2]),
-            "runtype": (["runtype"], ["control", "pulse"]),
-            "simulation": (["simulation"], [1]),
-            "year": (["year"], [2020]),
-            unnecesary_coord: (
-                [unnecesary_coord],
-                ["foobar"],
-            ),  # This one is unnecessary.
-        },
-    )
-    ds_in.to_zarr(infile_path)
-
-    clim = Climate(
-        gmst_path="",
-        gmsl_path="",
-        gmst_fair_path="bacon",
-        gmsl_fair_path=str(infile_path),
-        pulse_year=2020,
-        damages_pulse_conversion_path="bacon",
-        ecs_mask_path=None,
-        emission_scenarios=None,
-        gases=gases,
-    )
-    actual = clim.gmsl_anomalies
-
-    assert unnecesary_coord not in actual.coords
 
 
 def test_climate_gmst_anomalies(tmp_path):
@@ -418,20 +359,22 @@ def test_climate_anomalies(tmp_path):
     gmsl_infile_path = d / "gmsl_fair.zarr"
     gases_gmsl = ["CO2_Fossil", "CH4", "N2O"]
     gmsl_infile_path = d / "gmsl_fair2.zarr"
-    # As usual, this struction might appear weird, but matches that used for initial EPA runs.
+
     gmsl_in = xr.Dataset(
         {
-            "gmsl": (
-                ["runtype", "pulse_year", "simulation", "runid", "year", "gas"],
-                np.ones((2, 1, 1, 2, 3, 3)),
+            "pulse_gmsl": (
+                ["pulse_year", "runid", "year", "gas"],
+                np.ones((1, 2, 3, 3)),
+            ),
+            "control_gmsl": (
+                ["runid", "year"],
+                np.ones((2, 3)),
             ),
         },
         coords={
             "gas": (["gas"], gases_gmsl),
             "pulse_year": (["pulse_year"], [2002]),
             "runid": (["runid"], [1, 2]),
-            "runtype": (["runtype"], ["control", "pulse"]),
-            "simulation": (["simulation"], [1]),
             "year": (["year"], [2000, 2001, 2002]),
         },
     )
@@ -442,18 +385,20 @@ def test_climate_anomalies(tmp_path):
             "control_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "pulse_temperature": (["gas", "runid", "year"], np.zeros((3, 2, 1))),
             "control_gmsl": (
-                ["simulation", "runid", "year", "gas"],
-                np.ones((1, 2, 1, 3)),
+                [
+                    "runid",
+                    "year",
+                ],
+                np.ones((2, 1)),
             ),
             "pulse_gmsl": (
-                ["simulation", "runid", "year", "gas"],
-                np.ones((1, 2, 1, 3)),
+                ["runid", "year", "gas"],
+                np.ones((2, 1, 3)),
             ),
         },
         coords={
             "year": (["year"], [2002]),
             "gas": (["gas"], gases_gmst),
-            "simulation": (["simulation"], [1]),
             "runid": (["runid"], [1, 2]),
         },
     ).chunk({"year": 11})
