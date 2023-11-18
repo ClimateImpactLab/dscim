@@ -96,7 +96,7 @@ class Climate:
     @property
     def gmsl(self):
         """Cached GMSL anomalies"""
-        gmsl = xr.open_dataset(self.gmsl_path).gmsl.to_dataframe().reset_index()
+        gmsl = xr.open_zarr(self.gmsl_path).gmsl.to_dataframe().reset_index()
 
         return gmsl
 
