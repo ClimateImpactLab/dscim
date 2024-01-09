@@ -285,10 +285,12 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
     """
 
     if isinstance(array, xr.DataArray):
-        negative_values = array.where(lambda x: x < 0, drop=True).size
+        negative_values = array.where(lambda x: (x < 0).compute(), drop=True).size
     elif isinstance(array, xr.Dataset):
         negative_values = (
-            array[list(array.variables)[0]].where(lambda x: x < 0, drop=True).size
+            array[list(array.variables)[0]]
+            .where(lambda x: (x < 0).compute(), drop=True)
+            .size
         )
     else:
         raise TypeError("array should be either an xarray.DataArray or xarray.Dataset")

@@ -6,19 +6,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [0.5.0] - 2023-11-17
+
 ### Added
 - Add naive list of package dependencies to pyproject.toml.([PR #123](https://github.com/ClimateImpactLab/dscim/pull/123), [@brews](https://github.com/brews))
+- CI, coverage, DOI badges on README. ([PR #134](https://github.com/ClimateImpactLab/dscim/pull/134), [@brews](https://github.com/brews))
 - Add an option for producing SCC ranges that account for statistical uncertainty. ([PR #143](https://github.com/ClimateImpactLab/dscim/pull/143), [@davidrzhdu](https://github.com/davidrzhdu))
 
 ### Changed
 
 - Dropped optional/unused dependencies `click`, `dask-jobqueue`, `geopandas`, `gurobipy`, `ipywidgets`, `seaborn`. ([PR #99](https://github.com/ClimateImpactLab/dscim/pull/99), [@brews](https://github.com/brews))
 - Switch build system from `setuptools` to `hatchling`. ([PR #128](https://github.com/ClimateImpactLab/dscim/pull/128), [@brews](https://github.com/brews))
+- Clean up unit test for `dscim.utils.utils.c_equivalence`. ([PR #135](https://github.com/ClimateImpactLab/dscim/pull/135), [@brews](https://github.com/brews))
+- Reformat gmst/gmsl pulse files by removing unnecessary dimensions and indices. ([PR #169](https://github.com/ClimateImpactLab/dscim/pull/169), [@JMGilbert](https://github.com/JMGilbert))
 
 ### Fixed
 
 - Fix DeprecationWarning on import. ([PR #128](https://github.com/ClimateImpactLab/dscim/pull/128), [@brews](https://github.com/brews))
 - Fix write-to-copy warning in `process_rff_sample()`. ([PR #116](https://github.com/ClimateImpactLab/dscim/pull/116), [@brews](https://github.com/brews))
+- Fix exception from indexing with dask-backed boolean array and input climate Dataset attrs collision with xarray >= v2023.3.0. ([PR #129](https://github.com/ClimateImpactLab/dscim/pull/129), [@brews](https://github.com/brews))
 - Fix bad release header links in CHANGELOG.md. ([PR #105](https://github.com/ClimateImpactLab/dscim/pull/105), [@brews](https://github.com/brews))
 - Fixed broken code quality checks in CI. Now using `ruff` instead of `flake8`. ([PR #107](https://github.com/ClimateImpactLab/dscim/pull/107), [@brews](https://github.com/brews))
 - Minor code style cleanup. ([PR #133](https://github.com/ClimateImpactLab/dscim/pull/133), [@brews](https://github.com/brews))
@@ -99,7 +106,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/climateimpactlab/dscim/compare/v0.4.0...HEAD
+[unreleased]: https://github.com/climateimpactlab/dscim/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/climateimpactlab/dscim/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/climateimpactlab/dscim/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/climateimpactlab/dscim/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/climateimpactlab/dscim/compare/v0.2.0...v0.2.1

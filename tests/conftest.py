@@ -22,7 +22,7 @@ def climate():
         gmsl_path=os.path.join(data_dir, "gmsl.csv"),
         gmst_path=os.path.join(datadir, "gmst.csv"),
         gmst_fair_path=os.path.join(datadir, "fair_temps_sims.nc4"),
-        gmsl_fair_path=os.path.join(datadir, "fair_slr_sims.zarr"),
+        gmsl_fair_path=os.path.join(datadir, "fair_slr_sims.nc4"),
         damages_pulse_conversion_path=os.path.join(
             datadir,
             "scenario_rcp45-rcp85-ssp245-ssp460-ssp370_CO2_Fossil-CH4-N2O_conversion_pulseyears_2020-2100_5yrincrements_v3.0_newformat.nc",
