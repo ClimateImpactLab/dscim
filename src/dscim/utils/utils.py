@@ -99,7 +99,7 @@ def get_weights(quantiles):
     return weights
 
 
-def quantile_weight_quantilereg(array, quantiles=None):
+def quantile_weight_quantilereg(array, fair_dims, quantiles=None):
     """Produce quantile weights of the quantile regression damages.
 
     Parameters
@@ -112,15 +112,18 @@ def quantile_weight_quantilereg(array, quantiles=None):
     if quantiles is None:
         quantiles = [0.01, 0.05, 0.167, 0.25, 0.5, 0.75, 0.833, 0.95, 0.99]
 
-    if "simulation" not in array.coords:
-        array = array.assign_coords(simulation=1)
-        array = array.expand_dims(dim="simulation")
-
     qr_quantiles = array.q.values
     weights = xr.DataArray(get_weights(qr_quantiles), dims=["q"], coords=[qr_quantiles])
 
-    ds_stacked = array.stack(obs=("simulation", "q"))
-    weights_by_obs = weights.sel(q=ds_stacked.obs.q)
+    to_stack = ["q"] + list(set(fair_dims).intersection(set(array.coords)))
+
+    if len(to_stack) > 1:
+        ds_stacked = array.stack(obs=to_stack)
+        weights_by_obs = weights.sel(q=ds_stacked.obs.q)
+    else:
+        ds_stacked = array.rename({to_stack[0]:"obs"})
+        weights_by_obs = weights.sel(q=ds_stacked.obs)
+    
     dim = "obs"
 
     # these are quantiles of the statistical or full uncertainty, weighted by the quantile regression quantiles

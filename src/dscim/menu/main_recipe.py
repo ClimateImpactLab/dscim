@@ -1121,7 +1121,7 @@ class MainRecipe(StackedDamages, ABC):
     def uncollapsed_sccs(self):
         """Calculate full distribution of SCCs without FAIR aggregation"""
 
-        if (self.fit_type == "quantreg") & ("median_params" in self.fair_aggregation):
+        if (self.fit_type == "quantreg") and ("median_params" in self.fair_aggregation):
             md = (
                 self.median_params_marginal_damages
             )  # this is for statistical uncertainty
