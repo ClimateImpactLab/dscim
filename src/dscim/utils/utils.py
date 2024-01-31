@@ -121,9 +121,9 @@ def quantile_weight_quantilereg(array, fair_dims, quantiles=None):
         ds_stacked = array.stack(obs=to_stack)
         weights_by_obs = weights.sel(q=ds_stacked.obs.q)
     else:
-        ds_stacked = array.rename({to_stack[0]:"obs"})
+        ds_stacked = array.rename({to_stack[0]: "obs"})
         weights_by_obs = weights.sel(q=ds_stacked.obs)
-    
+
     dim = "obs"
 
     # these are quantiles of the statistical or full uncertainty, weighted by the quantile regression quantiles
