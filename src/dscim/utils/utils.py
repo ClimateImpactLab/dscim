@@ -113,9 +113,9 @@ def quantile_weight_quantilereg(array, fair_dims, quantiles=None):
         quantiles = [0.01, 0.05, 0.167, 0.25, 0.5, 0.75, 0.833, 0.95, 0.99]
 
     qr_quantiles = array.q.values
-    weights = xr.DataArray(get_weights(qr_quantiles), dims=["q"], coords=[qr_quantiles])
 
     to_stack = ["q"] + list(set(fair_dims).intersection(set(array.coords)))
+    weights = xr.DataArray(get_weights(qr_quantiles), dims=["q"], coords=[qr_quantiles])
 
     if len(to_stack) > 1:
         ds_stacked = array.stack(obs=to_stack)

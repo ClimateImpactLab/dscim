@@ -318,6 +318,8 @@ class MainRecipe(StackedDamages, ABC):
             self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
+                self.calculate_scc
+                self.quantiles_sccs
             else:
                 if len(self.fair_aggregation) > 0:
                     self.stream_discount_factors
@@ -1121,14 +1123,9 @@ class MainRecipe(StackedDamages, ABC):
     def uncollapsed_sccs(self):
         """Calculate full distribution of SCCs without FAIR aggregation"""
 
-        if (self.fit_type == "quantreg") and ("median_params" in self.fair_aggregation):
-            md = (
-                self.median_params_marginal_damages
-            )  # this is for statistical uncertainty
-        else:
-            md = (
-                self.global_consumption_no_pulse - self.global_consumption_pulse
-            )  # this is for full uncertainty
+        md = (
+            self.global_consumption_no_pulse - self.global_consumption_pulse
+        )  # this is for full uncertainty
 
         # convert to the marginal damages from a single pulse
         md = md * self.climate.conversion
@@ -1142,9 +1139,14 @@ class MainRecipe(StackedDamages, ABC):
 
         return sccs
 
-    # @cachedproperty
-    # def quantiles_sccs(self):
-    #     return self.uncollapsed_sccs.quantile(self.scc_quantiles, dim=self.fair_dims)
+    @cachedproperty
+    @save(name="quantiles_sccs")
+    def quantiles_sccs(self):
+        return quantile_weight_quantilereg(
+            self.calculate_scc,
+            fair_dims=self.fair_dims,
+            quantiles=self.full_uncertainty_quantiles,
+        )
 
     @cachedproperty
     @save(name="full_uncertainty_iqr")
@@ -1153,7 +1155,9 @@ class MainRecipe(StackedDamages, ABC):
         quantile regressions.
         """
         return quantile_weight_quantilereg(
-            self.uncollapsed_sccs, quantiles=self.full_uncertainty_quantiles
+            self.uncollapsed_sccs,
+            fair_dims=[],
+            quantiles=self.full_uncertainty_quantiles,
         )
 
     def calculate_discount_factors(self, cons_pc):
