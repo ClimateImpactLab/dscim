@@ -1140,8 +1140,8 @@ class MainRecipe(StackedDamages, ABC):
         return sccs
 
     @cachedproperty
-    @save(name="quantiles_sccs")
-    def quantiles_sccs(self):
+    @save(name="stat_uncertainty_iqr")
+    def stat_uncertainty_iqr(self):
         return quantile_weight_quantilereg(
             self.calculate_scc,
             fair_dims=self.fair_dims,
@@ -1156,7 +1156,7 @@ class MainRecipe(StackedDamages, ABC):
         """
         return quantile_weight_quantilereg(
             self.uncollapsed_sccs,
-            fair_dims=[],
+            fair_dims=self.fair_dims,
             quantiles=self.full_uncertainty_quantiles,
         )
 
