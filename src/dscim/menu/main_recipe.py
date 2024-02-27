@@ -319,7 +319,7 @@ class MainRecipe(StackedDamages, ABC):
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
                 self.calculate_scc
-                self.quantiles_sccs
+                self.stat_uncertainty_iqr
             else:
                 if len(self.fair_aggregation) > 0:
                     self.stream_discount_factors
