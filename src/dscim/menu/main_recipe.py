@@ -1142,6 +1142,9 @@ class MainRecipe(StackedDamages, ABC):
     @cachedproperty
     @save(name="stat_uncertainty_iqr")
     def stat_uncertainty_iqr(self):
+        """Calculate the distribution of quantile-weighted SCCs produced from
+        quantile regressions collapsed across pulse dimension.
+        """
         return quantile_weight_quantilereg(
             self.calculate_scc,
             fair_dims=self.fair_dims,
