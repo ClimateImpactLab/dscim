@@ -64,7 +64,7 @@ def test_get_weights():
 def test_quantile_weight_quantilereg_dim():
     """
     input cases covered :
-    fair dim is included in uncollapsed_sccs
+    fair dim (simulation in this case) is included in uncollapsed_sccs
     """
     ds_in = xr.Dataset(
         {
@@ -135,7 +135,7 @@ def test_quantile_weight_quantilereg_dim():
 def test_quantile_weight_quantilereg_nodim():
     """
     input cases covered :
-    fair dim is included in uncollapsed_sccs
+    fair dim (simulation in this case) is not included in uncollapsed_sccs
     """
     ds_in = xr.Dataset(
         {
