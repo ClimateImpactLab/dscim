@@ -1143,7 +1143,7 @@ class MainRecipe(StackedDamages, ABC):
     @save(name="stat_uncertainty_iqr")
     def stat_uncertainty_iqr(self):
         """Calculate the distribution of quantile-weighted SCCs produced from
-        quantile regressions collapsed across pulse dimension.
+        quantile regressions that have already been collapsed across other dimensions to give statistical-only uncertainty.
         """
         return quantile_weight_quantilereg(
             self.calculate_scc,
