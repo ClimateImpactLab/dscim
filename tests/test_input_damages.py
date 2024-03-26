@@ -571,7 +571,7 @@ def test_read_energy_files(
     energy_in_csv_fixture,
 ):
     """
-    Test that read_energy_files correctly reads energy csv files, trasnforms them to Xarray object, and saves to netcdf file
+    Test that read_energy_files correctly reads energy csv files, transforms them to Xarray object, and saves to netcdf file
     """
     read_energy_files(
         df=_parse_projection_filesys(
@@ -876,12 +876,6 @@ def test_concatenate_energy_damages(
             ds_out_expected,
             xr.open_dataset(os.path.join(tmp_path, f"rebased_{b}.nc4")),
         )
-
-    concatenate_energy_damages(
-        input_path=os.path.join(tmp_path, "energy_in_netcdf"),
-        save_path=tmp_path,
-        ec_cls=econvars_fixture,
-    )
 
 
 def test_error_concatenate_energy_damages(
