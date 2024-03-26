@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix concatenate_energy_damages netcdf saving functionality which was not clearing data encoding causing some coordinates to be truncated. ([PR #229](https://github.com/ClimateImpactLab/dscim/pull/229), [@JMGilbert](https://github.com/JMGilbert))
+
 
 ## [0.5.0] - 2023-11-17
 

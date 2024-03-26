@@ -649,7 +649,11 @@ def concatenate_energy_damages(
 
             to_store.to_zarr(f"{path_to_file}.zarr", mode="w", consolidated=True)
         elif format_file == "netcdf":
-            concat_ds.to_netcdf(f"{path_to_file}.nc4")
+            to_store = concat_ds.copy()
+            for var in to_store.variables:
+                to_store[var].encoding.clear()
+
+            to_store.to_netcdf(f"{path_to_file}.nc4")
 
     return concat_ds
 
