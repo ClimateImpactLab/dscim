@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
+import xarray as xr
 import pytest
 import statsmodels.formula.api as smf
 from dscim.utils.utils import modeler
 from dscim.utils.utils import get_weights
+from dscim.utils.utils import quantile_weight_quantilereg
 
 
 def test_modeler():
@@ -57,3 +59,143 @@ def test_get_weights():
     )
     np.testing.assert_allclose(get_weights([1]), np.array([1]))
     np.testing.assert_allclose(get_weights([0]), np.array([1]))
+
+
+def test_quantile_weight_quantilereg_dim():
+    """
+    input cases covered :
+    fair dim (simulation in this case) is included in uncollapsed_sccs
+    """
+    ds_in = xr.Dataset(
+        {
+            "uncollapsed_sccs": (
+                [
+                    "discount_type",
+                    "model",
+                    "ssp",
+                    "rcp",
+                    "simulation",
+                    "gas",
+                    "q",
+                    "weitzman_parameter",
+                    "fair_aggregation",
+                ],
+                np.ones((1, 2, 2, 2, 5, 1, 3, 1, 1)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["Euler_Ramsey"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "rcp": (["rcp"], ["rcp245", "rcp585"]),
+            "simulation": (["simulation"], [0, 1, 2, 3, 4]),
+            "gas": (["gas"], ["CO2_Fossil"]),
+            "q": (["q"], [0.01, 0.5, 0.99]),
+            "weitzman_parameter": (["weitzman_parameter"], ["0.1"]),
+            "fair_aggregation": (["fair_aggregation"], ["uncollapsed"]),
+        },
+    )
+
+    ds_out = quantile_weight_quantilereg(
+        ds_in.uncollapsed_sccs, ["simulation"], quantiles=[0.01, 0.5, 0.99]
+    )
+
+    ds_out_expected = xr.Dataset(
+        {
+            "uncollapsed_sccs": (
+                [
+                    "discount_type",
+                    "model",
+                    "ssp",
+                    "rcp",
+                    "simulation",
+                    "gas",
+                    "q",
+                    "weitzman_parameter",
+                    "fair_aggregation",
+                ],
+                np.ones((1, 2, 2, 2, 5, 1, 3, 1, 1)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["Euler_Ramsey"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "rcp": (["rcp"], ["rcp245", "rcp585"]),
+            "gas": (["gas"], ["CO2_Fossil"]),
+            "weitzman_parameter": (["weitzman_parameter"], ["0.1"]),
+            "fair_aggregation": (["fair_aggregation"], ["uncollapsed"]),
+            "quantile": (["quantile"], [0.01, 0.5, 0.99]),
+        },
+    )
+
+    np.testing.assert_equal(ds_out, ds_out_expected)
+
+
+def test_quantile_weight_quantilereg_nodim():
+    """
+    input cases covered :
+    fair dim (simulation in this case) is not included in uncollapsed_sccs
+    """
+    ds_in = xr.Dataset(
+        {
+            "uncollapsed_sccs": (
+                [
+                    "discount_type",
+                    "model",
+                    "ssp",
+                    "rcp",
+                    "gas",
+                    "q",
+                    "weitzman_parameter",
+                    "fair_aggregation",
+                ],
+                np.ones((1, 2, 2, 2, 1, 3, 1, 1)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["Euler_Ramsey"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "rcp": (["rcp"], ["rcp245", "rcp585"]),
+            "gas": (["gas"], ["CO2_Fossil"]),
+            "q": (["q"], [0.01, 0.5, 0.99]),
+            "weitzman_parameter": (["weitzman_parameter"], ["0.1"]),
+            "fair_aggregation": (["fair_aggregation"], ["uncollapsed"]),
+        },
+    )
+
+    ds_out = quantile_weight_quantilereg(
+        ds_in.uncollapsed_sccs, ["simulation"], quantiles=[0.01, 0.5, 0.99]
+    )
+
+    ds_out_expected = xr.Dataset(
+        {
+            "uncollapsed_sccs": (
+                [
+                    "discount_type",
+                    "model",
+                    "ssp",
+                    "rcp",
+                    "simulation",
+                    "gas",
+                    "q",
+                    "weitzman_parameter",
+                    "fair_aggregation",
+                ],
+                np.ones((1, 2, 2, 2, 5, 1, 3, 1, 1)),
+            ),
+        },
+        coords={
+            "discount_type": (["discount_type"], ["Euler_Ramsey"]),
+            "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+            "ssp": (["ssp"], ["SSP3", "SSP4"]),
+            "rcp": (["rcp"], ["rcp245", "rcp585"]),
+            "gas": (["gas"], ["CO2_Fossil"]),
+            "weitzman_parameter": (["weitzman_parameter"], ["0.1"]),
+            "fair_aggregation": (["fair_aggregation"], ["uncollapsed"]),
+            "quantile": (["quantile"], [0.01, 0.5, 0.99]),
+        },
+    )
+
+    np.testing.assert_equal(ds_out, ds_out_expected)
