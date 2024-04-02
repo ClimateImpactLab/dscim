@@ -45,9 +45,9 @@ def combine_CAMEL_coefs(
     coefs, fit = {}, {}
 
     for sector in [coastal, AMEL]:
-        coefs[
-            sector
-        ] = f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
+        coefs[sector] = (
+            f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4"
+        )
 
     coefs["combined"] = xr.combine_by_coords(
         [
@@ -71,9 +71,9 @@ def combine_CAMEL_coefs(
 
     if fit:
         for sector in [coastal, AMEL]:
-            fit[
-                sector
-            ] = f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
+            fit[sector] = (
+                f"{input_dir}/{sector}/{pulse_year}/{mask}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4"
+            )
 
         fit["combined"] = xr.open_dataset(fit[coastal]) + xr.open_dataset(fit[AMEL])
 

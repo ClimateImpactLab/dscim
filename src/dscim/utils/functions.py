@@ -206,9 +206,9 @@ def get_model_weights(rcp):
     [v.update(common) for k, v in name_dict.items()]
 
     for old, new in name_dict[rcp].items():
-        weights.loc[
-            weights.model.str.contains(f"{old}"), "model"
-        ] = weights.model.apply(lambda x: x.replace(x, new))
+        weights.loc[weights.model.str.contains(f"{old}"), "model"] = (
+            weights.model.apply(lambda x: x.replace(x, new))
+        )
     weights.model = weights.model.apply(lambda x: x.replace("*", ""))
     weights = weights.rename(columns={"model": "gcm"}).set_index("gcm").to_xarray()
     weights = weights.assign_coords({"rcp": rcp})
