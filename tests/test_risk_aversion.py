@@ -14,8 +14,8 @@ def test_risk_aversion_points(menu_instance, discount_types):
     expected = open_zipped_results(path)
     actual = menu_instance.damage_function_points
     assert_frame_equal(
-        expected.sort_values(by=list(expected.columns)).reset_index(drop = True),
-        actual.sort_values(by=list(actual.columns)).reset_index(drop = True),
+        expected.sort_values(by=list(expected.columns)).reset_index(drop=True),
+        actual.sort_values(by=list(actual.columns)).reset_index(drop=True),
         rtol=1e-4,
         atol=1e-4,
     )
