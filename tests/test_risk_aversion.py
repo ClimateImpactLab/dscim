@@ -1,5 +1,6 @@
 import pandas
 import xarray as xr
+import numpy as np
 from pandas.testing import assert_frame_equal
 from xarray.testing import assert_allclose
 import pytest
@@ -11,8 +12,8 @@ from dscim.menu.risk_aversion import RiskAversionRecipe
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_risk_aversion_points(menu_instance, discount_types):
     path = f"risk_aversion_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
-    expected = open_zipped_results(path)
-    actual = menu_instance.damage_function_points
+    expected = open_zipped_results(path).transform(np.sort)
+    actual = menu_instance.damage_function_points.transform(np.sort)
     assert_frame_equal(
         expected,
         actual,

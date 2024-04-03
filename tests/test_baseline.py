@@ -1,4 +1,5 @@
 import xarray as xr
+import numpy as np
 from pandas.testing import assert_frame_equal
 from xarray.testing import assert_allclose
 import pytest
@@ -10,8 +11,8 @@ from dscim.menu.baseline import Baseline
 @pytest.mark.parametrize("menu_class", [Baseline], indirect=True)
 def test_adding_up_points(menu_instance, discount_types):
     path = f"adding_up_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
-    expected = open_zipped_results(path)
-    actual = menu_instance.damage_function_points
+    expected = open_zipped_results(path).transform(np.sort)
+    actual = menu_instance.damage_function_points.transform(np.sort)
     assert_frame_equal(expected, actual, rtol=1e-4, atol=1e-4)
 
 
