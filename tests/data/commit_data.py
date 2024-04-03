@@ -1,6 +1,7 @@
 """
 Commit data from Gitlab CI/CD runner to repo
 """
+
 import os
 import requests
 from urllib.parse import quote, urljoin

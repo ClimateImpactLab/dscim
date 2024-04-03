@@ -318,6 +318,8 @@ class MainRecipe(StackedDamages, ABC):
             self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
+                self.calculate_scc
+                self.stat_uncertainty_iqr
             else:
                 if len(self.fair_aggregation) > 0:
                     self.stream_discount_factors
@@ -1121,7 +1123,9 @@ class MainRecipe(StackedDamages, ABC):
     def uncollapsed_sccs(self):
         """Calculate full distribution of SCCs without FAIR aggregation"""
 
-        md = self.global_consumption_no_pulse - self.global_consumption_pulse
+        md = (
+            self.global_consumption_no_pulse - self.global_consumption_pulse
+        )  # this is for full uncertainty
 
         # convert to the marginal damages from a single pulse
         md = md * self.climate.conversion
@@ -1135,9 +1139,17 @@ class MainRecipe(StackedDamages, ABC):
 
         return sccs
 
-    # @cachedproperty
-    # def quantiles_sccs(self):
-    #     return self.uncollapsed_sccs.quantile(self.scc_quantiles, dim=self.fair_dims)
+    @cachedproperty
+    @save(name="stat_uncertainty_iqr")
+    def stat_uncertainty_iqr(self):
+        """Calculate the distribution of quantile-weighted SCCs produced from
+        quantile regressions that have already been collapsed across other dimensions to give statistical-only uncertainty.
+        """
+        return quantile_weight_quantilereg(
+            self.calculate_scc,
+            fair_dims=self.fair_dims,
+            quantiles=self.full_uncertainty_quantiles,
+        )
 
     @cachedproperty
     @save(name="full_uncertainty_iqr")
@@ -1146,7 +1158,9 @@ class MainRecipe(StackedDamages, ABC):
         quantile regressions.
         """
         return quantile_weight_quantilereg(
-            self.uncollapsed_sccs, quantiles=self.full_uncertainty_quantiles
+            self.uncollapsed_sccs,
+            fair_dims=self.fair_dims,
+            quantiles=self.full_uncertainty_quantiles,
         )
 
     def calculate_discount_factors(self, cons_pc):
