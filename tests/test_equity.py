@@ -12,11 +12,11 @@ from dscim.menu.equity import EquityRecipe
 @pytest.mark.parametrize("menu_class", [EquityRecipe], indirect=True)
 def test_equity_points(menu_instance, discount_types):
     path = f"equity_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
-    expected = open_zipped_results(path).transform(np.sort)
-    actual = menu_instance.damage_function_points.transform(np.sort)
+    expected = open_zipped_results(path)
+    actual = menu_instance.damage_function_points
     assert_frame_equal(
-        expected,
-        actual,
+        expected.sort_values(by=list(expected.columns)),
+        actual.sort_values(by=list(actual.columns)),
         rtol=1e-4,
         atol=1e-4,
     )
