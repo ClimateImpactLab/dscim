@@ -1,6 +1,5 @@
 import pandas
 import xarray as xr
-import numpy as np
 from pandas.testing import assert_frame_equal
 from xarray.testing import assert_allclose
 import pytest
