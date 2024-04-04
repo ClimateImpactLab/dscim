@@ -11,13 +11,16 @@ from dscim.menu.risk_aversion import RiskAversionRecipe
 @pytest.mark.parametrize("menu_class", [RiskAversionRecipe], indirect=True)
 def test_risk_aversion_points(menu_instance, discount_types):
     path = f"risk_aversion_{discount_types}_eta{menu_instance.eta}_rho{menu_instance.rho}_damage_function_points.csv"
-    expected = open_zipped_results(path)
-    actual = menu_instance.damage_function_points
+    # Set index so can compare unsorted tables.
+    idx = ["model", "ssp", "rcp", "gcm", "year"]
+    expected = open_zipped_results(path).set_index(idx)
+    actual = menu_instance.damage_function_points.set_index(idx)
     assert_frame_equal(
         expected,
         actual,
         rtol=1e-4,
         atol=1e-4,
+        check_like=True,
     )
 
 
