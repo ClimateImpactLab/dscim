@@ -8,12 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add an option for producing SCC ranges that account for statistical uncertainty. ([PR #143](https://github.com/ClimateImpactLab/dscim/pull/143), [@davidrzhdu](https://github.com/davidrzhdu))
+- Add an option for producing SCC ranges that account for only statistical uncertainty. ([PR #143](https://github.com/ClimateImpactLab/dscim/pull/143), [@davidrzhdu](https://github.com/davidrzhdu))
 
 ### Fixed
 
 - Fix concatenate_energy_damages netcdf saving functionality which was not clearing data encoding causing some coordinates to be truncated. ([PR #229](https://github.com/ClimateImpactLab/dscim/pull/229), [@JMGilbert](https://github.com/JMGilbert))
-
+- Fix tests broken by sorting update in pandas v2.2.1 ([PR #216] (https://github.com/ClimateImpactLab/dscim/pull/216), [@JMGilbert](https://github.com/JMGilbert))
 
 ## [0.5.0] - 2023-11-17
 
