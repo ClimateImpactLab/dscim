@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-04-12
+
 ### Added
 
 - Add an option for producing SCC ranges that account for only statistical uncertainty. ([PR #143](https://github.com/ClimateImpactLab/dscim/pull/143), [@davidrzhdu](https://github.com/davidrzhdu))
