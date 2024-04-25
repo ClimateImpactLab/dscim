@@ -1,5 +1,4 @@
 import os
-import shutil
 
 USER = os.getenv("USER")
 import xarray as xr

@@ -1,5 +1,3 @@
-import pandas as pd
-import xarray as xr
 import numpy as np
 from dscim.utils.utils import power
 
