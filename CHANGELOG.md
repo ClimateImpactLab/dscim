@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed [`preprocessing/climate`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/climate) and [`preprocessing/misc`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/misc) subpackages. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+- Removed [`utils/generate_yaml`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/utils/generate_yaml.py) and [`utils/plotting_utils`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/utils/plotting_utils.py) modules. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+- Removed `midprocessing` [`update_damage_function_library`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/midprocessing.py#L8-L26) and `utils` [`constant_equivalent_discount_rate`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L25-L61), [`calculate_constant_equivalent_discount_rate`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L64-L142), and [`get_model_weights`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L145-L216) functions. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+
+
 ## [0.6.0] - 2024-04-24
 
 ### Added
