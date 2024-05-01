@@ -9,8 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed [`preprocessing/climate`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/climate) and [`preprocessing/misc`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/misc) subpackages. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+    - The modules in these subpackages referenced hard coded filepaths and were used for old versions of climate files and inputs that are now properly formatted by default
 - Removed [`utils/generate_yaml`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/utils/generate_yaml.py) and [`utils/plotting_utils`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/utils/plotting_utils.py) modules. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+    - `generate_yaml` seems to have been designed for an old version of `dscim-epa` and that functionality has now been transferred to the `scripts/directory_setup.py` script in the `dscim-epa` and `dscim-facts-epa` repositories
+    - `plotting utils` was only in use for a single diagnostic and was transferred to the script that generated that diagnostic
 - Removed `midprocessing` [`update_damage_function_library`](https://github.com/ClimateImpactLab/dscim/blob/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/midprocessing.py#L8-L26) and `utils` [`constant_equivalent_discount_rate`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L25-L61), [`calculate_constant_equivalent_discount_rate`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L64-L142), and [`get_model_weights`](https://github.com/ClimateImpactLab/dscim/blob/main/src/dscim/utils/functions.py#L145-L216) functions. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
+    - `update_damage_function_library` was previously used to move files prior to the functionality that directly saved files into the appropriate location
+    - `constant_equivalent_discount_rate` and `calculate_constant_equivalent_discount_rate` are used for integration paper tables, and have been transferred to the appropriate scripts
+    - `get_model_weights` is used for a few diagnostics and has been transferred to the appropriate scripts
 
 
 ## [0.6.0] - 2024-04-24
