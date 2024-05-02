@@ -28,9 +28,17 @@ dependencies = [
     "zarr",
 ]
 
+[project.optional-dependencies]
+docs = [
+    "mkdocs",
+    "mkdocstrings[python]",
+    "mkdocs-material",
+]
+
+
 [project.urls]
 Homepage = "https://github.com/ClimateImpactLab/dscim"
-Documentation = "https://github.com/ClimateImpactLab/dscim"
+Documentation = "https://ClimateImpactLab.github.io/dscim"
 Source = "https://github.com/ClimateImpactLab/dscim"
 "Bug Tracker" = "https://github.com/ClimateImpactLab/dscim/issues"
 
