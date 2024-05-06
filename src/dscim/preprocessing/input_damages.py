@@ -140,7 +140,7 @@ def concatenate_damage_output(damage_dir, basename, save_path):
 def calculate_labor_impacts(input_path, file_prefix, variable, val_type):
     """Calculate impacts for labor results.
 
-    Paramemters
+    Parameters
     ----------
     input_path str
         Path to model/gcm/iam/rcp/ folder, usually from the
@@ -538,7 +538,7 @@ def calculate_energy_impacts(input_path, file_prefix, variable):
     and re-index to add region dimension. This is needed to adjust the
     projection file outcomes that do not have a region dimension
 
-    Paramemters
+    Parameters
     ----------
     input_path str
         Path to model/gcm/iam/rcp/ folder, usually from the
