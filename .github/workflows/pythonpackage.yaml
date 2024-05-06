@@ -3,6 +3,9 @@ name: Python package
 on:
   pull_request:
   push:
+    paths:
+      - src/
+      - tests/
     branches:
       - main
 
