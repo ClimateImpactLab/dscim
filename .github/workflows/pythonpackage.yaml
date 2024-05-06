@@ -2,6 +2,9 @@ name: Python package
 
 on:
   pull_request:
+      paths:
+      - src/
+      - tests/
   push:
     paths:
       - src/
