@@ -290,9 +290,9 @@ def calculate_labor_batch_damages(batch, ec, input_path, save_path):
 
 
 def calculate_labor_damages(
-    path_econ="/shares/gcp/integration/float32/dscim_input_data/econvars/zarrs/integration-econ-bc39.zarr",
-    input_path="/shares/gcp/outputs/labor/impacts-woodwork/mc_correct_rebasing_for_integration",
-    save_path="/shares/gcp/integration/float32/input_data_histclim/labor_data/replication/",
+    path_econ,
+    input_path,
+    save_path,
 ):
     ec = EconVars(path_econ)
     # process in 3 rounds to limit memory usage

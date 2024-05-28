@@ -1,29 +1,7 @@
 import os
-import shutil
 
 USER = os.getenv("USER")
 import xarray as xr
-
-
-def update_damage_function_library(
-    input,
-    output,
-    recipe,
-    disc,
-    eta,
-    rho,
-    fit=True,
-):
-    os.makedirs(output, exist_ok=True)
-    shutil.copy2(
-        f"{input}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_coefficients.nc4",
-        output,
-    )
-
-    if fit:
-        shutil.copy2(
-            f"{input}/{recipe}_{disc}_eta{eta}_rho{rho}_damage_function_fit.nc4", output
-        )
 
 
 def combine_CAMEL_coefs(
