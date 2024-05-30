@@ -54,7 +54,6 @@ serve as the main classes to call different menu options.
 
 ```mermaid
 graph TD
-
 SubGraph1Flow(Storage and I/O)
   subgraph "Storage utilities"
   SubGraph1Flow --> A[Stacked_damages]
@@ -67,7 +66,7 @@ SubGraph1Flow(Storage and I/O)
   B[MainMenu] --> C[AddingUpRecipe];
   B[MainMenu] --> D[RiskAversionRecipe];
   B[MainMenu] --> E[EquityRecipe]
-end
+  end
 ```
 
 `StackedDamages` takes care of parsing all monetized damage data from several

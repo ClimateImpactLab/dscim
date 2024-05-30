@@ -1,0 +1,1 @@
+::: dscim.menu.decorators

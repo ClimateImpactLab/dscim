@@ -1,0 +1,68 @@
+# yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
+
+site_name: dscim Documentation
+repo_url: "https://github.com/climateimpactlab/dscim"
+
+theme:
+  name: "material"
+
+  palette:
+
+  # Palette toggle for light mode
+  - scheme: CILlight
+    toggle:
+      icon: material/brightness-7 
+      name: Switch to dark mode
+
+  # Palette toggle for dark mode
+  - scheme: slate
+    toggle:
+      icon: material/brightness-4
+      name: Switch to light mode
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: "numpy"
+            summary: true
+            separate_signature: true
+            show_object_full_path: true
+            show_root_toc_entry: false
+  - search
+
+markdown_extensions:
+  - "pymdownx.snippets"
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - dscim.menu:
+        - baseline: menu/baseline.md
+        - main_recipe: menu/main_recipe.md
+        - risk_aversion: menu/risk_aversion.md
+        - equity: menu/equity.md
+        - simple_storage: menu/simple_storage.md
+        - decorators: menu/decorators.md
+      - dscim.preprocessing:
+        - input_damages: preprocessing/input_damages.md
+        - midprocessing: preprocessing/midprocessing.md
+        - preprocessing: preprocessing/preprocessing.md
+      - dscim.utils:
+        - functions: utils/functions.md
+        - menu_runs: utils/menu_runs.md
+        - rff: utils/rff.md
+        - utils: utils/utils.md
+  - Changelog: changelog.md
+
