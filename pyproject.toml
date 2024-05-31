@@ -68,8 +68,10 @@ exclude = [
 
 [tool.ruff.lint]
 # E402: module level import not at top of file
+# E501: line too long
 ignore = [
     "E402",
+    "E501",
 ]
 select = [
     # Pyflakes
