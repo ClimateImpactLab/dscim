@@ -32,12 +32,12 @@ jobs:
       - name: Install package
         run: |
           pip install . --no-deps
-      - name: Format check with black
+      - name: Format check with ruff
         run: |
-          black --check .
-      - name: Format ruff check
+          ruff format . --diff
+      - name: Lint check with ruff
         run: |
-          ruff check .
+          ruff check . --output-format=github
 
   test:
     runs-on: ubuntu-latest

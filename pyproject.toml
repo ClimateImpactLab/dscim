@@ -65,11 +65,11 @@ exclude = [
     ".eggs",
     "docs",
 ]
+
+[tool.ruff.lint]
 # E402: module level import not at top of file
-# E501: line too long - let black worry about that
 ignore = [
     "E402",
-    "E501",
 ]
 select = [
     # Pyflakes
