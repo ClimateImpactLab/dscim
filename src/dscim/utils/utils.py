@@ -521,9 +521,7 @@ def compute_damages(anomaly, betas, formula):
             "gmsl:anomaly"
         ] * anomaly.temperature * anomaly.gmsl + betas[
             "gmsl:np.power(anomaly, 2)"
-        ] * anomaly.gmsl * np.power(
-            anomaly.temperature, 2
-        )
+        ] * anomaly.gmsl * np.power(anomaly.temperature, 2)
     elif (
         formula
         == "damages ~ -1 + anomaly + np.power(anomaly, 2) + gmsl + np.power(gmsl, 2)"
