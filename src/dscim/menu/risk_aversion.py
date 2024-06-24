@@ -1,7 +1,6 @@
 import pandas as pd
 import xarray as xr
 from dscim.menu.main_recipe import MainRecipe
-import numpy as np
 from dscim.descriptors import cachedproperty
 
 
@@ -63,7 +62,7 @@ class RiskAversionRecipe(MainRecipe):
             )
 
         return df
-    
+
     def country_damages_calculation(self, country) -> pd.DataFrame:
         """Aggregate damages to country level
 
@@ -74,17 +73,17 @@ class RiskAversionRecipe(MainRecipe):
 
         self.logger.info(f"Calculating damages for {country}")
         dams_collapse = self.calculated_damages * self.collapsed_pop
-        
+
         territories = []
         for ii, row in self.countries_mapping.iterrows():
             if row['MatchedISO'] == country:
                 territories.append(row['ISO'])
         self.logger.debug(f"Including territories {territories}")
-        
+
         dams_collapse = dams_collapse.sel(
             region=[i for i in dams_collapse.region.values if any(j in i for j in territories)]
         )
-        
+
         dams_collapse = dams_collapse.sum(dim="region").to_dataframe("damages").reset_index()
 
         if "gwr" in self.discounting_type:

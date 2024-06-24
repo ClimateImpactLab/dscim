@@ -575,5 +575,5 @@ def compute_damages(anomaly, betas, formula):
 
     elif formula == "damages ~ -1 + np.power(anomaly, 2)":
         damages_fair = betas["np.power(anomaly, 2)"] * np.power(anomaly.temperature, 2)
-        
+
     return damages_fair
