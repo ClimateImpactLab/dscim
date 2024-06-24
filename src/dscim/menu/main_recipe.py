@@ -194,7 +194,7 @@ class MainRecipe(StackedDamages, ABC):
                 "global_consumption",
                 "global_consumption_no_pulse",
             ]
-            
+
         if 'country_ISOs' in kwargs:
             self.countries_mapping = pd.read_csv(kwargs['country_ISOs'])
             self.countries = self.countries_mapping.MatchedISO.dropna().unique()
@@ -241,7 +241,7 @@ class MainRecipe(StackedDamages, ABC):
         self.__dict__.update(**kwargs)
         self.geography = geography
         self.kwargs = kwargs
-        
+
         self.logger = logging.getLogger(__name__)
 
         if self.quantreg_quantiles is not None:
@@ -515,7 +515,7 @@ class MainRecipe(StackedDamages, ABC):
             df.loc[(df.gcm == "ACCESS1-0") & (df.rcp == "rcp85"), "anomaly"] = np.nan
 
         return df
-    
+
     def country_damage_function_points(self, country) -> pd.DataFrame:
         """Global damages by RCP/GCM or SLR
 
@@ -611,7 +611,7 @@ class MainRecipe(StackedDamages, ABC):
                     damage_function_points.model.unique(),
                 )
             )
-            for country in self.countries if self.geography == 'country' else [0]:    
+            for country in self.countries if self.geography == 'country' else [0]:
                 if self.geography == 'country':
                     damage_function_points = self.country_damage_function_points(country)
                 for ssp, model in loop:
@@ -620,9 +620,9 @@ class MainRecipe(StackedDamages, ABC):
                     selection = (damage_function_points["ssp"] == ssp) & (damage_function_points["model"] == model)
 
                     fit_subset = damage_function_points[selection]
-                    
+
                     subset = dict(ssp=[ssp], model=[model])
-                    
+
                     if self.geography == 'country':
                         subset.update(dict(country = [country]))
 
@@ -639,7 +639,7 @@ class MainRecipe(StackedDamages, ABC):
                         year_range=yrs,
                         year_start_pred=self.ext_subset_end_year + 1,
                     )
-                    
+
                     subset.update(dict(discount_type=[self.discounting_type]))
 
                     # Add variables
