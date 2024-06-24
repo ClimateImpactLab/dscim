@@ -41,16 +41,18 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             return np.arange(vmin, vmax, stride)
 
         if orders_magnitude <= 2:
-            pos_a, pos_b = np.floor(np.log10(max(vmin, 1))), np.ceil(
-                np.log10(max(vmax, 1))
+            pos_a, pos_b = (
+                np.floor(np.log10(max(vmin, 1))),
+                np.ceil(np.log10(max(vmax, 1))),
             )
             positive_powers = 10 ** np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
             positive = np.ravel(np.outer(positive_powers, [1.0, 5.0]))
 
             linear = np.array([0.0]) if vmin < 1 and vmax > -1 else np.array([])
 
-            neg_a, neg_b = np.floor(np.log10(-min(vmin, -1))), np.ceil(
-                np.log10(-min(vmax, -1))
+            neg_a, neg_b = (
+                np.floor(np.log10(-min(vmin, -1))),
+                np.ceil(np.log10(-min(vmax, -1))),
             )
             negative_powers = -(
                 10 ** np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1]
@@ -60,15 +62,17 @@ class MajorSymLogLocator(SymmetricalLogLocator):
             return np.concatenate([negative, linear, positive])
 
         else:
-            pos_a, pos_b = np.floor(np.log10(max(vmin, 1))), np.ceil(
-                np.log10(max(vmax, 1))
+            pos_a, pos_b = (
+                np.floor(np.log10(max(vmin, 1))),
+                np.ceil(np.log10(max(vmax, 1))),
             )
             positive = 10 ** np.linspace(pos_a, pos_b, int(pos_b - pos_a) + 1)
 
             linear = np.array([0.0]) if vmin < 1 and vmax > -1 else np.array([])
 
-            neg_a, neg_b = np.floor(np.log10(-min(vmin, -1))), np.ceil(
-                np.log10(-min(vmax, -1))
+            neg_a, neg_b = (
+                np.floor(np.log10(-min(vmin, -1))),
+                np.ceil(np.log10(-min(vmax, -1))),
             )
             negative = -(10 ** np.linspace(neg_b, neg_a, int(neg_a - neg_b) + 1)[::-1])
 
