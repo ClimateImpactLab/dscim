@@ -195,8 +195,8 @@ class MainRecipe(StackedDamages, ABC):
                 "global_consumption_no_pulse",
             ]
 
-        if 'country_ISOs' in kwargs:
-            self.countries_mapping = pd.read_csv(kwargs['country_ISOs'])
+        if "country_ISOs" in kwargs:
+            self.countries_mapping = pd.read_csv(kwargs["country_ISOs"])
             self.countries = self.countries_mapping.MatchedISO.dropna().unique()
 
         super().__init__(
@@ -485,7 +485,7 @@ class MainRecipe(StackedDamages, ABC):
 
     @cachedproperty
     @save(name="damage_function_points")
-    def damage_function_points(self, country = None) -> pd.DataFrame:
+    def damage_function_points(self, country=None) -> pd.DataFrame:
         """Global damages by RCP/GCM or SLR
 
         Returns
@@ -611,20 +611,24 @@ class MainRecipe(StackedDamages, ABC):
                     damage_function_points.model.unique(),
                 )
             )
-            for country in self.countries if self.geography == 'country' else [0]:
-                if self.geography == 'country':
-                    damage_function_points = self.country_damage_function_points(country)
+            for country in self.countries if self.geography == "country" else [0]:
+                if self.geography == "country":
+                    damage_function_points = self.country_damage_function_points(
+                        country
+                    )
                 for ssp, model in loop:
                     # Subset dataframe to specific SSP-IAM combination.
 
-                    selection = (damage_function_points["ssp"] == ssp) & (damage_function_points["model"] == model)
+                    selection = (damage_function_points["ssp"] == ssp) & (
+                        damage_function_points["model"] == model
+                    )
 
                     fit_subset = damage_function_points[selection]
 
                     subset = dict(ssp=[ssp], model=[model])
 
-                    if self.geography == 'country':
-                        subset.update(dict(country = [country]))
+                    if self.geography == "country":
+                        subset.update(dict(country=[country]))
 
                     global_c_subset = global_consumption.sel(subset)
 
@@ -643,13 +647,9 @@ class MainRecipe(StackedDamages, ABC):
                     subset.update(dict(discount_type=[self.discounting_type]))
 
                     # Add variables
-                    params = damage_function["parameters"].expand_dims(
-                        subset
-                    )
+                    params = damage_function["parameters"].expand_dims(subset)
 
-                    preds = damage_function["preds"].expand_dims(
-                        subset
-                    )
+                    preds = damage_function["preds"].expand_dims(subset)
 
                     params_list.append(params)
                     preds_list.append(preds)
@@ -843,10 +843,11 @@ class MainRecipe(StackedDamages, ABC):
         """
 
         # Calculate global consumption per capita
-        if self.geography == 'country':
-            array_pc = self.global_consumption_calculation(
-                disc_type
-            ) / self.country_econ_vars.pop
+        if self.geography == "country":
+            array_pc = (
+                self.global_consumption_calculation(disc_type)
+                / self.country_econ_vars.pop
+            )
         else:
             array_pc = self.global_consumption_calculation(
                 disc_type
@@ -1047,7 +1048,6 @@ class MainRecipe(StackedDamages, ABC):
 
         if self.clip_gmsl:
             fair_pulse["gmsl"] = np.minimum(fair_pulse["gmsl"], self.gmsl_max)
-
 
         damages = compute_damages(
             fair_pulse,

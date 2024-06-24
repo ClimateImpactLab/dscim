@@ -76,15 +76,21 @@ class RiskAversionRecipe(MainRecipe):
 
         territories = []
         for ii, row in self.countries_mapping.iterrows():
-            if row['MatchedISO'] == country:
-                territories.append(row['ISO'])
+            if row["MatchedISO"] == country:
+                territories.append(row["ISO"])
         self.logger.debug(f"Including territories {territories}")
 
         dams_collapse = dams_collapse.sel(
-            region=[i for i in dams_collapse.region.values if any(j in i for j in territories)]
+            region=[
+                i
+                for i in dams_collapse.region.values
+                if any(j in i for j in territories)
+            ]
         )
 
-        dams_collapse = dams_collapse.sum(dim="region").to_dataframe("damages").reset_index()
+        dams_collapse = (
+            dams_collapse.sum(dim="region").to_dataframe("damages").reset_index()
+        )
 
         if "gwr" in self.discounting_type:
             dams_collapse = dams_collapse.assign(
@@ -93,7 +99,6 @@ class RiskAversionRecipe(MainRecipe):
             )
 
         return dams_collapse
-
 
     def global_consumption_calculation(self, disc_type):
         """Calculate global consumption
@@ -104,7 +109,7 @@ class RiskAversionRecipe(MainRecipe):
         """
 
         if (disc_type == "constant") or ("ramsey" in disc_type):
-            if self.geography == 'country':
+            if self.geography == "country":
                 global_cons_no_cc = self.country_econ_vars.gdp
             else:
                 global_cons_no_cc = self.gdp.sum(dim=["region"])
