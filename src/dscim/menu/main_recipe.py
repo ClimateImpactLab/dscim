@@ -106,6 +106,7 @@ class MainRecipe(StackedDamages, ABC):
         extrap_formula=None,
         fair_dims=None,
         save_files=None,
+        geography=None,
         **kwargs,
     ):
         if scc_quantiles is None:
@@ -193,6 +194,10 @@ class MainRecipe(StackedDamages, ABC):
                 "global_consumption",
                 "global_consumption_no_pulse",
             ]
+            
+        if 'country_ISOs' in kwargs:
+            self.countries_mapping = pd.read_csv(kwargs['country_ISOs'])
+            self.countries = self.countries_mapping.MatchedISO.dropna().unique()
 
         super().__init__(
             sector_path=sector_path,
@@ -203,6 +208,8 @@ class MainRecipe(StackedDamages, ABC):
             eta=eta,
             subset_dict=subset_dict,
             ce_path=ce_path,
+            geography=geography,
+            kwargs=kwargs,
         )
 
         self.rho = rho
@@ -232,8 +239,9 @@ class MainRecipe(StackedDamages, ABC):
         self.fair_dims = fair_dims
         self.save_files = save_files
         self.__dict__.update(**kwargs)
+        self.geography = geography
         self.kwargs = kwargs
-
+        
         self.logger = logging.getLogger(__name__)
 
         if self.quantreg_quantiles is not None:
@@ -477,7 +485,7 @@ class MainRecipe(StackedDamages, ABC):
 
     @cachedproperty
     @save(name="damage_function_points")
-    def damage_function_points(self) -> pd.DataFrame:
+    def damage_function_points(self, country = None) -> pd.DataFrame:
         """Global damages by RCP/GCM or SLR
 
         Returns
@@ -485,6 +493,37 @@ class MainRecipe(StackedDamages, ABC):
             pd.DataFrame
         """
         df = self.global_damages_calculation()
+
+        if "slr" in df.columns:
+            df = df.merge(self.climate.gmsl, on=["year", "slr"])
+        if "gcm" in df.columns:
+            df = df.merge(self.climate.gmst, on=["year", "gcm", "rcp"])
+
+        # removing illegal combinations from estimation
+        if any([i in df.ssp.unique() for i in ["SSP1", "SSP5"]]):
+            self.logger.info("Dropping illegal model combinations.")
+            for var in [i for i in df.columns if i in ["anomaly", "gmsl"]]:
+                df.loc[
+                    ((df.ssp == "SSP1") & (df.rcp == "rcp85"))
+                    | ((df.ssp == "SSP5") & (df.rcp == "rcp45")),
+                    var,
+                ] = np.nan
+
+        # agriculture lacks ACCESS0-1/rcp85 combo
+        if "agriculture" in self.sector:
+            self.logger.info("Dropping illegal model combinations for agriculture.")
+            df.loc[(df.gcm == "ACCESS1-0") & (df.rcp == "rcp85"), "anomaly"] = np.nan
+
+        return df
+    
+    def country_damage_function_points(self, country) -> pd.DataFrame:
+        """Global damages by RCP/GCM or SLR
+
+        Returns
+        --------
+            pd.DataFrame
+        """
+        df = self.country_damages_calculation(country)
 
         if "slr" in df.columns:
             df = df.merge(self.climate.gmsl, on=["year", "slr"])
@@ -566,47 +605,54 @@ class MainRecipe(StackedDamages, ABC):
         elif (self.discounting_type == "constant") or (
             "ramsey" in self.discounting_type
         ):
-            for ssp, model in list(
+            loop = list(
                 product(
                     damage_function_points.ssp.unique(),
                     damage_function_points.model.unique(),
                 )
-            ):
-                # Subset dataframe to specific SSP-IAM combination.
-                fit_subset = damage_function_points[
-                    (damage_function_points["ssp"] == ssp)
-                    & (damage_function_points["model"] == model)
-                ]
+            )
+            for country in self.countries if self.geography == 'country' else [0]:    
+                if self.geography == 'country':
+                    damage_function_points = self.country_damage_function_points(country)
+                for ssp, model in loop:
+                    # Subset dataframe to specific SSP-IAM combination.
 
-                global_c_subset = global_consumption.sel({"ssp": ssp, "model": model})
+                    selection = (damage_function_points["ssp"] == ssp) & (damage_function_points["model"] == model)
 
-                # Fit damage function curves using the data subset
-                damage_function = model_outputs(
-                    damage_function=fit_subset,
-                    formula=self.formula,
-                    type_estimation=self.fit_type,
-                    global_c=global_c_subset,
-                    extrapolation_type=self.ext_method,
-                    quantiles=self.quantreg_quantiles,
-                    year_range=yrs,
-                    year_start_pred=self.ext_subset_end_year + 1,
-                )
+                    fit_subset = damage_function_points[selection]
+                    
+                    subset = dict(ssp=[ssp], model=[model])
+                    
+                    if self.geography == 'country':
+                        subset.update(dict(country = [country]))
 
-                # Add variables
-                params = damage_function["parameters"].expand_dims(
-                    dict(
-                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
+                    global_c_subset = global_consumption.sel(subset)
+
+                    # Fit damage function curves using the data subset
+                    damage_function = model_outputs(
+                        damage_function=fit_subset,
+                        formula=self.formula,
+                        type_estimation=self.fit_type,
+                        global_c=global_c_subset,
+                        extrapolation_type=self.ext_method,
+                        quantiles=self.quantreg_quantiles,
+                        year_range=yrs,
+                        year_start_pred=self.ext_subset_end_year + 1,
                     )
-                )
+                    
+                    subset.update(dict(discount_type=[self.discounting_type]))
 
-                preds = damage_function["preds"].expand_dims(
-                    dict(
-                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
+                    # Add variables
+                    params = damage_function["parameters"].expand_dims(
+                        subset
                     )
-                )
 
-                params_list.append(params)
-                preds_list.append(preds)
+                    preds = damage_function["preds"].expand_dims(
+                        subset
+                    )
+
+                    params_list.append(params)
+                    preds_list.append(preds)
 
         elif "gwr" in self.discounting_type:
             # Fit damage function across all SSP-IAM combinations, as expected
@@ -797,9 +843,14 @@ class MainRecipe(StackedDamages, ABC):
         """
 
         # Calculate global consumption per capita
-        array_pc = self.global_consumption_calculation(
-            disc_type
-        ) / self.collapsed_pop.sum("region")
+        if self.geography == 'country':
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self.country_econ_vars.pop
+        else:
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self.collapsed_pop.sum("region")
 
         if self.NAME == "equity":
             # equity recipe's growth is capped to
@@ -840,7 +891,10 @@ class MainRecipe(StackedDamages, ABC):
 
             # holding population constant
             # from 2100 to 2300 with 2099 values
-            pop = self.collapsed_pop.sum("region")
+            if self.geography == "country":
+                pop = self.country_econ_vars.pop
+            else:
+                pop = self.collapsed_pop.sum("region")
             pop = pop.reindex(
                 year=range(pop.year.min().values, self.ext_end_year + 1),
                 method="ffill",
@@ -993,6 +1047,7 @@ class MainRecipe(StackedDamages, ABC):
 
         if self.clip_gmsl:
             fair_pulse["gmsl"] = np.minimum(fair_pulse["gmsl"], self.gmsl_max)
+
 
         damages = compute_damages(
             fair_pulse,

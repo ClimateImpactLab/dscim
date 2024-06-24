@@ -306,7 +306,13 @@ class StackedDamages:
         histclim=None,
         ce_path=None,
         subset_dict=None,
+        geography=None,
+        **kwargs,
     ):
+        
+        if geography is None:
+            geography = "global"
+
         self.sector_path = sector_path
         self.save_path = save_path
         self.gdppc_bottom_code = gdppc_bottom_code
@@ -317,6 +323,15 @@ class StackedDamages:
         self.histclim = histclim
         self.ce_path = ce_path
         self.eta = eta
+        self.__dict__.update(**kwargs)
+        self.geography = geography
+        self.kwargs = kwargs
+        
+        
+        if 'country_ISOs' in kwargs:
+            self.countries_mapping = pd.read_csv(kwargs['country_ISOs'])
+            self.countries = self.countries_mapping.MatchedISO.dropna().unique()
+
 
         self.logger = logging.getLogger(__name__)
 
@@ -366,6 +381,24 @@ class StackedDamages:
             raise ValueError(
                 "Economic data is not loaded. Check your config or input settings."
             )
+        return raw
+    
+    @property
+    def country_econ_vars(self):
+        mapping_dict = {}
+        for ii, row in self.countries_mapping.iterrows():
+            mapping_dict[row['ISO']] = row['MatchedISO']
+            if row['MatchedISO'] == 'nan':
+                mapping_dict[row['ISO']] = 'nopop'
+        
+        socioec = self.econ_vars.econ_vars
+        socioec = socioec.assign_coords({'region': [ region[:3] for region in socioec.region.values]})
+        new_ISOs = []
+        for ISO in socioec.region.values:
+            new_ISOs.append(mapping_dict[ISO])
+        raw = socioec.assign_coords({'region': new_ISOs}).groupby('region').sum().rename({'region':'country'}).drop_sel(country = 'nan')
+        raw = self.cut(raw, end_year=2099)
+        
         return raw
 
     @cachedproperty

@@ -364,15 +364,19 @@ def rff_damage_functions(
     weights_path,
     pulse_year,
     mask,
+    geography = None,
 ):
     """Wrapper function for `weight_df()`."""
 
     # ssp GDP for fractionalizing damage functions
-    ssp_gdp = xr.open_zarr(ssp_gdp, consolidated=True).sum("region").gdp
-
-    # get RFF data
-    region = "USA" if USA else "world"
-    rff_gdp = xr.open_dataset(rff_gdp).sel(region=region, drop=True).gdp
+    if geography == 'country':
+        ssp_gdp = xr.open_zarr(ssp_gdp, consolidated=True).gdp
+        rff_gdp = xr.open_dataset(rff_gdp).gdp
+    else:
+        ssp_gdp = xr.open_zarr(ssp_gdp, consolidated=True).sum("region").gdp
+        # get RFF data
+        region = "USA" if USA else "world"
+        rff_gdp = xr.open_dataset(rff_gdp).sel(region=region, drop=True).gdp
 
     # get global consumption factors to extrapolate damage function
     factors = rff_gdp.sel(year=slice(2100, 2300)) / rff_gdp.sel(year=2099)
