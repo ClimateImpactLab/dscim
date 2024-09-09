@@ -26,7 +26,7 @@ class MainRecipe(StackedDamages, ABC):
     Parameters
     ----------
     discounting_type : str
-        Choice of discounting: ``euler_gwr``, ``euler_ramsey``, ``constant``, ``naive_ramsey``,
+        Choice of discounting: ``euler_gwr``, ``euler_ramsey``, ``constant``, ``constant_gwr``, ``naive_ramsey``,
         ``naive_gwr``, ``gwr_gwr``.
     discrete_discounting: boolean
         Discounting is discrete if ``True``, else continuous (default is ``False``).
@@ -52,6 +52,7 @@ class MainRecipe(StackedDamages, ABC):
     DISCOUNT_TYPES = [
         "constant",
         "constant_model_collapsed",
+        "constant_gwr",
         "naive_ramsey",
         "euler_ramsey",
         "naive_gwr",
@@ -253,7 +254,7 @@ class MainRecipe(StackedDamages, ABC):
         # 'constant_model_collapsed' should be here except that we allow
         # for a collapsed-model Ramsey rate to be calculated (for labour
         # and energy purposes)
-        if self.discounting_type in ["constant", "constant_model_collapsed"]:
+        if self.discounting_type in ["constant", "constant_model_collapsed", "constant_gwr"]:
             self.stream_discount_factors = None
 
         # assert formulas for which clip_gmsl is implemented
@@ -1093,7 +1094,7 @@ class MainRecipe(StackedDamages, ABC):
             xr.Dataset
         """
 
-        if discrate in ["constant", "constant_model_collapsed"]:
+        if discrate in ["constant", "constant_model_collapsed", "constant_gwr"]:
             if self.discrete_discounting:
                 discrate_damages = [
                     damages * (1 / (1 + r)) ** (damages.year - self.climate.pulse_year)
