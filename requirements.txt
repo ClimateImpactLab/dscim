@@ -6,7 +6,7 @@ matplotlib==3.9.2
 dask[array, distributed]==2024.8.2
 requests==2.32.3
 statsmodels==0.14.2
-pytest==8.3.2
+pytest==8.3.3
 pytest-cov==5.0.0
 zarr==2.18.3
 ruff==0.6.4
