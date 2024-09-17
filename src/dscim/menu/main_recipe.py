@@ -319,8 +319,9 @@ class MainRecipe(StackedDamages, ABC):
             self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
-                self.calculate_scc
-                self.stat_uncertainty_iqr
+                if len(self.fair_aggregation) > 0:
+                    self.calculate_scc
+                    self.stat_uncertainty_iqr
             else:
                 if len(self.fair_aggregation) > 0:
                     self.stream_discount_factors
