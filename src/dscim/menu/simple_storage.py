@@ -306,7 +306,12 @@ class StackedDamages:
         histclim=None,
         ce_path=None,
         subset_dict=None,
+        geography=None,
+        **kwargs,
     ):
+        if geography is None:
+            geography = "global"
+
         self.sector_path = sector_path
         self.save_path = save_path
         self.gdppc_bottom_code = gdppc_bottom_code
@@ -317,7 +322,15 @@ class StackedDamages:
         self.histclim = histclim
         self.ce_path = ce_path
         self.eta = eta
+        self.__dict__.update(**kwargs)
+        self.geography = geography
+        self.kwargs = kwargs
 
+        if "country_ISOs" in kwargs:
+            self.countries_mapping = pd.read_csv(kwargs["country_ISOs"])
+            self.countries = self.countries_mapping.MatchedISO.dropna().unique()
+
+            
         self.logger = logging.getLogger(__name__)
 
     def cut(self, xr_array, end_year=2099):
@@ -351,7 +364,41 @@ class StackedDamages:
         )
 
         return xr_data
+    
+    @property
+    def geography_collapsed_econ_vars(self):
+        
+        pop_collapse = self.pop
+                
+        if self.geography == "ir":
+            pass
+        elif self.geography == "country":
+            territories = []
+            mapping_dict = {}
+            for ii, row in self.countries_mapping.iterrows():
+                mapping_dict[row["ISO"]] = row["MatchedISO"]
+                if row["MatchedISO"] == "nan":
+                    mapping_dict[row["ISO"]] = "nopop"
+                    
+            for region in pop_collapse.region.values:
+                    territories.append(mapping_dict(region[:3]))
+                    
+            pop_collapse = (pop_collapse
+                             .assign_coords({'region':territories})
+                             .groupby('region')
+                             .sum())
+        elif self.geography == "global":
+            pop_collapse = pop_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
 
+        if "gwr" in self.discounting_type:
+            pop_collapse = pop_collapse.assign(
+                ssp=str(list(self.gdp.ssp.values)),
+                model=str(list(self.gdp.model.values)),
+            )
+
+        return pop_collapse.to_dataset(name = 'damages')
+
+        
     @property
     def cut_econ_vars(self):
         """Economic variables from SSP object"""

@@ -10,7 +10,38 @@ from itertools import product
 logger = logging.getLogger(__name__)
 
 
-def modeler(df, formula, type_estimation, exog, quantiles=None):
+def fit_project(chunk_reg, formula, type_estimation, quantiles, index_dims):
+    # individual block's mapping function
+    df_reg = chunk_reg.to_dataframe().reset_index()
+
+    year_range = df_reg.year.values
+    
+    df_tot = []
+    for year in year_range:
+        time_window = range(year - 2, year + 3)
+        df = df_reg[df_reg.year.isin(time_window)]
+        params = modeler(
+                df=df,
+                formula=formula,
+                type_estimation=type_estimation,
+                quantiles=quantiles,
+            )
+        params.assign(year = year)
+        df_tot.append(params)
+
+    params = pd.concat(df_tot)
+    for dim in index_dims:
+        if chunk_reg[dim].size == 1:
+            params[dim] = chunk_reg[dim].values
+        else:
+            params[dim] = str(list(chunk_reg[dim].values))
+    
+    print(params, flush=True)
+
+    params = params.set_index(index_dims + ['year',])
+    return(params.to_xarray())
+
+def modeler(df, formula, type_estimation, quantiles=None):
     """Wrapper function for statsmodels functions (OLS and quantiles)
 
     For the quantiles, the function will fit for all quantiles between 0 and 1
@@ -43,11 +74,11 @@ def modeler(df, formula, type_estimation, exog, quantiles=None):
         pd.DataFrame with predictions
     """
 
+    import numpy as np
+    
     if type_estimation == "ols":
         mod = smf.ols(formula=formula, data=df).fit()
         params = pd.DataFrame(mod.params).T
-        y_hat = pd.DataFrame(dict(exog, y_hat=mod.predict(exog=exog)))
-
     elif type_estimation == "quantreg":
         # silence the 'max recursions' warning
         with warnings.catch_warnings():
@@ -55,7 +86,7 @@ def modeler(df, formula, type_estimation, exog, quantiles=None):
 
             # set up the model
             mod = smf.quantreg(formula=formula, data=df)
-            q_params, q_y_hat = [], []
+            q_params = []
 
             # calculate each quantile regression
             # save parameters and predictions
@@ -64,17 +95,12 @@ def modeler(df, formula, type_estimation, exog, quantiles=None):
                 params_quantile = pd.DataFrame(quant_mod.params).T
                 params_quantile = params_quantile.assign(q=quant)
                 q_params.append(params_quantile)
-
-                fitted = pd.DataFrame(dict(exog, y_hat=quant_mod.predict(exog=exog)))
-                q_y_hat.append(fitted.assign(q=quant))
-
             params = pd.concat(q_params)
-            y_hat = pd.DataFrame(pd.concat(q_y_hat))
 
     else:
         raise NotImplementedError(f"{type_estimation} is not valid option!")
 
-    return params, y_hat
+    return params
 
 
 def get_weights(quantiles):
@@ -330,26 +356,26 @@ def c_equivalence(array, dims, eta, weights=None, func_args=None, func=None):
 
 
 def model_outputs(
-    damage_function,
+    damage_function_points,
     extrapolation_type,
     formula,
+    map_dims,
     year_range,
     year_start_pred,
     quantiles,
     global_c=None,
-    min_anomaly=0,
-    max_anomaly=20,
-    step_anomaly=0.2,
-    min_gmsl=0,
-    max_gmsl=300,
-    step_gmsl=3,
     type_estimation="ols",
 ):
     """Estimate damage function coefficients and predictions using
     passed formula.
 
     This model is estimated for each year in our timeframe (2010 to 2099) and
-    using a rolling window across time (5-yr by default).
+    using a rolling window across time (5-yr by default). Dims are placed into
+    three categories:
+     - map_dims: these dimensions index the final coefficients 
+     - years: as described above
+     - everything else: these dimensions populate the full number of points in 
+         the regression (i.e. gcm places all 33 gcms into the regression)
 
     Damage functions are extrapolated for each year between 2099 and 2300.
 
@@ -357,6 +383,10 @@ def model_outputs(
     ----------
     damage_function: pandas.DataFrame
         A global damage function.
+    formula: str
+        Regression formula using R regression syntax.
+    map_dims:
+        Dims to index the final coefficients. 
     type_estimation: str
         Type of model use for damage function fitting: `ols`, `quantreg`
     extrapolation_type : str
@@ -377,68 +407,54 @@ def model_outputs(
         DataFrame with yearly damage functions (coefficients and predictions
         respectively).
     """
-
+    
+    map_chunks = {'year': -1}
+    out_chunks = {'year': -1}
+    
+    for dim in map_dims:
+        map_chunks[dim] = 1
+        out_chunks[dim] = 1
+    
+    for dim in set(damage_function_points.coords) - set(map_chunks.keys()):
+        map_chunks[dim] = -1
+    
     # set year of prediction for global C extrapolation
     fix_global_c = year_start_pred - 1
-
-    # set exogenous variables for predictions
-    gmsl = np.arange(min_gmsl, max_gmsl, step_gmsl)
-    temps = np.arange(min_anomaly, max_anomaly, step_anomaly)
-
-    if ("anomaly" in damage_function.columns) and ("gmsl" in damage_function.columns):
-        exog_X = pd.DataFrame(product(temps, gmsl))
-        exog = dict(anomaly=exog_X.values[:, 0], gmsl=exog_X.values[:, 1])
-    elif "anomaly" in damage_function.columns:
-        exog = dict(anomaly=temps)
-    elif "gmsl" in damage_function.columns:
-        exog = dict(gmsl=gmsl)
-    else:
-        print("Independent variables not found.")
-
-    # Rolling window estimation (5-yr)
-    list_params, list_y_hats = [], []
-
-    for year in year_range:
-        time_window = range(year - 2, year + 3)
-        df = damage_function[damage_function.year.isin(time_window)]
-        params, y_hat = modeler(
-            df=df,
-            formula=formula,
-            type_estimation=type_estimation,
-            exog=exog,
-            quantiles=quantiles,
-        )
-
-        params, y_hat = params.assign(year=year), y_hat.assign(year=year)
-        list_params.append(params)
-        list_y_hats.append(y_hat)
-
-    # Concatenate results
-    param_df = pd.concat(list_params)
-    y_hat_df = pd.concat(list_y_hats)
-
+    
+    ds_template = xr.Dataset(
+        data_vars={
+            'anomaly':(map_dims + ['year',], np.empty([damage_function_points[dim].size for dim in map_dims + ['year',]])),
+            'np.power(anomaly, 2)':(map_dims + ['year',], np.empty([damage_function_points[dim].size for dim in map_dims + ['year',]])),
+        },
+        coords={dim: damage_function_points[dim].values for dim in map_dims + ['year',]},
+    ).chunk(out_chunks)
+    # print(1)
+    ds_points = (damage_function_points
+            .chunk(map_chunks))
+    # print(1)
+    param_df = xr.map_blocks(fit_project,
+                        ds_points,
+                        template = ds_template,
+                        kwargs = dict(
+                            formula = menu_item.formula,
+                            type_estimation = menu_item.fit_type,
+                            quantiles = menu_item.quantreg_quantiles,
+                            index_dims = map_dims,))
+    
+    extrapolation_type = "global_c_ratio"
     if extrapolation_type == "global_c_ratio":
-        # convert to xarray immediately
-        index = ["year", "q"] if type_estimation == "quantreg" else ["year"]
-        y_hat_df = y_hat_df.set_index(
-            [i for i in y_hat_df.columns if "y_hat" not in i]
-        ).to_xarray()
-        param_df = param_df.set_index(index).to_xarray()
-
         # Calculate global consumption ratios to fixed year
         global_c_factors = (
             global_c.sel(year=slice(fix_global_c + 1, None))
             / global_c.sel(year=fix_global_c)
         ).squeeze()
-
+    
         # Extrapolate by multiplying fixed params by ratios
-        extrap_preds = y_hat_df.sel(year=fix_global_c) * global_c_factors
         extrap_params = param_df.sel(year=fix_global_c) * global_c_factors
-
+    
         # concatenate extrapolation and pre-2100
-        preds = xr.concat([y_hat_df, extrap_preds], dim="year")
         parameters = xr.concat([param_df, extrap_params], dim="year")
-
+    
         # For the local case we don't care about the time dimension, the
         # extrapolation will index on the last year available of damages (2099)
         # by design (changed using the fix_global_c parameter) and will use
@@ -447,14 +463,7 @@ def model_outputs(
         if global_c_factors.year.dims == ():
             raise NotImplementedError("WATCH OUT! Local is scrapped.")
 
-    # Return all results
-    res = {
-        "parameters": parameters,
-        "preds": preds,
-    }
-
-    return res
-
+    return(parameters)
 
 def compute_damages(anomaly, betas, formula):
     """Calculate damages using FAIR anomalies (either control or pulse).
