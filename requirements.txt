@@ -9,7 +9,7 @@ statsmodels==0.14.4
 pytest==8.3.3
 pytest-cov==6.0.0
 zarr==2.18.3
-ruff==0.7.0
+ruff==0.7.2
 netcdf4==1.7.2
 h5netcdf==1.4.0
 impactlab-tools==0.6.0
