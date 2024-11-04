@@ -14,4 +14,4 @@ netcdf4==1.7.2
 h5netcdf==1.4.0
 impactlab-tools==0.6.0
 p_tqdm==1.4.2
-pyarrow==17.0.0
+pyarrow==18.0.0
