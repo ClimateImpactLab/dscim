@@ -808,6 +808,8 @@ def prep_mortality_damages(
             if damages[v].dtype == object:
                 damages[v] = damages[v].astype("unicode")
 
+        damages.coords['gcm'] = damages.coords['gcm'].astype('object')
+
         if i == 0:
             damages.to_zarr(
                 f"{outpath}/impacts-darwin-montecarlo-damages-v{mortality_version}.zarr",

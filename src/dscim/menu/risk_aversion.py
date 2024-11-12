@@ -110,8 +110,16 @@ class RiskAversionRecipe(MainRecipe):
             xr.DataArray
         """
 
+        if self.geography == 'ir':
+            gdp = self.gdp
+        elif self.geography == 'country':
+            #group gdp by some grouping and collapse
+            gdp = self.gdp.sum(dim=["region"])
+        else:
+            gdp = self.gdp.sum(dim=["region"])
+
         if (disc_type == "constant") or ("ramsey" in disc_type):
-            global_cons_no_cc = self.gdp.sum(dim=["region"])
+            global_cons_no_cc = gdp
 
         elif disc_type == "constant_model_collapsed":
             global_cons_no_cc = self.gdp.sum(dim=["region"]).mean(dim=["model"])

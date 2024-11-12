@@ -107,6 +107,7 @@ class MainRecipe(StackedDamages, ABC):
         fair_dims=None,
         save_files=None,
         geography=None,
+        individual_region=None,
         **kwargs,
     ):
         if scc_quantiles is None:
@@ -240,6 +241,7 @@ class MainRecipe(StackedDamages, ABC):
         self.fair_dims = fair_dims
         self.save_files = save_files
         self.geography = geography
+        self.individual_region = individual_region
         self.__dict__.update(**kwargs)
         self.kwargs = kwargs
 
@@ -828,9 +830,14 @@ class MainRecipe(StackedDamages, ABC):
         """
 
         # Calculate global consumption per capita
-        array_pc = self.global_consumption_calculation(
-            disc_type
-        ) / self.collapsed_pop.sum("region")
+        if self.individual_region is not None:
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self.collapsed_pop.sel(region = self.individual_region)
+        else:
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self.collapsed_pop.sum("region")
 
         if self.NAME == "equity":
             # equity recipe's growth is capped to
@@ -863,15 +870,23 @@ class MainRecipe(StackedDamages, ABC):
         """Global consumption without climate change"""
 
         # rff simulation means that GDP already exists out to 2300
+        individual_region = self.individual_region
+        
         if 2300 in self.gdp.year:
             self.logger.debug("Global consumption found up to 2300.")
-            global_cons = self.gdp.sum("region").rename("global_consumption")
+            if individual_region is not None:
+                global_cons = self.gdp.sel(region = individual_region).rename("global_consumption")
+            else:
+                global_cons = self.gdp.sum("region").rename("global_consumption")
         else:
             self.logger.info("Extrapolating global consumption.")
 
             # holding population constant
             # from 2100 to 2300 with 2099 values
-            pop = self.collapsed_pop.sum("region")
+            if individual_region is None:
+                pop = self.collapsed_pop.sum("region")
+            else:
+                pop = self.collapsed_pop.sel(region = individual_region)
             pop = pop.reindex(
                 year=range(pop.year.min().values, self.ext_end_year + 1),
                 method="ffill",
@@ -988,18 +1003,25 @@ class MainRecipe(StackedDamages, ABC):
     @save(name="global_consumption_no_pulse")
     def global_consumption_no_pulse(self):
         """Global consumption under FAIR control scenario."""
-
+        individual_region = self.individual_region
         fair_control = self.climate.fair_control
 
         if self.clip_gmsl:
             fair_control["gmsl"] = np.minimum(fair_control["gmsl"], self.gmsl_max)
 
-        damages = compute_damages(
-            fair_control,
-            betas=self.damage_function_coefficients,
-            formula=self.formula,
-        )
-
+        if individual_region is not None:
+            damages = compute_damages(
+                fair_control,
+                betas=self.damage_function_coefficients.sel(region = individual_region),
+                formula=self.formula,
+            )
+        else:
+            damages = compute_damages(
+                fair_control,
+                betas=self.damage_function_coefficients,
+                formula=self.formula,
+            )
+            
         cc_cons = self.global_consumption - damages
 
         gc_no_pulse = []
@@ -1019,7 +1041,7 @@ class MainRecipe(StackedDamages, ABC):
     @save(name="global_consumption_pulse")
     def global_consumption_pulse(self):
         """Global consumption under FAIR pulse scenario."""
-
+        individual_region = self.individual_region
         fair_pulse = self.climate.fair_pulse
 
         if self.clip_gmsl:
@@ -1027,7 +1049,7 @@ class MainRecipe(StackedDamages, ABC):
 
         damages = compute_damages(
             fair_pulse,
-            betas=self.damage_function_coefficients,
+            betas=self.damage_function_coefficients.sel(region = individual_region),
             formula=self.formula,
         )
 
