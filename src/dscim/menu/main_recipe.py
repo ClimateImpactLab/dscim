@@ -476,7 +476,7 @@ class MainRecipe(StackedDamages, ABC):
                              .assign_coords({'region':territories})
                              .groupby('region')
                              .sum())
-        elif geography == "global":
+        elif geography == "globe":
             pop = pop.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
             
         return pop
@@ -823,22 +823,37 @@ class MainRecipe(StackedDamages, ABC):
 
     def global_consumption_per_capita(self, disc_type):
         """Global consumption per capita
-
+    
         Returns
         -------
             xr.DataArray
         """
-
+    
         # Calculate global consumption per capita
-        if self.individual_region is not None:
-            array_pc = self.global_consumption_calculation(
-                disc_type
-            ) / self.collapsed_pop.sel(region = self.individual_region)
-        else:
-            array_pc = self.global_consumption_calculation(
-                disc_type
-            ) / self.collapsed_pop.sum("region")
-
+        array_pc = self.global_consumption_calculation(
+            disc_type
+        ) / self.collapsed_pop#.sum("region")
+        
+        if self.geography == "ir":
+            pass
+        elif self.geography == "country":
+            territories = []
+            mapping_dict = {}
+            for ii, row in self.countries_mapping.iterrows():
+                mapping_dict[row["ISO"]] = row["MatchedISO"]
+                if row["MatchedISO"] == "nan":
+                    mapping_dict[row["ISO"]] = "nopop"
+                    
+            for region in array_pc.region.values:
+                    territories.append(mapping_dict[region[:3]])
+                    
+            array_pc = (array_pc
+                        .assign_coords({'region':territories})
+                        .groupby('region')
+                        .sum())
+        elif self.geography == "globe":
+            array_pc = array_pc.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
+    
         if self.NAME == "equity":
             # equity recipe's growth is capped to
             # risk aversion recipe's growth rates
@@ -850,7 +865,7 @@ class MainRecipe(StackedDamages, ABC):
                 method="growth_constant",
                 cap=self.risk_aversion_growth_rates(),
             )
-
+    
         else:
             extrapolated = extrapolate(
                 xr_array=array_pc,
@@ -859,9 +874,9 @@ class MainRecipe(StackedDamages, ABC):
                 interp_year=self.ext_end_year,
                 method="growth_constant",
             )
-
+    
         complete_array = xr.concat([array_pc, extrapolated], dim="year")
-
+    
         return complete_array
 
     @cachedproperty
@@ -869,9 +884,9 @@ class MainRecipe(StackedDamages, ABC):
     def global_consumption(self):
         """Global consumption without climate change"""
 
-        # rff simulation means that GDP already exists out to 2300
         individual_region = self.individual_region
         
+        # rff simulation means that GDP already exists out to 2300
         if 2300 in self.gdp.year:
             self.logger.debug("Global consumption found up to 2300.")
             if individual_region is not None:
@@ -884,7 +899,13 @@ class MainRecipe(StackedDamages, ABC):
             # holding population constant
             # from 2100 to 2300 with 2099 values
             if individual_region is None:
-                pop = self.collapsed_pop.sum("region")
+                pop = self.collapsed_pop
+                if self.geography == "ir": 
+                    pass
+                elif self.geography == "country":
+                    pass
+                elif self.geography == "globe":
+                    pop = self.collapsed_pop.sum("region")
             else:
                 pop = self.collapsed_pop.sel(region = individual_region)
             pop = pop.reindex(
@@ -893,9 +914,14 @@ class MainRecipe(StackedDamages, ABC):
             )
 
             # Calculate global consumption back by
-            global_cons = (
-                self.global_consumption_per_capita(self.discounting_type) * pop
-            )
+            if individual_region is None:
+                global_cons = (
+                    self.global_consumption_per_capita(self.discounting_type) * pop
+                )
+            else:
+                global_cons = (
+                    self.global_consumption_per_capita(self.discounting_type).sel(region = individual_region) * pop
+                )
 
         # Add dimension
         # @TODO: remove this line altogether
@@ -1047,12 +1073,19 @@ class MainRecipe(StackedDamages, ABC):
         if self.clip_gmsl:
             fair_pulse["gmsl"] = np.minimum(fair_pulse["gmsl"], self.gmsl_max)
 
-        damages = compute_damages(
-            fair_pulse,
-            betas=self.damage_function_coefficients.sel(region = individual_region),
-            formula=self.formula,
-        )
-
+        if individual_region is not None:
+            damages = compute_damages(
+                fair_pulse,
+                betas=self.damage_function_coefficients.sel(region = individual_region),
+                formula=self.formula,
+            )
+        else:
+            damages = compute_damages(
+                fair_pulse,
+                betas=self.damage_function_coefficients,
+                formula=self.formula,
+            )
+    
         cc_cons = self.global_consumption - damages
         gc_no_pulse = []
         for wp in self.weitzman_parameter:

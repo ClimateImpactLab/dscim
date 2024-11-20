@@ -72,7 +72,7 @@ class RiskAversionRecipe(MainRecipe):
                              .assign_coords({'region':territories})
                              .groupby('region')
                              .sum())
-        elif geography == "global":
+        elif geography == "globe":
             dams_collapse = dams_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
 
         if "gwr" in self.discounting_type:
