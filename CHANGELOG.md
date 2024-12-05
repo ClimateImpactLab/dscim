@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Python version for running automated tests in CI upgraded from Python 3.10 to 3.12 ([PR #270](https://github.com/ClimateImpactLab/dscim/pull/270), [@brews](https://github.com/brews)).
 
+### Fixed
+
+- Minor code cleanup. Switch old %-string formatting to use f-strings ([PR #351](https://github.com/ClimateImpactLab/dscim/pull/351), [@brews](https://github.com/brews)).
+
 ### Removed
 
 - Removed [`preprocessing/climate`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/climate) and [`preprocessing/misc`](https://github.com/ClimateImpactLab/dscim/tree/25dfb39637d5716662a3ec636028d5066ddb10bb/src/dscim/preprocessing/misc) subpackages. ([PR #249](https://github.com/ClimateImpactLab/dscim/pull/249), [@JMGilbert](https://github.com/JMGilbert))
