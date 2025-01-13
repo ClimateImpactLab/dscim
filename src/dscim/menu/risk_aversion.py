@@ -122,7 +122,7 @@ class RiskAversionRecipe(MainRecipe):
             global_cons_no_cc = gdp
 
         elif disc_type == "constant_model_collapsed":
-            global_cons_no_cc = self.gdp.sum(dim=["region"]).mean(dim=["model"])
+            global_cons_no_cc = gdp.mean(dim=["model"])
 
         elif "gwr" in disc_type:
             ce_cons = self.ce(self.gdppc, dims=["ssp", "model"])

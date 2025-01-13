@@ -832,10 +832,10 @@ class MainRecipe(StackedDamages, ABC):
         # Calculate global consumption per capita
         array_pc = self.global_consumption_calculation(
             disc_type
-        ) / self.collapsed_pop#.sum("region")
+        )
         
         if self.geography == "ir":
-            pass
+            array_pc = array_pc / self.collapsed_pop
         elif self.geography == "country":
             territories = []
             mapping_dict = {}
@@ -847,12 +847,14 @@ class MainRecipe(StackedDamages, ABC):
             for region in array_pc.region.values:
                     territories.append(mapping_dict[region[:3]])
                     
-            array_pc = (array_pc
-                        .assign_coords({'region':territories})
-                        .groupby('region')
-                        .sum())
+            pop = (self.collapsed_pop
+                       .assign_coords({'region':territories})
+                       .groupby('region')
+                       .sum())
+
+            array_pc = (array_pc / pop)
         elif self.geography == "globe":
-            array_pc = array_pc.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
+            array_pc = (array_pc / self.collapsed_pop.sum("region")).assign_coords({'region':'globe'}).expand_dims('region')   
     
         if self.NAME == "equity":
             # equity recipe's growth is capped to
@@ -905,7 +907,7 @@ class MainRecipe(StackedDamages, ABC):
                 elif self.geography == "country":
                     pass
                 elif self.geography == "globe":
-                    pop = self.collapsed_pop.sum("region")
+                    pop = pop.sum("region")
             else:
                 pop = self.collapsed_pop.sel(region = individual_region)
             pop = pop.reindex(
