@@ -436,9 +436,9 @@ def model_outputs(
                         ds_points,
                         template = ds_template,
                         kwargs = dict(
-                            formula = menu_item.formula,
-                            type_estimation = menu_item.fit_type,
-                            quantiles = menu_item.quantreg_quantiles,
+                            formula = formula,
+                            type_estimation = type_estimation,
+                            quantiles = quantiles,
                             index_dims = map_dims,))
     
     extrapolation_type = "global_c_ratio"

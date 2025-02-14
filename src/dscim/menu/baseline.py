@@ -1,5 +1,7 @@
+import pandas as pd
+import xarray as xr
 from dscim.menu.main_recipe import MainRecipe
-
+import os
 
 class Baseline(MainRecipe):
     """Adding up option"""
@@ -16,9 +18,68 @@ class Baseline(MainRecipe):
     def global_damages_calculation(self):
         """Call global damages"""
         return self.adding_up_damages.to_dataframe("damages").reset_index()
+    
+    def damages_calculation(self, geography) -> xr.Dataset:
+        """Aggregate damages to country level
 
+        Returns
+        --------
+            pd.DataFrame
+        """
+        
+        self.logger.info(f"Calculating damages")
+        if self.individual_region:
+            dams_collapse = self.calculated_damages * self.collapsed_pop.sel(region = self.individual_region, drop=True)
+        else:
+            dams_collapse = self.calculated_damages * self.collapsed_pop
+        
+        if geography == "ir":
+            pass
+        elif geography == "country":
+            territories = []
+            mapping_dict = {}
+            for ii, row in self.countries_mapping.iterrows():
+                mapping_dict[row["ISO"]] = row["MatchedISO"]
+                if row["MatchedISO"] == "nan":
+                    mapping_dict[row["ISO"]] = "nopop"
+                    
+            for region in dams_collapse.region.values:
+                    territories.append(mapping_dict[region[:3]])
+                    
+            dams_collapse = (dams_collapse
+                             .assign_coords({'region':territories})
+                             .groupby('region')
+                             .sum())
+        elif geography == "globe":
+            dams_collapse = dams_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
+
+        if "gwr" in self.discounting_type:
+            dams_collapse = dams_collapse.assign(
+                ssp=str(list(self.gdp.ssp.values)),
+                model=str(list(self.gdp.model.values)),
+            )
+
+        return dams_collapse.to_dataset(name = 'damages')
+
+    @property
     def calculated_damages(self):
-        pass
+        mean_cc = f"{self.ce_path}/adding_up_cc.zarr"
+        mean_no_cc = f"{self.ce_path}/adding_up_no_cc.zarr"
+
+        if os.path.exists(mean_cc) and os.path.exists(mean_no_cc):
+            self.logger.info(
+                f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
+            )
+            damages = (
+                (xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc) * self.pop
+            )
+        else:
+            raise NotImplementedError(
+                f"Adding up reduced damages not found: {mean_no_cc}, {mean_cc}. Please reduce damages for for `adding_up`."
+            )
+        if self.individual_region:
+            damages = damages.sel(region=self.individual_region,drop=True)
+        return self.cut(damages)
 
     def ce_cc_calculation(self):
         pass

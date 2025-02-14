@@ -460,7 +460,7 @@ class MainRecipe(StackedDamages, ABC):
             pop = self.pop.mean(["model", "ssp"])
                     
         if geography == "ir":
-            pass
+            pass        
         elif geography == "country":
             territories = []
             mapping_dict = {}
@@ -599,47 +599,27 @@ class MainRecipe(StackedDamages, ABC):
         elif (self.discounting_type == "constant") or (
             "ramsey" in self.discounting_type
         ):
-            for ssp, model in list(
-                product(
-                    damage_function_points.ssp.unique(),
-                    damage_function_points.model.unique(),
-                )
-            ):
-                # Subset dataframe to specific SSP-IAM combination.
-                fit_subset = damage_function_points[
-                    (damage_function_points["ssp"] == ssp)
-                    & (damage_function_points["model"] == model)
-                ]
+            # Subset dataframe to specific SSP-IAM combination.
+            fit_subset = damage_function_points
+            global_c_subset = global_consumption
 
-                global_c_subset = global_consumption.sel({"ssp": ssp, "model": model})
+            # Fit damage function curves using the data subset
+            damage_function = model_outputs(
+                damage_function_points=fit_subset,
+                formula=self.formula,
+                map_dims=['ssp','model'],
+                type_estimation=self.fit_type,
+                global_c=global_c_subset,
+                extrapolation_type=self.ext_method,
+                quantiles=self.quantreg_quantiles,
+                year_range=yrs,
+                year_start_pred=self.ext_subset_end_year + 1,
+            )
+            
+            # Add variables
+            params = damage_function
 
-                # Fit damage function curves using the data subset
-                damage_function = model_outputs(
-                    damage_function=fit_subset,
-                    formula=self.formula,
-                    type_estimation=self.fit_type,
-                    global_c=global_c_subset,
-                    extrapolation_type=self.ext_method,
-                    quantiles=self.quantreg_quantiles,
-                    year_range=yrs,
-                    year_start_pred=self.ext_subset_end_year + 1,
-                )
-
-                # Add variables
-                params = damage_function["parameters"].expand_dims(
-                    dict(
-                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
-                    )
-                )
-
-                preds = damage_function["preds"].expand_dims(
-                    dict(
-                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
-                    )
-                )
-
-                params_list.append(params)
-                preds_list.append(preds)
+            params_list.append(params)
 
         elif "gwr" in self.discounting_type:
             # Fit damage function across all SSP-IAM combinations, as expected
@@ -667,20 +647,10 @@ class MainRecipe(StackedDamages, ABC):
                 )
             )
 
-            preds = damage_function["preds"].expand_dims(
-                dict(
-                    discount_type=[self.discounting_type],
-                    ssp=[str(list(self.gdp.ssp.values))],
-                    model=[str(list(self.gdp.model.values))],
-                )
-            )
-
             params_list.append(params)
-            preds_list.append(preds)
 
         return dict(
             params=xr.combine_by_coords(params_list),
-            preds=xr.combine_by_coords(preds_list),
         )
 
     @cachedproperty
@@ -892,7 +862,7 @@ class MainRecipe(StackedDamages, ABC):
         if 2300 in self.gdp.year:
             self.logger.debug("Global consumption found up to 2300.")
             if individual_region is not None:
-                global_cons = self.gdp.sel(region = individual_region).rename("global_consumption")
+                global_cons = self.gdp.sel(region = individual_region,drop=True).rename("global_consumption")
             else:
                 global_cons = self.gdp.sum("region").rename("global_consumption")
         else:
@@ -922,7 +892,7 @@ class MainRecipe(StackedDamages, ABC):
                 )
             else:
                 global_cons = (
-                    self.global_consumption_per_capita(self.discounting_type).sel(region = individual_region) * pop
+                    self.global_consumption_per_capita(self.discounting_type).sel(region = individual_region,drop=True) * pop
                 )
 
         # Add dimension
