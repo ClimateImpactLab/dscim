@@ -540,6 +540,7 @@ class MainRecipe(StackedDamages, ABC):
 
         return df
 
+
     def damage_function_calculation(self, damage_function_points, global_consumption):
         """The damage function model fit may be : (1) ssp specific, (2) ssp-model specific, (3) unique across ssp-model.
         This depends on the type of discounting. In each case the input data passed to the fitting functions and the formatting of the returned
@@ -552,7 +553,6 @@ class MainRecipe(StackedDamages, ABC):
         """
 
         yrs = range(self.climate.pulse_year, self.ext_subset_end_year + 1)
-        
 
         params_list, preds_list = [], []
 
@@ -599,27 +599,47 @@ class MainRecipe(StackedDamages, ABC):
         elif (self.discounting_type == "constant") or (
             "ramsey" in self.discounting_type
         ):
-            # Subset dataframe to specific SSP-IAM combination.
-            fit_subset = damage_function_points
-            global_c_subset = global_consumption
+            for ssp, model in list(
+                product(
+                    damage_function_points.ssp.unique(),
+                    damage_function_points.model.unique(),
+                )
+            ):
+                # Subset dataframe to specific SSP-IAM combination.
+                fit_subset = damage_function_points[
+                    (damage_function_points["ssp"] == ssp)
+                    & (damage_function_points["model"] == model)
+                ]
 
-            # Fit damage function curves using the data subset
-            damage_function = model_outputs(
-                damage_function_points=fit_subset,
-                formula=self.formula,
-                map_dims=['ssp','model'],
-                type_estimation=self.fit_type,
-                global_c=global_c_subset,
-                extrapolation_type=self.ext_method,
-                quantiles=self.quantreg_quantiles,
-                year_range=yrs,
-                year_start_pred=self.ext_subset_end_year + 1,
-            )
-            
-            # Add variables
-            params = damage_function
+                global_c_subset = global_consumption.sel({"ssp": ssp, "model": model})
 
-            params_list.append(params)
+                # Fit damage function curves using the data subset
+                damage_function = model_outputs(
+                    damage_function=fit_subset,
+                    formula=self.formula,
+                    type_estimation=self.fit_type,
+                    global_c=global_c_subset,
+                    extrapolation_type=self.ext_method,
+                    quantiles=self.quantreg_quantiles,
+                    year_range=yrs,
+                    year_start_pred=self.ext_subset_end_year + 1,
+                )
+
+                # Add variables
+                params = damage_function["parameters"].expand_dims(
+                    dict(
+                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
+                    )
+                )
+
+                preds = damage_function["preds"].expand_dims(
+                    dict(
+                        discount_type=[self.discounting_type], ssp=[ssp], model=[model]
+                    )
+                )
+
+                params_list.append(params)
+                preds_list.append(preds)
 
         elif "gwr" in self.discounting_type:
             # Fit damage function across all SSP-IAM combinations, as expected
@@ -647,10 +667,20 @@ class MainRecipe(StackedDamages, ABC):
                 )
             )
 
+            preds = damage_function["preds"].expand_dims(
+                dict(
+                    discount_type=[self.discounting_type],
+                    ssp=[str(list(self.gdp.ssp.values))],
+                    model=[str(list(self.gdp.model.values))],
+                )
+            )
+
             params_list.append(params)
+            preds_list.append(preds)
 
         return dict(
             params=xr.combine_by_coords(params_list),
+            preds=xr.combine_by_coords(preds_list),
         )
 
     @cachedproperty
@@ -879,7 +909,7 @@ class MainRecipe(StackedDamages, ABC):
                 elif self.geography == "globe":
                     pop = pop.sum("region")
             else:
-                pop = self.collapsed_pop.sel(region = individual_region)
+                pop = self.collapsed_pop.sel(region = individual_region, drop=True)
             pop = pop.reindex(
                 year=range(pop.year.min().values, self.ext_end_year + 1),
                 method="ffill",
