@@ -106,7 +106,7 @@ class MainRecipe(StackedDamages, ABC):
         extrap_formula=None,
         fair_dims=None,
         save_files=None,
-        geography=None,
+        geography="globe",
         individual_region=None,
         **kwargs,
     ):
@@ -507,9 +507,7 @@ class MainRecipe(StackedDamages, ABC):
         """Certainty equivalent of consumption without climate change damages"""
         return self.ce_no_cc_calculation()
 
-    @cachedproperty
-    @save(name="damage_function_points")
-    def damage_function_points(self) -> pd.DataFrame:
+    def damage_function_points_xr(self) -> pd.DataFrame:
         """Global damages by RCP/GCM or SLR
 
         Returns
@@ -539,6 +537,19 @@ class MainRecipe(StackedDamages, ABC):
         df = xr.merge([df, climate_ds]).sel(year = df.year)
 
         return df
+    
+    @cachedproperty
+    @save(name="damage_function_points")
+    def damage_function_points(self) -> pd.DataFrame:
+        """Global damages by RCP/GCM or SLR
+
+        Returns
+        --------
+            pd.DataFrame
+        """
+        pts = self.damage_function_points_xr().to_dataframe().reset_index()
+
+        return pts
 
 
     def damage_function_calculation(self, damage_function_points, global_consumption):
@@ -1331,11 +1342,20 @@ class MainRecipe(StackedDamages, ABC):
 
         # holding population constant
         # from 2100 to 2300 with 2099 values
-        full_pop = self.collapsed_pop.sum("region")
-        full_pop = full_pop.reindex(
-            year=range(full_pop.year.min().values, self.ext_end_year + 1),
-            method="ffill",
-        )
+        
+        individual_region = self.individual_region
+        if individual_region is None:
+            full_pop = self.collapsed_pop.sum("region")
+            full_pop = full_pop.reindex(
+                year=range(full_pop.year.min().values, self.ext_end_year + 1),
+                method="ffill",
+            )
+        else:
+            full_pop = self.collapsed_pop.sel(region = individual_region,drop=True)
+            full_pop = full_pop.reindex(
+                year=range(full_pop.year.min().values, self.ext_end_year + 1),
+                method="ffill",
+            )           
 
         # for aggregations other than uncollapsed,
         # we need to collapse over pop dimensions
