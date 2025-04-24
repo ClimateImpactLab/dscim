@@ -43,6 +43,8 @@ def ce_from_chunk(
     else:
         raise NotImplementedError("Pass 'cc' or 'no_cc' to reduction.")
 
+    calculation = xr.where(calculation > 1e8, np.nan, calculation)
+        
     if recipe == "adding_up":
         result = mean_func(
             np.maximum(
@@ -74,12 +76,6 @@ def reduce_damages(
     bottom_coding_gdppc=39.39265060424805,
     zero=False,
 ):
-    if recipe == "adding_up":
-        assert (
-            eta is None
-        ), "Adding up does not take an eta argument. Please set to None."
-    # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
-
     with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
@@ -114,7 +110,7 @@ def reduce_damages(
                 }
 
             ce_batch_dims = [i for i in gdppc.dims] + [
-                i for i in ds.dims if i not in gdppc.dims and i != "batch"
+                i for i in ds.dims if i not in gdppc.dims and i != "batch" and i != "eta"
             ]
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
@@ -129,7 +125,9 @@ def reduce_damages(
     ).chunk(chunkies)
 
     other = xr.open_zarr(damages).chunk(chunkies)
-
+    if "eta" in other.coords:
+        other = other.sel(eta = eta, drop=True)
+    
     out = other.map_blocks(
         ce_from_chunk,
         kwargs=dict(
@@ -155,7 +153,7 @@ def reduce_damages(
 
     if recipe == "adding_up":
         out.to_zarr(
-            f"{outpath}/{recipe}_{reduction}.zarr",
+            f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr",
             consolidated=True,
             mode="w",
         )

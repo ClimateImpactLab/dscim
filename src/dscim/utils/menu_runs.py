@@ -104,6 +104,8 @@ def run_ssps(
                     "damage_function_path": f"{conf['paths']['ssp_damage_function_library']}/{sector}/2020/unmasked",
                     "save_files": [
                         "damage_function_points",
+                        #"uncollapsed_marginal_damages",
+                        #"uncollapsed_discount_factors",
                         "marginal_damages",
                         "discount_factors",
                         "uncollapsed_sccs",

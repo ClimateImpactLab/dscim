@@ -710,6 +710,7 @@ def prep_mortality_damages(
     outpath,
     mortality_version,
     path_econ,
+    etas,
 ):
     ec = EconVars(path_econ=path_econ)
 
@@ -732,6 +733,10 @@ def prep_mortality_damages(
         scaling_deaths = "epa_row"
         scaling_costs = "epa_scaled"
         valuation = "vsl"
+    elif mortality_version == 9:
+        scaling_deaths = "epa_popavg"
+        scaling_costs = "epa_scaled"
+        valuation = "vly"
     else:
         raise ValueError("Mortality version not valid: ", str(mortality_version))
 
@@ -764,8 +769,14 @@ def prep_mortality_damages(
                     valuation=valuation,
                 ).drop(["gcm", "valuation"])
 
-        data = xr.open_mfdataset(paths, preprocess=prep, parallel=True, engine="zarr")
-
+        d_ls = []
+        for eta in etas:
+            paths_ls = [paths.format(i,eta) for i in range(15)]
+            data = xr.open_mfdataset(paths_ls, preprocess=prep, parallel=True, engine="zarr").assign_coords({'eta': eta}).expand_dims('eta')
+            d_ls.append(data)
+        
+        data = xr.merge(d_ls)
+            
         damages = xr.Dataset(
             {
                 "delta": (
@@ -786,12 +797,14 @@ def prep_mortality_damages(
         damages = damages.chunk(
             {
                 "batch": 15,
+                "eta": 1,
                 "ssp": 1,
                 "model": 1,
                 "rcp": 1,
                 "gcm": 1,
                 "year": 10,
                 "region": -1,
+                "eta": 1,
             }
         )
         damages.coords.update({"batch": [f"batch{i}" for i in damages.batch.values]})
@@ -807,6 +820,8 @@ def prep_mortality_damages(
         for v in list(damages.variables.keys()):
             if damages[v].dtype == object:
                 damages[v] = damages[v].astype("unicode")
+
+        damages.coords['gcm'] = damages.coords['gcm'].astype('object')
 
         if i == 0:
             damages.to_zarr(
