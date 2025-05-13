@@ -15,4 +15,4 @@ h5netcdf==1.6.1
 impactlab-tools==0.6.0
 p_tqdm==1.4.2
 pyarrow==19.0.1
-numcodecs=0.15.1
+numcodecs==0.15.1
