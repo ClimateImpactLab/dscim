@@ -160,9 +160,9 @@ def process_ssp_sample(ssppath):
     ssp_df = pd.read_csv(ssppath, skiprows=11)
     ssp_df = ssp_df[ssp_df.year >= 2010]
     ssp_df["loginc"] = np.log(ssp_df.value)
-    ssp_df["isoyear"] = ssp_df.apply(lambda row: "%s:%d" % (row.iso, row.year), axis=1)
+    ssp_df["isoyear"] = ssp_df.apply(lambda row: f"{row.iso}:{row.year:d}", axis=1)
     ssp_df["yearscen"] = ssp_df.apply(
-        lambda row: "%d:%s/%s" % (row.year, row.model, row.scenario), axis=1
+        lambda row: f"{row.year:d}:{row.model}/{row.scenario}", axis=1
     )
 
     return ssp_df
@@ -176,7 +176,7 @@ def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
     increments for a single RFF-SP
     """
 
-    read_feather = os.path.join(rffpath, "run_%d.feather" % i)
+    read_feather = os.path.join(rffpath, f"run_{i:d}.feather")
     rff_raw = pd.read_feather(read_feather)
     rff_raw.rename(columns={"Year": "year", "Country": "iso"}, inplace=True)
 
@@ -199,7 +199,7 @@ def process_rff_sample(i, rffpath, ssp_df, outdir, HEADER, **storage_options):
         rff_df = pd.concat((rff_df, all_year_df))
 
     rff_df["loginc"] = np.log(rff_df.value)
-    rff_df["isoyear"] = rff_df.apply(lambda row: "%s:%d" % (row.iso, row.year), axis=1)
+    rff_df["isoyear"] = rff_df.apply(lambda row: f"{row.iso}:{row.year:d}", axis=1)
 
     rff_df = pd.merge(rff_df, rff_raw, on=["year", "iso"], how="left")
 
