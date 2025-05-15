@@ -275,13 +275,21 @@ def concatenate_labor_damages(
     return concat_ds
 
 
-def calculate_labor_batch_damages(batch, ec, input_path, save_path):
+def calculate_labor_batch_damages(
+    batch,
+    ec,
+    input_path,
+    save_path,
+    variable="rebased",
+    file_prefix="uninteracted_main_model",
+):
     print(f"Processing batch={batch} damages in {os.getpid()}")
     concatenate_labor_damages(
         input_path=input_path,
         save_path=save_path,
         ec_cls=ec,
-        variable="rebased",
+        variable=variable,
+        file_prefix=file_prefix,
         val_type="wage-levels",
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
@@ -293,6 +301,8 @@ def calculate_labor_damages(
     path_econ,
     input_path,
     save_path,
+    variable="rebased",
+    file_prefix="uninteracted_main_model",
 ):
     ec = EconVars(path_econ)
     # process in 3 rounds to limit memory usage
@@ -302,6 +312,8 @@ def calculate_labor_damages(
             input_path=input_path,
             save_path=save_path,
             ec=ec,
+            variable=variable,
+            file_prefix=file_prefix,
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
