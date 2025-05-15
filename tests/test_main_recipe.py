@@ -258,11 +258,11 @@ def test_weitzman_min(menu_instance):
     diff = censored_values_slower[0:index] - censored_values[0:index]
     assert all(x > 0 for x in diff)
     as_share = menu_instance.weitzman_min(
-        [20, 50, 100], [5, 30, 60], as_share
+        np.array([20, 50, 100]), np.array([5, 30, 60]), as_share
     )  # the first value only should be censored
     assert as_share[0] != 5 and [as_share[1], as_share[2]] == [30, 60]
     all_cons = menu_instance.weitzman_min(
-        [20, 50, 100], [5, 30, 60], all_cons
+        np.array([20, 50, 100]), np.array([5, 30, 60]), all_cons
     )  # all values should be changed
     assert all([x != 0 for x in all_cons - [5, 30, 60]])
 
