@@ -14,7 +14,6 @@ from itertools import product
 from functools import partial
 from p_tqdm import p_map, p_umap
 from dscim.menu.simple_storage import EconVars
-from zarr.errors import GroupNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -832,11 +831,7 @@ def coastal_inputs(
     adapt_type,
     vsl_valuation=None,
 ):
-    try:
-        d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
-    except GroupNotFoundError:
-        print(f"Zarr not found: {path}/coastal_damages_{version}.zarr")
-        exit()
+    d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
 
     if "vsl_valuation" in d.coords:
         if vsl_valuation is None:
