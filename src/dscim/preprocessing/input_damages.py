@@ -715,6 +715,7 @@ def prep_mortality_damages(
 
     # longest-string gcm has to be processed first so the coordinate is the right str length
     gcms = sorted(gcms, key=len, reverse=True)
+    max_gcm_len = len(gcms[0])
 
     if mortality_version == 0:
         scaling_deaths = "epa_scaled"
@@ -807,6 +808,8 @@ def prep_mortality_damages(
         for v in list(damages.variables.keys()):
             if damages[v].dtype == object:
                 damages[v] = damages[v].astype("unicode")
+
+        damages["gcm"] = damages["gcm"].astype("U" + str(max_gcm_len))
 
         if i == 0:
             damages.to_zarr(
