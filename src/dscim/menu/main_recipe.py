@@ -106,6 +106,7 @@ class MainRecipe(StackedDamages, ABC):
         extrap_formula=None,
         fair_dims=None,
         save_files=None,
+        EZ_eta=None,
         **kwargs,
     ):
         if scc_quantiles is None:
@@ -193,6 +194,9 @@ class MainRecipe(StackedDamages, ABC):
                 "global_consumption",
                 "global_consumption_no_pulse",
             ]
+            
+        if EZ_eta is None:
+            EZ_eta = eta
 
         super().__init__(
             sector_path=sector_path,
@@ -233,6 +237,7 @@ class MainRecipe(StackedDamages, ABC):
         self.save_files = save_files
         self.__dict__.update(**kwargs)
         self.kwargs = kwargs
+        self.EZ_eta = EZ_eta
 
         self.logger = logging.getLogger(__name__)
 
@@ -719,7 +724,7 @@ class MainRecipe(StackedDamages, ABC):
         """
         if self.damage_function_path is not None:
             return xr.open_dataset(
-                f"{self.damage_function_path}/{self.NAME}_{self.discounting_type}_eta{self.eta}_rho{self.rho}_damage_function_coefficients.nc4"
+                f"{self.damage_function_path}/{self.NAME}_{self.discounting_type}_eta{self.EZ_eta}_rho{self.rho}_damage_function_coefficients.nc4"
             )
         else:
             return self.damage_function["params"]
