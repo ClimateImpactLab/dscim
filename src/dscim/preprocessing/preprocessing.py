@@ -21,7 +21,7 @@ def ce_from_chunk(
     zero,
     socioec,
     ce_batch_coords,
-    quantreg,
+    quantreg=False,
 ):
     year = chunk.year.values
     ssp = chunk.ssp.values
