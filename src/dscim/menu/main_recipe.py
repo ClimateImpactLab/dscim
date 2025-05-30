@@ -254,7 +254,11 @@ class MainRecipe(StackedDamages, ABC):
         # 'constant_model_collapsed' should be here except that we allow
         # for a collapsed-model Ramsey rate to be calculated (for labour
         # and energy purposes)
-        if self.discounting_type in ["constant", "constant_model_collapsed", "constant_gwr"]:
+        if self.discounting_type in [
+            "constant",
+            "constant_model_collapsed",
+            "constant_gwr",
+        ]:
             self.stream_discount_factors = None
 
         # assert formulas for which clip_gmsl is implemented

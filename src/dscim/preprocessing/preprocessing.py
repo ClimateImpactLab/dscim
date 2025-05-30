@@ -55,8 +55,8 @@ def ce_from_chunk(
             )
         else:
             result = np.maximum(
-                    calculation,
-                    bottom_code,
+                calculation,
+                bottom_code,
             )
     elif recipe == "risk_aversion":
         result = ce_func(
@@ -121,7 +121,7 @@ def reduce_damages(
                     "ssp": 1,
                 }
             if quantreg:
-                chunkies['batch'] = 1
+                chunkies["batch"] = 1
                 ce_batch_dims = [i for i in gdppc.dims] + [
                     i for i in ds.dims if i not in gdppc.dims
                 ]
