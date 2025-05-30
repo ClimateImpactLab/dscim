@@ -105,6 +105,7 @@ def run_ssps(
                     "save_files": [
                         "damage_function_points",
                         "marginal_damages",
+                        "uncollapsed_marginal_damages",
                         "discount_factors",
                         "uncollapsed_sccs",
                         "scc",

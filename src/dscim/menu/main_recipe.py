@@ -893,7 +893,7 @@ class MainRecipe(StackedDamages, ABC):
         # if parameter is share of consumption,
         # multiply by no-climate-change consumption
         if parameter <= 1:
-            parameter = parameter * no_cc_consumption
+            parameter = (parameter * no_cc_consumption).astype(np.float64)
 
         if self.eta == 1:
             w_utility = np.log(parameter)
@@ -974,13 +974,13 @@ class MainRecipe(StackedDamages, ABC):
             formula=self.formula,
         )
 
-        cc_cons = self.global_consumption - damages
+        cc_cons = (self.global_consumption - damages)
 
         gc_no_pulse = []
         for wp in self.weitzman_parameter:
             gc = self.weitzman_min(
-                no_cc_consumption=self.global_consumption,
-                cc_consumption=cc_cons,
+                no_cc_consumption=self.global_consumption.astype(np.float64),
+                cc_consumption=cc_cons.astype(np.float64),
                 parameter=wp,
             )
             gc = gc.assign_coords({"weitzman_parameter": str(wp)})
@@ -1005,7 +1005,8 @@ class MainRecipe(StackedDamages, ABC):
             formula=self.formula,
         )
 
-        cc_cons = self.global_consumption - damages
+        cc_cons = (self.global_consumption - damages).round(0)
+        
         gc_no_pulse = []
         for wp in self.weitzman_parameter:
             gc = self.weitzman_min(
