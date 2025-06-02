@@ -737,7 +737,7 @@ def prep_mortality_damages(
 
     # We set 0 population to infinity so that per capita damages are 0 in locations with 0 population
     pop = ec.econ_vars.pop.load()
-    pop = xr.where(pop == 0, np.Inf, pop)
+    pop = xr.where(pop == 0, np.inf, pop)
 
     for i, gcm in enumerate(gcms):
         print(gcm, i + 1, "/", len(gcms))
