@@ -88,6 +88,9 @@ def reduce_damages(
         ), "Adding up does not take an eta argument. Please set to None."
     # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
 
+    if recipe == "risk_aversion":
+        assert not quantreg, "Quantile regression is not compatible with risk aversion. Please set quantreg to False."
+
     with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
