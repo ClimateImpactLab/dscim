@@ -63,8 +63,8 @@ class Baseline(MainRecipe):
 
     @property
     def calculated_damages(self):
-        mean_cc = f"{self.ce_path}/adding_up_cc.zarr"
-        mean_no_cc = f"{self.ce_path}/adding_up_no_cc.zarr"
+        mean_cc = f"{self.ce_path}/adding_up_cc_eta{self.eta}.zarr"
+        mean_no_cc = f"{self.ce_path}/adding_up_no_cc_eta{self.eta}.zarr"
 
         if os.path.exists(mean_cc) and os.path.exists(mean_no_cc):
             self.logger.info(
