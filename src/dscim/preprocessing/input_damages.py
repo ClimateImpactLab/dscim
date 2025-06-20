@@ -14,7 +14,6 @@ from itertools import product
 from functools import partial
 from p_tqdm import p_map, p_umap
 from dscim.menu.simple_storage import EconVars
-from zarr.errors import GroupNotFoundError
 
 logger = logging.getLogger(__name__)
 
@@ -275,13 +274,21 @@ def concatenate_labor_damages(
     return concat_ds
 
 
-def calculate_labor_batch_damages(batch, ec, input_path, save_path):
+def calculate_labor_batch_damages(
+    batch,
+    ec,
+    input_path,
+    save_path,
+    variable="rebased",
+    file_prefix="uninteracted_main_model",
+):
     print(f"Processing batch={batch} damages in {os.getpid()}")
     concatenate_labor_damages(
         input_path=input_path,
         save_path=save_path,
         ec_cls=ec,
-        variable="rebased",
+        variable=variable,
+        file_prefix=file_prefix,
         val_type="wage-levels",
         format_file="zarr",
         query=f"exists==True&batch=='batch{batch}'",
@@ -293,6 +300,8 @@ def calculate_labor_damages(
     path_econ,
     input_path,
     save_path,
+    variable="rebased",
+    file_prefix="uninteracted_main_model",
 ):
     ec = EconVars(path_econ)
     # process in 3 rounds to limit memory usage
@@ -302,6 +311,8 @@ def calculate_labor_damages(
             input_path=input_path,
             save_path=save_path,
             ec=ec,
+            variable=variable,
+            file_prefix=file_prefix,
         )
         print("Processing batches:")
         print(list(range(i * 5, i * 5 + 5)))
@@ -716,6 +727,7 @@ def prep_mortality_damages(
 
     # longest-string gcm has to be processed first so the coordinate is the right str length
     gcms = sorted(gcms, key=len, reverse=True)
+    max_gcm_len = len(gcms[0])
 
     if mortality_version == 0:
         scaling_deaths = "epa_scaled"
@@ -826,7 +838,7 @@ def prep_mortality_damages(
             if damages[v].dtype == object:
                 damages[v] = damages[v].astype("unicode")
 
-        damages.coords["gcm"] = damages.coords["gcm"].astype("object")
+        damages["gcm"] = damages["gcm"].astype("U" + str(max_gcm_len))
 
         if i == 0:
             damages.to_zarr(
@@ -852,11 +864,7 @@ def coastal_inputs(
     adapt_type,
     vsl_valuation=None,
 ):
-    try:
-        d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
-    except GroupNotFoundError:
-        print(f"Zarr not found: {path}/coastal_damages_{version}.zarr")
-        exit()
+    d = xr.open_zarr(f"{path}/coastal_damages_{version}.zarr")
 
     if "vsl_valuation" in d.coords:
         if vsl_valuation is None:
