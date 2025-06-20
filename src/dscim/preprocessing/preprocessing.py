@@ -43,8 +43,6 @@ def ce_from_chunk(
     else:
         raise NotImplementedError("Pass 'cc' or 'no_cc' to reduction.")
 
-    calculation = xr.where(calculation > 1e8, np.nan, calculation)
-        
     if recipe == "adding_up":
         result = mean_func(
             np.maximum(
@@ -110,7 +108,9 @@ def reduce_damages(
                 }
 
             ce_batch_dims = [i for i in gdppc.dims] + [
-                i for i in ds.dims if i not in gdppc.dims and i != "batch" and i != "eta"
+                i
+                for i in ds.dims
+                if i not in gdppc.dims and i != "batch" and i != "eta"
             ]
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
@@ -126,8 +126,8 @@ def reduce_damages(
 
     other = xr.open_zarr(damages).chunk(chunkies)
     if "eta" in other.coords:
-        other = other.sel(eta = eta, drop=True)
-    
+        other = other.sel(eta=eta, drop=True)
+
     out = other.map_blocks(
         ce_from_chunk,
         kwargs=dict(
