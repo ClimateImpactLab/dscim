@@ -69,12 +69,8 @@ def test_subset_USA_reduced_damages(tmp_path, recipe):
 
     d = tmp_path / "USA_econ"
     d.mkdir()
-    if recipe == "adding_up":
-        infile = d / f"{sector}/{recipe}_{reduction}.zarr"
-        outfile = d / f"{sector}_USA/{recipe}_{reduction}.zarr"
-    else:
-        infile = d / f"{sector}/{recipe}_{reduction}_eta{eta}.zarr"
-        outfile = d / f"{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr"
+    infile = d / f"{sector}/{recipe}_{reduction}_eta{eta}.zarr"
+    outfile = d / f"{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr"
 
     ds_in = xr.Dataset(
         {
@@ -404,14 +400,9 @@ def test_reduce_damages(tmp_path, recipe, eta):
         + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
     )
 
-    if recipe == "adding_up":
-        damages_reduced_actual_path = (
-            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
-        )
-    else:
-        damages_reduced_actual_path = (
-            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
-        )
+    damages_reduced_actual_path = (
+        f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
+    )
 
     xr.testing.assert_equal(
         xr.open_zarr(damages_reduced_actual_path), damages_reduced_out_expected
