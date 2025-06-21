@@ -323,6 +323,7 @@ class MainRecipe(StackedDamages, ABC):
             self.logger.info("Processing SCC calculation ...")
             if self.fit_type == "quantreg":
                 self.full_uncertainty_iqr
+                # stat_uncertainty_iqr function expects collapsed SCCs, so a fair aggregation is required
                 if len(self.fair_aggregation) > 0:
                     self.calculate_scc
                     self.stat_uncertainty_iqr
