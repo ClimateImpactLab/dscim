@@ -993,7 +993,7 @@ def test_calculate_energy_damages(
         xr.testing.assert_equal(ds_out_expected, ds_out_actual)
 
 
-@pytest.mark.parametrize("version_test", [0, 1, 4, 5])
+@pytest.mark.parametrize("version_test", [0, 1, 4, 5, 9])
 def test_prep_mortality_damages(
     tmp_path,
     version_test,
@@ -1050,7 +1050,7 @@ def test_prep_mortality_damages(
                     ),
                 },
                 coords={
-                    "batch": (["batch"], [b]),
+                    "batch": (["batch"], [f"{b}"]),
                     "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
                     "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
                     "rcp": (["rcp"], ["rcp45", "rcp85"]),
@@ -1063,7 +1063,7 @@ def test_prep_mortality_damages(
                     "valuation": (["valuation"], ["vsl", "vly"]),
                     "year": (["year"], [2010, 2099]),
                 },
-            )
+            ).expand_dims('mortality')
 
             d = os.path.join(tmp_path, "mortality_in")
             if not os.path.exists(d):
@@ -1076,7 +1076,7 @@ def test_prep_mortality_damages(
         gcms=["ACCESS1-0", "GFDL-CM3"],
         paths=str(
             os.path.join(
-                tmp_path, f"mortality_in/mortality_damages_batch{b}_eta{e}.zarr"
+                tmp_path, "mortality_in/mortality_damages_batch{0}_eta{1}.zarr"
             )
         ),
         vars={
@@ -1102,15 +1102,15 @@ def test_prep_mortality_damages(
         {
             "delta": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region", "eta"],
-                np.float32(np.full((2, 2, 2, 2, 2, 2, 2, 2), -0.90681089)),
+                np.float32(np.full((2, 15, 2, 2, 2, 2, 2, 2), -0.90681089)),
             ),
             "histclim": (
                 ["gcm", "batch", "ssp", "rcp", "model", "year", "region", "eta"],
-                np.float32(np.full((2, 2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
+                np.float32(np.full((2, 15, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
             ),
         },
         coords={
-            "batch": (["batch"], ["batch6", "batch9"]),
+            "batch": (["batch"], ["batch" + str(i) for i in [0, 1, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7, 8, 9,]]),
             "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
