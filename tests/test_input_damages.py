@@ -1003,80 +1003,82 @@ def test_prep_mortality_damages(
     Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
     """
     for b in ["6", "9"]:
-        ds_in = xr.Dataset(
-            {
-                "monetized_costs": (
-                    [
-                        "gcm",
-                        "batch",
-                        "ssp",
-                        "rcp",
-                        "model",
-                        "year",
-                        "region",
-                        "scaling",
-                        "valuation",
-                    ],
-                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 0),
-                ),
-                "monetized_deaths": (
-                    [
-                        "gcm",
-                        "batch",
-                        "ssp",
-                        "rcp",
-                        "model",
-                        "year",
-                        "region",
-                        "scaling",
-                        "valuation",
-                    ],
-                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 1),
-                ),
-                "monetized_histclim_deaths": (
-                    [
-                        "gcm",
-                        "batch",
-                        "ssp",
-                        "rcp",
-                        "model",
-                        "year",
-                        "region",
-                        "scaling",
-                        "valuation",
-                    ],
-                    np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 2),
-                ),
-            },
-            coords={
-                "batch": (["batch"], [b]),
-                "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
-                "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
-                "rcp": (["rcp"], ["rcp45", "rcp85"]),
-                "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
-                "scaling": (
-                    ["scaling"],
-                    ["epa_scaled", "epa_iso_scaled", "epa_popavg", "epa_row"],
-                ),
-                "ssp": (["ssp"], ["SSP2", "SSP3"]),
-                "valuation": (["valuation"], ["vsl", "vly"]),
-                "year": (["year"], [2010, 2099]),
-            },
-        )
+        for e in ["1.0", "1.34"]:
+            ds_in = xr.Dataset(
+                {
+                    "monetized_costs": (
+                        [
+                            "gcm",
+                            "batch",
+                            "ssp",
+                            "rcp",
+                            "model",
+                            "year",
+                            "region",
+                            "scaling",
+                            "valuation",
+                        ],
+                        np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 0),
+                    ),
+                    "monetized_deaths": (
+                        [
+                            "gcm",
+                            "batch",
+                            "ssp",
+                            "rcp",
+                            "model",
+                            "year",
+                            "region",
+                            "scaling",
+                            "valuation",
+                        ],
+                        np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 1),
+                    ),
+                    "monetized_histclim_deaths": (
+                        [
+                            "gcm",
+                            "batch",
+                            "ssp",
+                            "rcp",
+                            "model",
+                            "year",
+                            "region",
+                            "scaling",
+                            "valuation",
+                        ],
+                        np.full((2, 1, 2, 2, 2, 2, 2, 4, 2), 2),
+                    ),
+                },
+                coords={
+                    "batch": (["batch"], [b]),
+                    "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
+                    "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
+                    "rcp": (["rcp"], ["rcp45", "rcp85"]),
+                    "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
+                    "scaling": (
+                        ["scaling"],
+                        ["epa_scaled", "epa_iso_scaled", "epa_popavg", "epa_row"],
+                    ),
+                    "ssp": (["ssp"], ["SSP2", "SSP3"]),
+                    "valuation": (["valuation"], ["vsl", "vly"]),
+                    "year": (["year"], [2010, 2099]),
+                },
+            )
 
-        d = os.path.join(tmp_path, "mortality_in")
-        if not os.path.exists(d):
-            os.makedirs(d)
-        infile = os.path.join(d, f"mortality_damages_batch{b}.zarr")
+            d = os.path.join(tmp_path, "mortality_in")
+            if not os.path.exists(d):
+                os.makedirs(d)
+            infile = os.path.join(d, f"mortality_damages_batch{b}_eta{e}.zarr")
 
-        ds_in.to_zarr(infile)
+            ds_in.to_zarr(infile)
 
     prep_mortality_damages(
         gcms=["ACCESS1-0", "GFDL-CM3"],
-        paths=[
-            os.path.join(tmp_path, f"mortality_in/mortality_damages_batch{b}.zarr")
-            for b in [6, 9]
-        ],
+        paths=str(
+            os.path.join(
+                tmp_path, f"mortality_in/mortality_damages_batch{b}_eta{e}.zarr"
+            )
+        ),
         vars={
             "delta_costs": "monetized_costs",
             "delta_deaths": "monetized_deaths",
@@ -1098,12 +1100,12 @@ def test_prep_mortality_damages(
     ds_out_expected = xr.Dataset(
         {
             "delta": (
-                ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), -0.90681089)),
+                ["gcm", "batch", "ssp", "rcp", "model", "year", "region", "eta"],
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2, 2), -0.90681089)),
             ),
             "histclim": (
-                ["gcm", "batch", "ssp", "rcp", "model", "year", "region"],
-                np.float32(np.full((2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
+                ["gcm", "batch", "ssp", "rcp", "model", "year", "region", "eta"],
+                np.float32(np.full((2, 2, 2, 2, 2, 2, 2, 2), 2 * 0.90681089)),
             ),
         },
         coords={
@@ -1114,6 +1116,7 @@ def test_prep_mortality_damages(
             "region": (["region"], ["USA.test_region", "ZWE.test_region"]),
             "ssp": (["ssp"], ["SSP2", "SSP3"]),
             "year": (["year"], [2010, 2099]),
+            "eta": (["eta"], [1.0, 1.34]),
         },
     )
 
@@ -1127,10 +1130,12 @@ def test_error_prep_mortality_damages(tmp_path):
     with pytest.raises(ValueError) as excinfo:
         prep_mortality_damages(
             gcms=["ACCESS1-0", "GFDL-CM3"],
-            paths=[
-                os.path.join(tmp_path, f"mortality_in/mortality_damages_batch{b}.zarr")
-                for b in [6, 9]
-            ],
+            paths=str(
+                os.path.join(
+                    tmp_path,
+                    f"mortality_in/mortality_damages_batch{0}_eta{1}.zarr.zarr",
+                )
+            ),
             vars={
                 "delta_costs": "monetized_costs",
                 "delta_deaths": "monetized_deaths",
@@ -1141,6 +1146,7 @@ def test_error_prep_mortality_damages(tmp_path):
             path_econ=os.path.join(
                 tmp_path, "econvars_for_test", "econvars_for_test.zarr"
             ),
+            etas=[1.0, 1.34],
         )
     assert "Mortality version not valid: " in str(excinfo.value)
 

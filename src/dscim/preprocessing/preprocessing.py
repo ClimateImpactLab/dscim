@@ -270,14 +270,9 @@ def subset_USA_reduced_damages(
     eta,
     input_path,
 ):
-    if recipe == "adding_up":
-        ds = xr.open_zarr(
-            f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
-        )
-    elif recipe == "risk_aversion":
-        ds = xr.open_zarr(
-            f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
-        )
+    ds = xr.open_zarr(
+        f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
+    )
 
     US_territories = [
         "USA",

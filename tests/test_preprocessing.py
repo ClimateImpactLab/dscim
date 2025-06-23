@@ -253,25 +253,6 @@ def test_sum_AMEL(tmp_path):
     )
 
 
-def test_reduce_damages_error_eta():
-    """
-    Test that reduce_damages complains when adding up is passed an eta argument
-    """
-    with pytest.raises(AssertionError) as excinfo:
-        reduce_damages(
-            "adding_up",
-            "cc",
-            10,
-            "dummy_sector1",
-            "/configdirectory/config.yml",
-            "/reductiondirectory/reduction.zarr",
-        )
-    assert (
-        str(excinfo.value)
-        == "Adding up does not take an eta argument. Please set to None."
-    )
-
-
 @pytest.mark.parametrize(
     "recipe, eta",
     [
