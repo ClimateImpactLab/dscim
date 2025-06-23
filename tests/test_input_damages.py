@@ -1087,6 +1087,7 @@ def test_prep_mortality_damages(
         outpath=os.path.join(tmp_path, "mortality_out"),
         mortality_version=version_test,
         path_econ=os.path.join(tmp_path, "econvars_for_test", "econvars_for_test.zarr"),
+        etas=[1.0, 1.34],
     )
 
     ds_out_actual = xr.open_zarr(

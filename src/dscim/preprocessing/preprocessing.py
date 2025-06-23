@@ -310,18 +310,11 @@ def subset_USA_reduced_damages(
     for var in subset.variables:
         subset[var].encoding.clear()
 
-    if recipe == "adding_up":
-        subset.to_zarr(
-            f"{input_path}/{sector}_USA/{recipe}_{reduction}.zarr",
-            consolidated=True,
-            mode="w",
-        )
-    elif recipe == "risk_aversion":
-        subset.to_zarr(
-            f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
-            consolidated=True,
-            mode="w",
-        )
+    subset.to_zarr(
+        f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
+        consolidated=True,
+        mode="w",
+    )
 
 
 def subset_USA_ssp_econ(
