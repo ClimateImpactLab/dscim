@@ -1002,7 +1002,7 @@ def test_prep_mortality_damages(
     """
     Test that prep_mortality_damages correctly reshapes different versions of mortality estimate runs for use in integration system and saves to zarr file
     """
-    for b in ["6", "9"]:
+    for b in range(15):
         for e in ["1.0", "1.34"]:
             ds_in = xr.Dataset(
                 {
