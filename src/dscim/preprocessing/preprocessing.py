@@ -82,7 +82,6 @@ def reduce_damages(
     zero=False,
     quantreg=False,
 ):
-
     with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
@@ -115,16 +114,14 @@ def reduce_damages(
                     "model": 1,
                     "ssp": 1,
                 }
-            map_dims = ['eta']
+            map_dims = ["eta"]
             if quantreg:
                 chunkies["batch"] = 1
             else:
-                map_dims.append('batch')
+                map_dims.append("batch")
 
             ce_batch_dims = [i for i in gdppc.dims] + [
-                i
-                for i in ds.dims
-                if i not in gdppc.dims and i not in map_dims
+                i for i in ds.dims if i not in gdppc.dims and i not in map_dims
             ]
 
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
