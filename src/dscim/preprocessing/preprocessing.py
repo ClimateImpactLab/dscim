@@ -21,6 +21,7 @@ def ce_from_chunk(
     zero,
     socioec,
     ce_batch_coords,
+    quantreg=False,
 ):
     year = chunk.year.values
     ssp = chunk.ssp.values
@@ -44,13 +45,19 @@ def ce_from_chunk(
         raise NotImplementedError("Pass 'cc' or 'no_cc' to reduction.")
 
     if recipe == "adding_up":
-        result = mean_func(
-            np.maximum(
+        if not quantreg:
+            result = mean_func(
+                np.maximum(
+                    calculation,
+                    bottom_code,
+                ),
+                "batch",
+            )
+        else:
+            result = np.maximum(
                 calculation,
                 bottom_code,
-            ),
-            "batch",
-        )
+            )
     elif recipe == "risk_aversion":
         result = ce_func(
             np.maximum(
@@ -73,7 +80,9 @@ def reduce_damages(
     socioec,
     bottom_coding_gdppc=39.39265060424805,
     zero=False,
+    quantreg=False,
 ):
+
     with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
@@ -106,12 +115,18 @@ def reduce_damages(
                     "model": 1,
                     "ssp": 1,
                 }
+            map_dims = ['eta']
+            if quantreg:
+                chunkies["batch"] = 1
+            else:
+                map_dims.append('batch')
 
             ce_batch_dims = [i for i in gdppc.dims] + [
                 i
                 for i in ds.dims
-                if i not in gdppc.dims and i != "batch" and i != "eta"
+                if i not in gdppc.dims and i not in map_dims
             ]
+
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
@@ -141,6 +156,7 @@ def reduce_damages(
             zero=zero,
             socioec=socioec,
             ce_batch_coords=ce_batch_coords,
+            quantreg=quantreg,
         ),
         template=template,
     )
