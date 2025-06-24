@@ -1063,7 +1063,7 @@ def test_prep_mortality_damages(
                     "valuation": (["valuation"], ["vsl", "vly"]),
                     "year": (["year"], [2010, 2099]),
                 },
-            ).expand_dims("mortality")
+            )
 
             d = os.path.join(tmp_path, "mortality_in")
             if not os.path.exists(d):
@@ -1123,7 +1123,7 @@ def test_prep_mortality_damages(
 
     xr.testing.assert_equal(
         ds_out_expected,
-        ds_out_actual.sel(ds_out_expected.coords).transpose(*list(ds_out_expected.dims)),
+        ds_out_actual,
     )
 
 
