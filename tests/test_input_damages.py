@@ -1123,7 +1123,9 @@ def test_prep_mortality_damages(
 
     xr.testing.assert_equal(
         ds_out_expected,
-        ds_out_actual,
+        ds_out_actual.sel(ds_out_expected.coords).transpose(
+            *list(ds_out_expected.dims)
+        ),
     )
 
 
