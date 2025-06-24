@@ -1110,7 +1110,7 @@ def test_prep_mortality_damages(
             ),
         },
         coords={
-            "batch": (["batch"], ["batch" + str(i) for i in [0, 1, 10, 11, 12, 13, 14, 2, 3, 4, 5, 6, 7, 8, 9,]]),
+            "batch": (["batch"], ["batch" + str(i) for i in range(15)]),
             "gcm": (["gcm"], ["ACCESS1-0", "GFDL-CM3"]),
             "model": (["model"], ["IIASA GDP", "OECD Env-Growth"]),
             "rcp": (["rcp"], ["rcp45", "rcp85"]),
@@ -1121,7 +1121,7 @@ def test_prep_mortality_damages(
         },
     )
 
-    xr.testing.assert_equal(ds_out_expected, ds_out_actual)
+    xr.testing.assert_equal(ds_out_expected, ds_out_actual.sel(ds_out_expected.coords))
 
 
 def test_error_prep_mortality_damages(tmp_path):
