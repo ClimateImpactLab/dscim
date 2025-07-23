@@ -32,12 +32,14 @@ def check_versions():
 def test_statsmodels_import():
     """Ensure statsmodels can be imported and has expected version."""
     import statsmodels
+
     assert statsmodels.__version__ >= "0.14.5"
 
 
 def test_statsmodels_api_import():
     """Ensure statsmodels.api can be imported without triggering ImportError."""
     import statsmodels.api as sm
+
     assert hasattr(sm, "OLS")
     assert len(dir(sm)) > 10  # Sanity check
 
