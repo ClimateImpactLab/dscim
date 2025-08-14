@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Documentation pages added using mkdocs (Needs a new hostsite) ([PR #254](https://github.com/ClimateImpactLab/dscim/pull/254), [@JMGilbert](https://github.com/JMGilbert))
-- Added discounting option `constant_gwr`, which applies discounting across SSPs.
+- Added discounting option `constant_gwr`, which applies discounting across SSPs ([PR #405](https://github.com/ClimateImpactLab/dscim/pull/405), [@JMGilbert](https://github.com/JMGilbert)).
 
 ### Changed
 
