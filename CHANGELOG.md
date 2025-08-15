@@ -4,25 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
 
 ## [0.7.0] - 2025-08-14
 
 ### Added
-- Documentation pages added using mkdocs (Needs a new hostsite) ([PR #254](https://github.com/ClimateImpactLab/dscim/pull/254), [@JMGilbert](https://github.com/JMGilbert))
+- [Documentation pages](climateimpactlab.github.io/dscim/) added using mkdocs ([PR #254](https://github.com/ClimateImpactLab/dscim/pull/254), [@JMGilbert](https://github.com/JMGilbert))
 - Added discounting option `constant_gwr`, which applies discounting across SSPs ([PR #405](https://github.com/ClimateImpactLab/dscim/pull/405), [@JMGilbert](https://github.com/JMGilbert)).
 
 ### Changed
 
+- The function signature for `calculate_labor_batch_damages()` in `src/dscim/preprocessing/input_damages.py` was updated to include additional args with default values that allow the labor SCC application to run without modifying `dscim` code in the future. This is backwards compatible. ([PR #415](https://github.com/ClimateImpactLab/dscim/pull/415), [@JMGilbert](https://github.com/JMGilbert)).
 - Python version for running automated tests in CI upgraded from Python 3.10 to 3.12 ([PR #270](https://github.com/ClimateImpactLab/dscim/pull/270), [@brews](https://github.com/brews)).
-- The function signature for `calculate_labor_batch_damages()` in `src/dscim/preprocessing/input_damages.py` was updated to include additional args with default values that allow the labor SCC application to run without modifying `dscim` code in the future ([PR #415](https://github.com/ClimateImpactLab/dscim/pull/415), [@JMGilbert](https://github.com/JMGilbert)).
 
 ### Fixed
 
-- Minor code cleanup. Switch old %-string formatting to use f-strings ([PR #351](https://github.com/ClimateImpactLab/dscim/pull/351), [@brews](https://github.com/brews)).
-- Pin `numcodecs` package to 0.15.1 in `requirements.txt` to fix failing tests. This works with `zarr < 3` and will need to be updated when DSCIM's `zarr` version is updated ([PR #406](https://github.com/ClimateImpactLab/dscim/pull/406), [@JMGilbert](https://github.com/JMGilbert)).
 - Fixed how quantile regression SCCs (`quantreg`) are calculated by allowing for the full cloud of damage points in the damage function fit stage (previously the `batch` dimension was incorrectly reduced before damage function fit even if `quantreg=True`) ([PR #405](https://github.com/ClimateImpactLab/dscim/pull/405), [@JMGilbert](https://github.com/JMGilbert)). 
-- Pin `statsmodels` to 0.14.5 in `requirements.txt` to fix `scipy` 1.16+ import error ([PR #429](https://github.com/ClimateImpactLab/dscim/pull/429), [@C1587S](https://github.com/C1587S)). 
+- Minor code cleanup. Switch old %-string formatting to use f-strings ([PR #351](https://github.com/ClimateImpactLab/dscim/pull/351), [@brews](https://github.com/brews)).
+- Pin `numcodecs` package to 0.15.1 to fix automated tests in CI. This works with `zarr < 3`. ([PR #406](https://github.com/ClimateImpactLab/dscim/pull/406), [@JMGilbert](https://github.com/JMGilbert)).
+- Pin `statsmodels` to 0.14.5 to fix automated tests in CI. ([PR #429](https://github.com/ClimateImpactLab/dscim/pull/429), [@C1587S](https://github.com/C1587S)). 
 
 ### Removed
 
