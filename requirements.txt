@@ -11,7 +11,7 @@ pytest-cov==7.0.0
 zarr==2.18.4
 ruff==0.8.6
 netcdf4==1.7.2
-h5netcdf==1.6.4
+h5netcdf==1.7.2
 impactlab-tools==0.6.0
 p_tqdm==1.4.2
 pyarrow==21.0.0
