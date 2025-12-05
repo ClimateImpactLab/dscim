@@ -4,15 +4,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+
+## Unreleased
 
 ### Changed
 
+- Standardized eta handling across all damage reduction recipes. Previously, the `adding_up` recipe did not use eta parameters while `risk_aversion` did. Now all recipes require and use eta values consistently. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+  - File naming convention updated to include eta value for all reduced damage outputs (e.g., `adding_up_cc_eta1.0.zarr`)
+  - Simplified `reduce_damages()` and `subset_USA_reduced_damages()` functions by removing conditional logic for eta-less processing
+  - Updated `StackedDamages.adding_up_damages` property to reference eta-specific file paths
+- Refactored mortality damage preprocessing to support eta-aware damage loading. The `prep_mortality_damages()` function now accepts multiple eta values and merges damage data across the eta dimension. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Added support for mortality version 9 with VLY (Value of a Life Year) valuation using EPA population-averaged scaling. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Updated chunking strategy in `reduce_damages()` to handle eta as a mapped dimension alongside batch operations, improving consistency in batch dimension handling for both standard and quantile regression workflows. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+
+### Fixed
+
+- Pinned `scipy=1.15.3` to resolve `statsmodels==0.14.4` import issues. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Updated all unit tests to work with eta-aware damage processing, including test fixtures for mortality damages and adding-up calculations. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+
+### Removed
+
+- Removed assertion preventing `adding_up` recipe from accepting eta arguments, as this recipe now processes damages with eta values like all other recipes. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+
+## [0.7.0] - 2025-08-15
+
+### Added
+- [Documentation pages](climateimpactlab.github.io/dscim/) added using mkdocs ([PR #254](https://github.com/ClimateImpactLab/dscim/pull/254), [@JMGilbert](https://github.com/JMGilbert))
+- Added discounting option `constant_gwr`, which applies discounting across SSPs ([PR #405](https://github.com/ClimateImpactLab/dscim/pull/405), [@JMGilbert](https://github.com/JMGilbert)).
+
+### Changed
+
+- The function signature for `calculate_labor_batch_damages()` in `src/dscim/preprocessing/input_damages.py` was updated to include additional args with default values that allow the labor SCC application to run without modifying `dscim` code in the future. This is backwards compatible. ([PR #415](https://github.com/ClimateImpactLab/dscim/pull/415), [@JMGilbert](https://github.com/JMGilbert)).
 - Python version for running automated tests in CI upgraded from Python 3.10 to 3.12 ([PR #270](https://github.com/ClimateImpactLab/dscim/pull/270), [@brews](https://github.com/brews)).
 
 ### Fixed
 
+- Fixed how quantile regression SCCs (`quantreg`) are calculated by allowing for the full cloud of damage points in the damage function fit stage (previously the `batch` dimension was incorrectly reduced before damage function fit even if `quantreg=True`) ([PR #405](https://github.com/ClimateImpactLab/dscim/pull/405), [@JMGilbert](https://github.com/JMGilbert)). 
 - Minor code cleanup. Switch old %-string formatting to use f-strings ([PR #351](https://github.com/ClimateImpactLab/dscim/pull/351), [@brews](https://github.com/brews)).
+- Pin `numcodecs` package to 0.15.1 to fix automated tests in CI. This works with `zarr < 3`. ([PR #406](https://github.com/ClimateImpactLab/dscim/pull/406), [@JMGilbert](https://github.com/JMGilbert)).
+- Pin `statsmodels` to 0.14.5 to fix automated tests in CI. ([PR #429](https://github.com/ClimateImpactLab/dscim/pull/429), [@C1587S](https://github.com/C1587S)). 
 
 ### Removed
 
@@ -137,7 +167,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release.
 
-[unreleased]: https://github.com/climateimpactlab/dscim/compare/v0.6.0...HEAD
+[unreleased]: https://github.com/climateimpactlab/dscim/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/climateimpactlab/dscim/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/climateimpactlab/dscim/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/climateimpactlab/dscim/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/climateimpactlab/dscim/compare/v0.3.0...v0.4.0
