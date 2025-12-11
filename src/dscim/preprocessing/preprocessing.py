@@ -82,15 +82,6 @@ def reduce_damages(
     zero=False,
     quantreg=False,
 ):
-    if recipe == "adding_up":
-        assert (
-            eta is None
-        ), "Adding up does not take an eta argument. Please set to None."
-    # client = Client(n_workers=35, memory_limit="9G", threads_per_worker=1)
-
-    if recipe == "risk_aversion":
-        assert not quantreg, "Quantile regression is not compatible with risk aversion. Please set quantreg to False."
-
     with open(config) as stream:
         c = yaml.safe_load(stream)
         params = c["sectors"][sector]
@@ -123,15 +114,16 @@ def reduce_damages(
                     "model": 1,
                     "ssp": 1,
                 }
+            map_dims = ["eta"]
             if quantreg:
                 chunkies["batch"] = 1
-                ce_batch_dims = [i for i in gdppc.dims] + [
-                    i for i in ds.dims if i not in gdppc.dims
-                ]
             else:
-                ce_batch_dims = [i for i in gdppc.dims] + [
-                    i for i in ds.dims if i not in gdppc.dims and i != "batch"
-                ]
+                map_dims.append("batch")
+
+            ce_batch_dims = [i for i in gdppc.dims] + [
+                i for i in ds.dims if i not in gdppc.dims and i not in map_dims
+            ]
+
             ce_batch_coords = {c: ds[c].values for c in ce_batch_dims}
             ce_batch_coords["region"] = [
                 i for i in gdppc.region.values if i in ce_batch_coords["region"]
@@ -145,6 +137,8 @@ def reduce_damages(
     ).chunk(chunkies)
 
     other = xr.open_zarr(damages).chunk(chunkies)
+    if "eta" in other.coords:
+        other = other.sel(eta=eta, drop=True)
 
     out = other.map_blocks(
         ce_from_chunk,
@@ -172,7 +166,7 @@ def reduce_damages(
 
     if recipe == "adding_up":
         out.to_zarr(
-            f"{outpath}/{recipe}_{reduction}.zarr",
+            f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr",
             consolidated=True,
             mode="w",
         )
@@ -289,14 +283,9 @@ def subset_USA_reduced_damages(
     eta,
     input_path,
 ):
-    if recipe == "adding_up":
-        ds = xr.open_zarr(
-            f"{input_path}/{sector}/{recipe}_{reduction}.zarr",
-        )
-    elif recipe == "risk_aversion":
-        ds = xr.open_zarr(
-            f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
-        )
+    ds = xr.open_zarr(
+        f"{input_path}/{sector}/{recipe}_{reduction}_eta{eta}.zarr",
+    )
 
     US_territories = [
         "USA",
@@ -321,18 +310,11 @@ def subset_USA_reduced_damages(
     for var in subset.variables:
         subset[var].encoding.clear()
 
-    if recipe == "adding_up":
-        subset.to_zarr(
-            f"{input_path}/{sector}_USA/{recipe}_{reduction}.zarr",
-            consolidated=True,
-            mode="w",
-        )
-    elif recipe == "risk_aversion":
-        subset.to_zarr(
-            f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
-            consolidated=True,
-            mode="w",
-        )
+    subset.to_zarr(
+        f"{input_path}/{sector}_USA/{recipe}_{reduction}_eta{eta}.zarr",
+        consolidated=True,
+        mode="w",
+    )
 
 
 def subset_USA_ssp_econ(
