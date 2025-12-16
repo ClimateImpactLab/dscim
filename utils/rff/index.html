@@ -1,0 +1,2690 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../menu_runs/">
+      
+      
+        <link rel="next" href="../utils/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>rff - dscim Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="CILlight" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dscim.utils.rff.aggregate_rff_weights" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="dscim Documentation" class="md-header__button md-logo" aria-label="dscim Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            dscim Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              rff
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="CILlight" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/climateimpactlab/dscim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="dscim Documentation" class="md-nav__button md-logo" aria-label="dscim Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    dscim Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/climateimpactlab/dscim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dscim.menu
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    dscim.menu
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/baseline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    baseline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/main_recipe/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    main_recipe
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/risk_aversion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    risk_aversion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/equity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    equity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/simple_storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    simple_storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../menu/decorators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    decorators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dscim.preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    dscim.preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/input_damages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    input_damages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/midprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    midprocessing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preprocessing/preprocessing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    preprocessing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    dscim.utils
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    dscim.utils
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../functions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    functions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../menu_runs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    menu_runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rff
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    rff
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.aggregate_rff_weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aggregate_rff_weights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.clean_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean_error
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.clean_simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean_simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.prep_rff_socioeconomics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        prep_rff_socioeconomics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.process_rff_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_rff_sample
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.process_ssp_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_ssp_sample
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.rff_damage_functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rff_damage_functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.solve_optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        solve_optimization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.weight_df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        weight_df
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../utils/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    utils
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.aggregate_rff_weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aggregate_rff_weights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.clean_error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean_error
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.clean_simulation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clean_simulation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.prep_rff_socioeconomics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        prep_rff_socioeconomics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.process_rff_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_rff_sample
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.process_ssp_sample" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        process_ssp_sample
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.rff_damage_functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rff_damage_functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.solve_optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        solve_optimization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dscim.utils.rff.weight_df" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        weight_df
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>rff</h1>
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Functions:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.aggregate_rff_weights" href="#dscim.utils.rff.aggregate_rff_weights">aggregate_rff_weights</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Wrapper function for <code>clean_simulation()</code> and <code>clean_error()</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.clean_error" href="#dscim.utils.rff.clean_error">clean_error</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Clean the weights csvs generated by the RFF emulator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.clean_simulation" href="#dscim.utils.rff.clean_simulation">clean_simulation</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Clean the weights csvs generated by the RFF emulator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.prep_rff_socioeconomics" href="#dscim.utils.rff.prep_rff_socioeconomics">prep_rff_socioeconomics</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Generate the global or domestic RFF socioeconomics file for use with the <code>dscim</code> MainRecipe.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.process_rff_sample" href="#dscim.utils.rff.process_rff_sample">process_rff_sample</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Clean raw socioeconomic projections from a single RFF-SP simulation run,</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.process_ssp_sample" href="#dscim.utils.rff.process_ssp_sample">process_ssp_sample</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Clean SSP per capita GDP projections</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.rff_damage_functions" href="#dscim.utils.rff.rff_damage_functions">rff_damage_functions</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Wrapper function for <code>weight_df()</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.solve_optimization" href="#dscim.utils.rff.solve_optimization">solve_optimization</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Generate weights based on which to derive the weighted average of damage function coefficents</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="dscim.utils.rff.weight_df" href="#dscim.utils.rff.weight_df">weight_df</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Weight, fractionalize, and combine SSP damage functions,</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.aggregate_rff_weights" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.aggregate_rff_weights</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">aggregate_rff_weights</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wrapper function for <code>clean_simulation()</code> and <code>clean_error()</code>.
+Generates an aggregated file of RFF emulator weights.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">aggregate_rff_weights</span><span class="p">(</span>
+    <span class="n">root</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function for `clean_simulation()` and `clean_error()`.</span>
+<span class="sd">    Generates an aggregated file of RFF emulator weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># clean simulation files</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">p_map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">clean_simulation</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10001</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="c1"># concatenate and interpolate</span>
+    <span class="n">concatenated</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">datasets</span><span class="p">,</span> <span class="s2">&quot;rff_sp&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;year&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2101</span><span class="p">,</span> <span class="mi">1</span><span class="p">)},</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># reweight</span>
+    <span class="n">reweighted</span> <span class="o">=</span> <span class="n">concatenated</span> <span class="o">/</span> <span class="n">concatenated</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;ssp&quot;</span><span class="p">])</span>
+
+    <span class="c1"># make sure weights sum to 1</span>
+    <span class="n">assert_allclose</span><span class="p">(</span><span class="n">reweighted</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;ssp&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># describe and save file</span>
+    <span class="n">reweighted</span> <span class="o">=</span> <span class="n">reweighted</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
+    <span class="n">reweighted</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">reweighted</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    This set of emulator weights is generated using this script:</span>
+<span class="s2">    dscim/dscim/utils/rff.py -&gt; aggregate_rff_weights</span>
+<span class="s2">    It cleans and aggregates the emulator weights csvs, linearly interpolates them between 5 year intervals, reweights them to sum to 1, and converts to ncdf4 format.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">reweighted</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">/damage_function_weights.nc4&quot;</span><span class="p">)</span>
+
+    <span class="c1"># save out error files</span>
+
+    <span class="n">error_datasets</span> <span class="o">=</span> <span class="n">p_map</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="n">clean_error</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10001</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">error_concatenated</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">error_datasets</span><span class="p">,</span> <span class="s2">&quot;rff_sp&quot;</span><span class="p">)</span>
+
+    <span class="c1"># describe and save file</span>
+    <span class="n">error_concatenated</span> <span class="o">=</span> <span class="n">error_concatenated</span><span class="o">.</span><span class="n">to_dataset</span><span class="p">()</span>
+    <span class="n">error_concatenated</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">error_concatenated</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    This set of emulator weight errors is generated using this script:</span>
+<span class="s2">    dscim/dscim/preprocessing/rff/aggregate_rff_weights.py</span>
+<span class="s2">    It cleans and aggregates the emulator weights csvs for error rows only, and converts to ncdf4 format.</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+    <span class="n">error_concatenated</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2">/weights_errors.nc4&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.clean_error" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.clean_error</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clean_error</span><span class="p">(</span><span class="n">draw</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clean the weights csvs generated by the RFF emulator.
+This produces a file of the errors (for diagnostics).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>draw</code>
+            </td>
+            <td>
+                  <code>int, weight draw</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>root</code>
+            </td>
+            <td>
+                  <code>str, root directory</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clean_error</span><span class="p">(</span>
+    <span class="n">draw</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clean the weights csvs generated by the RFF emulator.</span>
+<span class="sd">    This produces a file of the errors (for diagnostics).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    draw : int, weight draw</span>
+<span class="sd">    root : str, root directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/emulate-fivebean-</span><span class="si">{</span><span class="n">draw</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">,</span>
+        <span class="n">skiprows</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># cleaning columns</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;iso&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">]):</span>
+        <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="c1"># dropping weights rows and keeping only error rows</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ds</span><span class="o">.</span><span class="n">param</span> <span class="o">==</span> <span class="s2">&quot;error&quot;</span><span class="p">]</span>
+
+    <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;rff_sp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">draw</span>
+
+    <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;iso&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;rff_sp&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">ds</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.clean_simulation" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.clean_simulation</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">clean_simulation</span><span class="p">(</span><span class="n">draw</span><span class="p">,</span> <span class="n">root</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clean the weights csvs generated by the RFF emulator.
+This produces a file of the weights.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>draw</code>
+            </td>
+            <td>
+                  <code>int, weight draw</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>root</code>
+            </td>
+            <td>
+                  <code>str, root directory</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">clean_simulation</span><span class="p">(</span>
+    <span class="n">draw</span><span class="p">,</span>
+    <span class="n">root</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clean the weights csvs generated by the RFF emulator.</span>
+<span class="sd">    This produces a file of the weights.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    draw : int, weight draw</span>
+<span class="sd">    root : str, root directory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">root</span><span class="si">}</span><span class="s2">/emulate-fivebean-</span><span class="si">{</span><span class="n">draw</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">,</span>
+        <span class="n">skiprows</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># cleaning columns</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;ssp&quot;</span><span class="p">]):</span>
+        <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">]):</span>
+        <span class="n">ds</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="c1"># dropping error rows and keeping only weights rows</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">ds</span><span class="o">.</span><span class="n">param</span> <span class="o">!=</span> <span class="s2">&quot;error&quot;</span><span class="p">]</span>
+
+    <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">replace</span><span class="p">({</span><span class="s2">&quot;low&quot;</span><span class="p">:</span> <span class="s2">&quot;IIASA GDP&quot;</span><span class="p">,</span> <span class="s2">&quot;high&quot;</span><span class="p">:</span> <span class="s2">&quot;OECD Env-Growth&quot;</span><span class="p">})</span>
+
+    <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;rff_sp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">draw</span>
+
+    <span class="n">ds</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">year</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="s2">&quot;ssp&quot;</span><span class="p">,</span> <span class="s2">&quot;rff_sp&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ds</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.prep_rff_socioeconomics" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.prep_rff_socioeconomics</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">prep_rff_socioeconomics</span><span class="p">(</span><span class="n">inflation_path</span><span class="p">,</span> <span class="n">rff_path</span><span class="p">,</span> <span class="n">runid_path</span><span class="p">,</span> <span class="n">out_path</span><span class="p">,</span> <span class="n">USA</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Generate the global or domestic RFF socioeconomics file for use with the <code>dscim</code> MainRecipe.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prep_rff_socioeconomics</span><span class="p">(</span>
+    <span class="n">inflation_path</span><span class="p">,</span>
+    <span class="n">rff_path</span><span class="p">,</span>
+    <span class="n">runid_path</span><span class="p">,</span>
+    <span class="n">out_path</span><span class="p">,</span>
+    <span class="n">USA</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate the global or domestic RFF socioeconomics file for use with the `dscim` MainRecipe.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Load Fed GDP deflator</span>
+    <span class="n">fed_gdpdef</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">inflation_path</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;year&quot;</span><span class="p">)[</span><span class="s2">&quot;gdpdef&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+    <span class="c1"># transform 2011 USD to 2019 USD</span>
+    <span class="n">inflation_adj</span> <span class="o">=</span> <span class="n">fed_gdpdef</span><span class="p">[</span><span class="mi">2019</span><span class="p">]</span> <span class="o">/</span> <span class="n">fed_gdpdef</span><span class="p">[</span><span class="mi">2011</span><span class="p">]</span>
+
+    <span class="c1"># read in RFF data</span>
+    <span class="n">socioec</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">rff_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">USA</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Summing to globe.&quot;</span><span class="p">)</span>
+        <span class="n">socioec</span> <span class="o">=</span> <span class="n">socioec</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;Country&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;USA output.&quot;</span><span class="p">)</span>
+        <span class="n">socioec</span> <span class="o">=</span> <span class="n">socioec</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">Country</span><span class="o">=</span><span class="s2">&quot;USA&quot;</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># interpolate with log -&gt; linear interpolation -&gt; exponentiate</span>
+    <span class="n">socioec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">socioec</span><span class="p">)</span><span class="o">.</span><span class="n">interp</span><span class="p">({</span><span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">2301</span><span class="p">,</span> <span class="mi">1</span><span class="p">)},</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="s2">&quot;runid&quot;</span><span class="p">:</span> <span class="s2">&quot;rff_sp&quot;</span><span class="p">,</span> <span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;Pop&quot;</span><span class="p">:</span> <span class="s2">&quot;pop&quot;</span><span class="p">,</span> <span class="s2">&quot;GDP&quot;</span><span class="p">:</span> <span class="s2">&quot;gdp&quot;</span><span class="p">})</span>
+
+    <span class="n">socioec</span><span class="p">[</span><span class="s2">&quot;pop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">socioec</span><span class="p">[</span><span class="s2">&quot;pop&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1000</span>
+    <span class="n">socioec</span><span class="p">[</span><span class="s2">&quot;gdp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">socioec</span><span class="p">[</span><span class="s2">&quot;gdp&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1e6</span> <span class="o">*</span> <span class="n">inflation_adj</span>
+
+    <span class="c1"># read in RFF runids and update coordinates with them</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">runid_path</span><span class="p">)</span>
+    <span class="n">socioec</span> <span class="o">=</span> <span class="n">socioec</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">rff_sp</span><span class="o">=</span><span class="n">run_id</span><span class="o">.</span><span class="n">rff_sp</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">USA</span><span class="p">:</span>
+        <span class="n">socioec</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">({</span><span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;world&quot;</span><span class="p">]})</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">/rff_global_socioeconomics.nc4&quot;</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">socioec</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">({</span><span class="s2">&quot;region&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;USA&quot;</span><span class="p">]})</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_path</span><span class="si">}</span><span class="s2">/rff_USA_socioeconomics.nc4&quot;</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.process_rff_sample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.process_rff_sample</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">process_rff_sample</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rffpath</span><span class="p">,</span> <span class="n">ssp_df</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">HEADER</span><span class="p">,</span> <span class="o">**</span><span class="n">storage_options</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clean raw socioeconomic projections from a single RFF-SP simulation run,
+pass the cleaned dataset to the <code>solve_optimization</code> function, and save outputs
+This produces a csv file of RFF emulator weights and country-level errors in 5-year
+increments for a single RFF-SP</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_rff_sample</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">rffpath</span><span class="p">,</span> <span class="n">ssp_df</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">HEADER</span><span class="p">,</span> <span class="o">**</span><span class="n">storage_options</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean raw socioeconomic projections from a single RFF-SP simulation run,</span>
+<span class="sd">    pass the cleaned dataset to the `solve_optimization` function, and save outputs</span>
+<span class="sd">    This produces a csv file of RFF emulator weights and country-level errors in 5-year</span>
+<span class="sd">    increments for a single RFF-SP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">read_feather</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rffpath</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;run_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.feather&quot;</span><span class="p">)</span>
+    <span class="n">rff_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="n">read_feather</span><span class="p">)</span>
+    <span class="n">rff_raw</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Year&quot;</span><span class="p">:</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;Country&quot;</span><span class="p">:</span> <span class="s2">&quot;iso&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Fill missing data with mean across SSP scenarios of the same years</span>
+    <span class="n">rff_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">iso</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">rff_raw</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;iso&quot;</span><span class="p">):</span>
+        <span class="n">minyear</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">before_all</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="p">[(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">year</span> <span class="o">&lt;</span> <span class="n">minyear</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">iso</span> <span class="o">==</span> <span class="n">iso</span><span class="p">)][</span>
+            <span class="p">[</span><span class="s2">&quot;iso&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+        <span class="p">]</span>
+        <span class="n">before</span> <span class="o">=</span> <span class="n">before_all</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;iso&quot;</span><span class="p">,</span> <span class="s2">&quot;year&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">after</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+            <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">iso</span><span class="o">=</span><span class="n">iso</span><span class="p">,</span>
+                <span class="n">year</span><span class="o">=</span><span class="n">group</span><span class="o">.</span><span class="n">year</span><span class="p">,</span>
+                <span class="n">value</span><span class="o">=</span><span class="p">(</span><span class="mf">88.58</span> <span class="o">/</span> <span class="mf">98.71</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">GDP</span> <span class="o">*</span> <span class="mf">1e6</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">Pop</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># Get in per capita 2005 PPP-adjusted USD rff GDP</span>
+        <span class="n">all_year_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">))</span>
+        <span class="n">rff_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">rff_df</span><span class="p">,</span> <span class="n">all_year_df</span><span class="p">))</span>
+
+    <span class="n">rff_df</span><span class="p">[</span><span class="s2">&quot;loginc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rff_df</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">rff_df</span><span class="p">[</span><span class="s2">&quot;isoyear&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rff_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">iso</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">year</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">rff_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">rff_df</span><span class="p">,</span> <span class="n">rff_raw</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;iso&quot;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+
+    <span class="n">rff_df</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mf">88.58</span> <span class="o">/</span> <span class="mf">98.71</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="n">rff_df</span><span class="o">.</span><span class="n">GDP</span>  <span class="c1"># Adjust weight measurement from 2011 tp 2005 PPP USD</span>
+
+    <span class="c1"># print(rff_df.iso[np.isnan(rff_df.weight)])</span>
+    <span class="n">rff_df</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rff_df</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rff_df</span><span class="o">.</span><span class="n">weight</span><span class="p">)))</span>
+    <span class="p">)</span>  <span class="c1"># Fill missing value weights with sample mean</span>
+
+    <span class="n">out_df</span> <span class="o">=</span> <span class="n">solve_optimization</span><span class="p">(</span><span class="n">ssp_df</span><span class="p">,</span> <span class="n">rff_df</span><span class="p">)</span>
+
+    <span class="n">write_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span> <span class="s2">&quot;emulate-</span><span class="si">%d</span><span class="s2">.csv&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">i</span>
+
+    <span class="n">protocol</span> <span class="o">=</span> <span class="n">write_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;://&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="s2">&quot;://&quot;</span> <span class="ow">in</span> <span class="n">write_file</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">write_options</span> <span class="o">=</span> <span class="n">storage_options</span> <span class="k">if</span> <span class="n">protocol</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">fs</span> <span class="o">=</span> <span class="n">fsspec</span><span class="o">.</span><span class="n">filesystem</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="o">**</span><span class="n">write_options</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">fs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">write_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outf</span><span class="p">:</span>
+        <span class="n">outf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">HEADER</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">out_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">outf</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.process_ssp_sample" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.process_ssp_sample</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">process_ssp_sample</span><span class="p">(</span><span class="n">ssppath</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Clean SSP per capita GDP projections</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">process_ssp_sample</span><span class="p">(</span><span class="n">ssppath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clean SSP per capita GDP projections&quot;&quot;&quot;</span>
+    <span class="n">ssp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">ssppath</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">ssp_df</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="p">[</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">year</span> <span class="o">&gt;=</span> <span class="mi">2010</span><span class="p">]</span>
+    <span class="n">ssp_df</span><span class="p">[</span><span class="s2">&quot;loginc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">ssp_df</span><span class="p">[</span><span class="s2">&quot;isoyear&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">iso</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">year</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ssp_df</span><span class="p">[</span><span class="s2">&quot;yearscen&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">year</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">row</span><span class="o">.</span><span class="n">scenario</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ssp_df</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.rff_damage_functions" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.rff_damage_functions</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">rff_damage_functions</span><span class="p">(</span><span class="n">sectors</span><span class="p">,</span> <span class="n">eta_rhos</span><span class="p">,</span> <span class="n">USA</span><span class="p">,</span> <span class="n">ssp_gdp</span><span class="p">,</span> <span class="n">rff_gdp</span><span class="p">,</span> <span class="n">recipes_discs</span><span class="p">,</span> <span class="n">in_library</span><span class="p">,</span> <span class="n">out_library</span><span class="p">,</span> <span class="n">runid_path</span><span class="p">,</span> <span class="n">weights_path</span><span class="p">,</span> <span class="n">pulse_year</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wrapper function for <code>weight_df()</code>.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">rff_damage_functions</span><span class="p">(</span>
+    <span class="n">sectors</span><span class="p">,</span>
+    <span class="n">eta_rhos</span><span class="p">,</span>
+    <span class="n">USA</span><span class="p">,</span>
+    <span class="n">ssp_gdp</span><span class="p">,</span>
+    <span class="n">rff_gdp</span><span class="p">,</span>
+    <span class="n">recipes_discs</span><span class="p">,</span>
+    <span class="n">in_library</span><span class="p">,</span>
+    <span class="n">out_library</span><span class="p">,</span>
+    <span class="n">runid_path</span><span class="p">,</span>
+    <span class="n">weights_path</span><span class="p">,</span>
+    <span class="n">pulse_year</span><span class="p">,</span>
+    <span class="n">mask</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function for `weight_df()`.&quot;&quot;&quot;</span>
+
+    <span class="c1"># ssp GDP for fractionalizing damage functions</span>
+    <span class="n">ssp_gdp</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_zarr</span><span class="p">(</span><span class="n">ssp_gdp</span><span class="p">,</span> <span class="n">consolidated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="s2">&quot;region&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">gdp</span>
+
+    <span class="c1"># get RFF data</span>
+    <span class="n">region</span> <span class="o">=</span> <span class="s2">&quot;USA&quot;</span> <span class="k">if</span> <span class="n">USA</span> <span class="k">else</span> <span class="s2">&quot;world&quot;</span>
+    <span class="n">rff_gdp</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">rff_gdp</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">gdp</span>
+
+    <span class="c1"># get global consumption factors to extrapolate damage function</span>
+    <span class="n">factors</span> <span class="o">=</span> <span class="n">rff_gdp</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">2100</span><span class="p">,</span> <span class="mi">2300</span><span class="p">))</span> <span class="o">/</span> <span class="n">rff_gdp</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2099</span><span class="p">)</span>
+
+    <span class="c1"># get RFF emulator weights</span>
+    <span class="n">run_id</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">runid_path</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">weights_path</span><span class="si">}</span><span class="s2">/damage_function_weights.nc4&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">rff_sp</span><span class="o">=</span><span class="n">run_id</span><span class="o">.</span><span class="n">rff_sp</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">value</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">recipe_disc</span><span class="p">,</span> <span class="n">sector</span><span class="p">,</span> <span class="n">eta_rho</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="n">recipes_discs</span><span class="p">,</span> <span class="n">sectors</span><span class="p">,</span> <span class="n">eta_rhos</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="si">}</span><span class="s2"> : </span><span class="si">{</span><span class="n">recipe_disc</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">eta_rho</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">weight_df</span><span class="p">(</span>
+            <span class="n">sector</span><span class="o">=</span><span class="n">sector</span><span class="p">,</span>
+            <span class="n">eta_rho</span><span class="o">=</span><span class="n">eta_rho</span><span class="p">,</span>
+            <span class="n">recipe</span><span class="o">=</span><span class="n">recipe_disc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">disc</span><span class="o">=</span><span class="n">recipe_disc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">file</span><span class="o">=</span><span class="s2">&quot;damage_function_coefficients&quot;</span><span class="p">,</span>
+            <span class="n">in_library</span><span class="o">=</span><span class="n">in_library</span><span class="p">,</span>
+            <span class="n">out_library</span><span class="o">=</span><span class="n">out_library</span><span class="p">,</span>
+            <span class="n">rff_gdp</span><span class="o">=</span><span class="n">rff_gdp</span><span class="p">,</span>
+            <span class="n">ssp_gdp</span><span class="o">=</span><span class="n">ssp_gdp</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">factors</span><span class="o">=</span><span class="n">factors</span><span class="p">,</span>
+            <span class="n">pulse_year</span><span class="o">=</span><span class="n">pulse_year</span><span class="p">,</span>
+            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+        <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.solve_optimization" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.solve_optimization</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">solve_optimization</span><span class="p">(</span><span class="n">ssp_df</span><span class="p">,</span> <span class="n">rff_df</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Generate weights based on which to derive the weighted average of damage function coefficents
+across six SSP-growth models for a single RFF-SP
+This function applies an emulation scheme to calculate a set of weights, constrained to
+sum to unity, that, when used to take a weighted average of global GDP across SSP-growth models
+(3 SSPs X 2 IAMs), most closely recovers the global GDP in the RFF-SP simulation run that
+wish to emulate. The emulation scheme is estimated and applied separately for each 5-year period,
+of a single RFF-SP. Within each period, the scheme aims to interpolate between the SSP-growth models
+in order to match the country-level GDPs designated by the given RFF-SP. Empirically, it solves
+an optimization problem to minimize a weighted sum of country-level errors, taking country-level
+RFF-SP GDPs as weights</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>ssp_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dataset with country-level log per capita GDPs by SSP-growth models in 5-year increments, post-
+processed by the <code>process_ssp_sample</code> function</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>rff_df</code>
+            </td>
+            <td>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dateset with country-level GDPs and log per capita GDPs for a single RFF-SP simulation run</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>    Dataset with a set of SSP-growth model weights and country-level errors in 5-year increments</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>for a single RFF-SP</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">solve_optimization</span><span class="p">(</span><span class="n">ssp_df</span><span class="p">,</span> <span class="n">rff_df</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate weights based on which to derive the weighted average of damage function coefficents</span>
+<span class="sd">    across six SSP-growth models for a single RFF-SP</span>
+<span class="sd">    This function applies an emulation scheme to calculate a set of weights, constrained to</span>
+<span class="sd">    sum to unity, that, when used to take a weighted average of global GDP across SSP-growth models</span>
+<span class="sd">    (3 SSPs X 2 IAMs), most closely recovers the global GDP in the RFF-SP simulation run that</span>
+<span class="sd">    wish to emulate. The emulation scheme is estimated and applied separately for each 5-year period,</span>
+<span class="sd">    of a single RFF-SP. Within each period, the scheme aims to interpolate between the SSP-growth models</span>
+<span class="sd">    in order to match the country-level GDPs designated by the given RFF-SP. Empirically, it solves</span>
+<span class="sd">    an optimization problem to minimize a weighted sum of country-level errors, taking country-level</span>
+<span class="sd">    RFF-SP GDPs as weights</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ssp_df : pd.DataFrame</span>
+<span class="sd">        Dataset with country-level log per capita GDPs by SSP-growth models in 5-year increments, post-</span>
+<span class="sd">        processed by the `process_ssp_sample` function</span>
+<span class="sd">    rff_df : pd.DataFrame</span>
+<span class="sd">        Dateset with country-level GDPs and log per capita GDPs for a single RFF-SP simulation run</span>
+<span class="sd">    Returns</span>
+<span class="sd">    ------</span>
+<span class="sd">        Dataset with a set of SSP-growth model weights and country-level errors in 5-year increments</span>
+<span class="sd">        for a single RFF-SP</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Import gurobipy here so only required for this function rather than entire module.</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">gurobipy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gp</span>
+
+    <span class="n">ssp_df</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="p">[(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">scenario</span> <span class="o">!=</span> <span class="s2">&quot;SSP1&quot;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">scenario</span> <span class="o">!=</span> <span class="s2">&quot;SSP5&quot;</span><span class="p">)]</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;year&quot;</span><span class="p">,</span> <span class="s2">&quot;param&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">]</span>
+
+    <span class="n">years</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+        <span class="n">sspidf</span> <span class="o">=</span> <span class="n">ssp_df</span><span class="p">[</span><span class="n">ssp_df</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="n">year</span><span class="p">]</span>
+        <span class="n">rffidf</span> <span class="o">=</span> <span class="n">rff_df</span><span class="p">[</span><span class="n">rff_df</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="n">year</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">rffidf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">isoyears</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sspidf</span><span class="o">.</span><span class="n">isoyear</span><span class="p">)</span>
+
+        <span class="c1"># Create parameters list</span>
+        <span class="n">alphaparams</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sspidf</span><span class="o">.</span><span class="n">yearscen</span><span class="p">)</span>
+
+        <span class="c1"># Drop the first entry for each subgroup</span>
+        <span class="n">alphaparams_butfirst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">alphaparams</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">isoyears</span><span class="p">,</span> <span class="n">alphaparams_butfirst</span><span class="p">))</span>
+        <span class="n">paramindex_alpha0</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">isoyears</span><span class="p">)</span>
+
+        <span class="c1"># Construct objective function</span>
+        <span class="k">if</span> <span class="s2">&quot;weight&quot;</span> <span class="ow">in</span> <span class="n">rff_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">rffidf</span><span class="o">.</span><span class="n">weight</span><span class="p">[(</span><span class="n">rffidf</span><span class="o">.</span><span class="n">isoyear</span> <span class="o">==</span> <span class="n">isoyear</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">isoyear</span> <span class="ow">in</span> <span class="n">isoyears</span>
+            <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">isoyears</span><span class="p">))</span>
+        <span class="n">objfunc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">weights</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">alphaparams_butfirst</span><span class="p">))))</span>
+
+        <span class="c1"># Contruct constraints, all in the form of A x &lt; b</span>
+        <span class="n">AA_rows</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AA_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">AA_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">bb</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">add_AA_cell</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="n">AA_rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">AA_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+            <span class="n">AA_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1">## Rows defining absolute values</span>
+
+        <span class="c1"># d_it &gt; y_it - (sum_s&gt;1 alpha_is y_sit + (1 - sum_s&gt;1 alpha_is) y_1it)</span>
+        <span class="c1"># -d_it - (sum_s&gt;1 alpha_is y_sit - (sum_s&gt;1 alpha_is) y_1it) &lt; -y_it + y_1it</span>
+
+        <span class="c1"># d_it &gt; -(y_it - (sum_s&gt;1 alpha_is y_sit + (1 - sum_s&gt;1 alpha_is) y_1it))</span>
+        <span class="c1"># -d_it + (sum_s&gt;1 alpha_is y_sit - (sum_s&gt;1 alpha_is) y_1it) &lt; y_it - y_1it</span>
+
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">isoyear</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">isoyears</span><span class="p">):</span>
+            <span class="n">subdf</span> <span class="o">=</span> <span class="n">sspidf</span><span class="p">[</span><span class="n">sspidf</span><span class="o">.</span><span class="n">isoyear</span> <span class="o">==</span> <span class="n">isoyear</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">subdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">rffidf</span><span class="o">.</span><span class="n">isoyear</span> <span class="o">==</span> <span class="n">isoyear</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">y1it</span> <span class="o">=</span> <span class="n">subdf</span><span class="o">.</span><span class="n">loginc</span><span class="p">[</span><span class="n">subdf</span><span class="o">.</span><span class="n">yearscen</span> <span class="o">==</span> <span class="n">alphaparams</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">ii</span><span class="p">,</span> <span class="n">isoyear</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception! Keep going..&quot;</span><span class="p">)</span>  <span class="c1"># KM added</span>
+                <span class="k">continue</span>
+
+            <span class="n">add_AA_cell</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bb</span><span class="p">),</span> <span class="n">ii</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">add_AA_cell</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bb</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ii</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">jj</span><span class="p">,</span> <span class="n">alphaparam</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alphaparams_butfirst</span><span class="p">):</span>
+                <span class="n">ysit</span> <span class="o">=</span> <span class="n">subdf</span><span class="o">.</span><span class="n">loginc</span><span class="p">[</span><span class="n">subdf</span><span class="o">.</span><span class="n">yearscen</span> <span class="o">==</span> <span class="n">alphaparam</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">add_AA_cell</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bb</span><span class="p">),</span> <span class="n">paramindex_alpha0</span> <span class="o">+</span> <span class="n">jj</span><span class="p">,</span> <span class="o">-</span><span class="n">ysit</span> <span class="o">+</span> <span class="n">y1it</span><span class="p">)</span>
+                <span class="n">add_AA_cell</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bb</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">paramindex_alpha0</span> <span class="o">+</span> <span class="n">jj</span><span class="p">,</span> <span class="n">ysit</span> <span class="o">-</span> <span class="n">y1it</span><span class="p">)</span>
+
+            <span class="n">bb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="n">rffidf</span><span class="o">.</span><span class="n">loginc</span><span class="p">[(</span><span class="n">rffidf</span><span class="o">.</span><span class="n">isoyear</span> <span class="o">==</span> <span class="n">isoyear</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">y1it</span><span class="p">)</span>
+            <span class="n">bb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rffidf</span><span class="o">.</span><span class="n">loginc</span><span class="p">[(</span><span class="n">rffidf</span><span class="o">.</span><span class="n">isoyear</span> <span class="o">==</span> <span class="n">isoyear</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">y1it</span><span class="p">)</span>
+
+        <span class="n">constrindex_alphag10</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bb</span><span class="p">)</span>
+
+        <span class="c1"># sum alpha_is &lt; 1</span>
+        <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">paramindex_alpha0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)):</span>
+            <span class="n">add_AA_cell</span><span class="p">(</span><span class="n">constrindex_alphag10</span><span class="p">,</span> <span class="n">jj</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">bb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">constrindex_end</span> <span class="o">=</span> <span class="n">constrindex_alphag10</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">AA</span> <span class="o">=</span> <span class="n">coo_matrix</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">AA_data</span><span class="p">,</span> <span class="p">(</span><span class="n">AA_rows</span><span class="p">,</span> <span class="n">AA_cols</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">constrindex_end</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Also constrained so that d_it &gt; 0 and alpha_is &gt; 0</span>
+
+        <span class="n">env</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">Env</span><span class="p">(</span><span class="n">empty</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">setParam</span><span class="p">(</span><span class="s2">&quot;OutputFlag&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="s2">&quot;gourmet&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+        <span class="n">xx</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">addMVar</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">objfunc</span><span class="p">),</span> <span class="n">vtype</span><span class="o">=</span><span class="n">gp</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;xx&quot;</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">setObjective</span><span class="p">(</span><span class="n">objfunc</span> <span class="o">@</span> <span class="n">xx</span><span class="p">,</span> <span class="n">gp</span><span class="o">.</span><span class="n">MINIMIZE</span><span class="p">)</span>
+        <span class="n">bb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bb</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">addConstr</span><span class="p">(</span><span class="n">AA</span> <span class="o">@</span> <span class="n">xx</span> <span class="o">&lt;=</span> <span class="n">bb</span><span class="p">)</span>
+        <span class="n">mod</span><span class="o">.</span><span class="n">optimize</span><span class="p">()</span>
+        <span class="n">errors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">X</span><span class="p">[:</span><span class="n">paramindex_alpha0</span><span class="p">],</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">xx</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">paramindex_alpha0</span><span class="p">:],</span> <span class="mi">6</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">error</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">errors</span><span class="p">):</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="n">isoyears</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">error</span><span class="p">])</span>
+
+        <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">alphaparams</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">sum</span><span class="p">(</span><span class="n">alphas</span><span class="p">))])</span>
+        <span class="k">for</span> <span class="n">ii</span><span class="p">,</span> <span class="n">alpha</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">alphas</span><span class="p">):</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">year</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="n">alphaparams_butfirst</span><span class="p">[</span><span class="n">ii</span><span class="p">],</span> <span class="n">alpha</span><span class="p">])</span>
+
+    <span class="n">out_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">header</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out_df</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="dscim.utils.rff.weight_df" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">dscim.utils.rff.weight_df</span>
+
+
+</h2>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">weight_df</span><span class="p">(</span><span class="n">sector</span><span class="p">,</span> <span class="n">eta_rho</span><span class="p">,</span> <span class="n">recipe</span><span class="p">,</span> <span class="n">disc</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">in_library</span><span class="p">,</span> <span class="n">out_library</span><span class="p">,</span> <span class="n">rff_gdp</span><span class="p">,</span> <span class="n">ssp_gdp</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">factors</span><span class="p">,</span> <span class="n">pulse_year</span><span class="p">,</span> <span class="n">fractional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="s1">&#39;unmasked&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Weight, fractionalize, and combine SSP damage functions,
+then multiply by RFF GDP to return RFF damage functions.</p>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>src/dscim/utils/rff.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">weight_df</span><span class="p">(</span>
+    <span class="n">sector</span><span class="p">,</span>
+    <span class="n">eta_rho</span><span class="p">,</span>
+    <span class="n">recipe</span><span class="p">,</span>
+    <span class="n">disc</span><span class="p">,</span>
+    <span class="n">file</span><span class="p">,</span>
+    <span class="n">in_library</span><span class="p">,</span>
+    <span class="n">out_library</span><span class="p">,</span>
+    <span class="n">rff_gdp</span><span class="p">,</span>
+    <span class="n">ssp_gdp</span><span class="p">,</span>
+    <span class="n">weights</span><span class="p">,</span>
+    <span class="n">factors</span><span class="p">,</span>
+    <span class="n">pulse_year</span><span class="p">,</span>
+    <span class="n">fractional</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="s2">&quot;unmasked&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Weight, fractionalize, and combine SSP damage functions,</span>
+<span class="sd">    then multiply by RFF GDP to return RFF damage functions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># get damage function as share of global GDP</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">in_library</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pulse_year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">recipe</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">disc</span><span class="si">}</span><span class="s2">_eta</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_rho</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">.nc4&quot;</span>
+        <span class="p">)</span>
+        <span class="o">/</span> <span class="n">ssp_gdp</span>
+    <span class="p">)</span>
+
+    <span class="c1"># pre-2100 weighted fractional damage functions</span>
+    <span class="n">rff</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span> <span class="o">*</span> <span class="n">weights</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="s2">&quot;ssp&quot;</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">])</span>
+
+    <span class="c1"># save fractional damage function</span>
+    <span class="k">if</span> <span class="n">fractional</span><span class="p">:</span>
+        <span class="n">rff</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">2099</span><span class="p">))</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_library</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pulse_year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">recipe</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">disc</span><span class="si">}</span><span class="s2">_eta</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_rho</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_fractional_</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">.nc4&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># recover damage function as dollars instead of fraction</span>
+    <span class="n">rff</span> <span class="o">=</span> <span class="p">(</span><span class="n">rff</span> <span class="o">*</span> <span class="n">rff_gdp</span><span class="p">)</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="nb">slice</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">2099</span><span class="p">))</span>
+
+    <span class="c1"># post-2100 weighted damage functions</span>
+    <span class="n">post_2100</span> <span class="o">=</span> <span class="n">rff</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">2099</span><span class="p">)</span> <span class="o">*</span> <span class="n">factors</span>
+
+    <span class="n">dfs</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">combine_by_coords</span><span class="p">([</span><span class="n">rff</span><span class="p">,</span> <span class="n">post_2100</span><span class="p">])</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_library</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pulse_year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dfs</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">out_library</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">sector</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">pulse_year</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">mask</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">recipe</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">disc</span><span class="si">}</span><span class="s2">_eta</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">_rho</span><span class="si">{</span><span class="n">eta_rho</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">.nc4&quot;</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
