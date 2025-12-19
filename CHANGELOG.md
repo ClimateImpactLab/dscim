@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- Standardized eta handling across all damage reduction recipes. Previously, the `adding_up` recipe did not use eta parameters while `risk_aversion` did. Now all recipes require and use eta values consistently. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+  - File naming convention updated to include eta value for all reduced damage outputs (e.g., `adding_up_cc_eta1.0.zarr`)
+  - Simplified `reduce_damages()` and `subset_USA_reduced_damages()` functions by removing conditional logic for eta-less processing
+  - Updated `StackedDamages.adding_up_damages` property to reference eta-specific file paths
+- Refactored mortality damage preprocessing to support eta-aware damage loading. The `prep_mortality_damages()` function now accepts multiple eta values and merges damage data across the eta dimension. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Added support for mortality version 9 with VLY (Value of a Life Year) valuation using EPA population-averaged scaling. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Updated chunking strategy in `reduce_damages()` to handle eta as a mapped dimension alongside batch operations, improving consistency in batch dimension handling for both standard and quantile regression workflows. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+
+### Fixed
+
+- Pinned `scipy=1.15.3` to resolve `statsmodels==0.14.4` import issues. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Updated all unit tests to work with eta-aware damage processing, including test fixtures for mortality damages and adding-up calculations. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+
+### Removed
+
+- Removed assertion preventing `adding_up` recipe from accepting eta arguments, as this recipe now processes damages with eta values like all other recipes. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
 
 ## [0.7.0] - 2025-08-15
 
