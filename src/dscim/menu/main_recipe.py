@@ -247,17 +247,17 @@ class MainRecipe(StackedDamages, ABC):
         self.logger = logging.getLogger(__name__)
 
         if self.quantreg_quantiles is not None:
-            assert len(self.quantreg_quantiles) == len(
-                self.quantreg_weights
-            ), "Length of quantreg quantiles does not match length of weights."
+            assert len(self.quantreg_quantiles) == len(self.quantreg_weights), (
+                "Length of quantreg quantiles does not match length of weights."
+            )
 
-        assert (
-            self.discounting_type in self.DISCOUNT_TYPES
-        ), f"Discount type not implemented. Try one of {self.DISCOUNT_TYPES}."
+        assert self.discounting_type in self.DISCOUNT_TYPES, (
+            f"Discount type not implemented. Try one of {self.DISCOUNT_TYPES}."
+        )
 
-        assert (
-            self.formula in self.FORMULAS
-        ), f"Formula not implemented. Try one of {self.FORMULAS}."
+        assert self.formula in self.FORMULAS, (
+            f"Formula not implemented. Try one of {self.FORMULAS}."
+        )
 
         # Set stream of discounts to None if discounting_type is 'constant'
         # 'constant_model_collapsed' should be here except that we allow
@@ -488,10 +488,7 @@ class MainRecipe(StackedDamages, ABC):
             return data  # No aggregation needed
 
         elif geography == "country":
-            if (
-                hasattr(self, "country_mapping")
-                and self.country_mapping is not None
-            ):
+            if hasattr(self, "country_mapping") and self.country_mapping is not None:
                 return self._aggregate_to_country(data)
             else:
                 raise ValueError(
@@ -530,9 +527,7 @@ class MainRecipe(StackedDamages, ABC):
             else "nopop"
             for _, row in self.country_mapping.iterrows()
         }
-        territories = [
-            mapping.get(str(r)[:3], "unknown") for r in data.region.values
-        ]
+        territories = [mapping.get(str(r)[:3], "unknown") for r in data.region.values]
         return data.assign_coords({"region": territories}).groupby("region").sum()
 
     def damages_dataset(self, geography: str = "globe") -> xr.Dataset:
@@ -579,9 +574,7 @@ class MainRecipe(StackedDamages, ABC):
         xr.Dataset
             Filtered dataset with illegal combinations set to NaN
         """
-        if "ssp" in ds.coords and any(
-            ssp in ds.ssp.values for ssp in ["SSP1", "SSP5"]
-        ):
+        if "ssp" in ds.coords and any(ssp in ds.ssp.values for ssp in ["SSP1", "SSP5"]):
             self.logger.info("Dropping illegal model combinations.")
             illegal = ((ds.ssp == "SSP1") & (ds.rcp == "rcp85")) | (
                 (ds.ssp == "SSP5") & (ds.rcp == "rcp45")

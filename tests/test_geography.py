@@ -139,7 +139,11 @@ class TestDualPathEquivalence:
         assert "damages" in pandas_result.columns
         assert "damages" in xarray_result.columns
 
-        sort_cols = [c for c in ["year", "ssp", "model", "gcm", "rcp"] if c in pandas_result.columns]
+        sort_cols = [
+            c
+            for c in ["year", "ssp", "model", "gcm", "rcp"]
+            if c in pandas_result.columns
+        ]
         pandas_sorted = pandas_result.sort_values(sort_cols).reset_index(drop=True)
         xarray_sorted = xarray_result.sort_values(sort_cols).reset_index(drop=True)
 
