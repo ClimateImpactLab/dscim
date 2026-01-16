@@ -107,6 +107,9 @@ class MainRecipe(StackedDamages, ABC):
         extrap_formula=None,
         fair_dims=None,
         save_files=None,
+        geography="globe",
+        country_mapping_path=None,
+        individual_region=None,
         **kwargs,
     ):
         if scc_quantiles is None:
@@ -232,6 +235,12 @@ class MainRecipe(StackedDamages, ABC):
         self.extrap_formula = extrap_formula
         self.fair_dims = fair_dims
         self.save_files = save_files
+        self.geography = geography
+        self.individual_region = individual_region
+        if country_mapping_path is not None:
+            self.country_mapping = pd.read_csv(country_mapping_path)
+        else:
+            self.country_mapping = None
         self.__dict__.update(**kwargs)
         self.kwargs = kwargs
 
@@ -456,6 +465,142 @@ class MainRecipe(StackedDamages, ABC):
             pop = self.pop.mean(["model", "ssp"])
         return pop
 
+    def _aggregate_by_geography(
+        self,
+        data: xr.DataArray,
+        geography: str,
+    ) -> xr.DataArray:
+        """Aggregate data by geography type.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            Data with 'region' dimension to aggregate
+        geography : str
+            One of "ir" (impact region), "country", or "globe"
+
+        Returns
+        -------
+        xr.DataArray
+            Aggregated data according to geography
+        """
+        if geography == "ir":
+            return data  # No aggregation needed
+
+        elif geography == "country":
+            if (
+                hasattr(self, "country_mapping")
+                and self.country_mapping is not None
+            ):
+                return self._aggregate_to_country(data)
+            else:
+                raise ValueError(
+                    "Country aggregation requires country_mapping parameter"
+                )
+
+        elif geography in ("globe", "global"):
+            return (
+                data.sum(dim="region")
+                .assign_coords({"region": "globe"})
+                .expand_dims("region")
+            )
+
+        else:
+            raise ValueError(
+                f"Unknown geography: {geography}. "
+                f"Valid options: 'ir', 'country', 'globe'"
+            )
+
+    def _aggregate_to_country(self, data: xr.DataArray) -> xr.DataArray:
+        """Aggregate to country level using mapping.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            Data with 'region' dimension to aggregate
+
+        Returns
+        -------
+        xr.DataArray
+            Data aggregated to country level
+        """
+        mapping = {
+            row["ISO"]: row["MatchedISO"]
+            if str(row["MatchedISO"]) != "nan"
+            else "nopop"
+            for _, row in self.country_mapping.iterrows()
+        }
+        territories = [
+            mapping.get(str(r)[:3], "unknown") for r in data.region.values
+        ]
+        return data.assign_coords({"region": territories}).groupby("region").sum()
+
+    def damages_dataset(self, geography: str = "globe") -> xr.Dataset:
+        """Calculate damages as xarray Dataset.
+
+        Parameters
+        ----------
+        geography : str, optional
+            One of "ir" (impact region), "country", or "globe" (default)
+
+        Returns
+        -------
+        xr.Dataset
+            Damages dataset with regional aggregation
+        """
+        # Get raw calculated damages (xr.DataArray)
+        damages = self.calculated_damages
+        pop = self.collapsed_pop
+
+        # Apply geography aggregation
+        aggregated = self._aggregate_by_geography(damages * pop, geography)
+
+        ds = aggregated.to_dataset(name="damages")
+
+        # Add metadata for GWR discounting
+        if "gwr" in self.discounting_type:
+            ds = ds.assign_coords(
+                ssp=str(list(self.gdp.ssp.values)),
+                model=str(list(self.gdp.model.values)),
+            )
+
+        return ds
+
+    def _filter_illegal_combinations_xr(self, ds: xr.Dataset) -> xr.Dataset:
+        """Filter illegal SSP/RCP combinations (xarray version).
+
+        Parameters
+        ----------
+        ds : xr.Dataset
+            Dataset to filter
+
+        Returns
+        -------
+        xr.Dataset
+            Filtered dataset with illegal combinations set to NaN
+        """
+        if "ssp" in ds.coords and any(
+            ssp in ds.ssp.values for ssp in ["SSP1", "SSP5"]
+        ):
+            self.logger.info("Dropping illegal model combinations.")
+            illegal = ((ds.ssp == "SSP1") & (ds.rcp == "rcp85")) | (
+                (ds.ssp == "SSP5") & (ds.rcp == "rcp45")
+            )
+            for var in ["anomaly", "gmsl"]:
+                if var in ds:
+                    ds[var] = xr.where(illegal, np.nan, ds[var])
+
+        if "agriculture" in self.sector:
+            self.logger.info("Dropping illegal model combinations for agriculture.")
+            if "anomaly" in ds:
+                ds["anomaly"] = xr.where(
+                    (ds.gcm == "ACCESS1-0") & (ds.rcp == "rcp85"),
+                    np.nan,
+                    ds["anomaly"],
+                )
+
+        return ds
+
     @abstractmethod
     def ce_cc_calculation(self):
         """Calculate CE damages depending on discount type"""
@@ -491,6 +636,13 @@ class MainRecipe(StackedDamages, ABC):
         --------
             pd.DataFrame
         """
+        if self.geography != "globe":
+            return self._damage_function_points_xarray()
+        else:
+            return self._damage_function_points_pandas()
+
+    def _damage_function_points_pandas(self) -> pd.DataFrame:
+        """Original pandas-based implementation for backward compatibility."""
         df = self.global_damages_calculation()
 
         if "slr" in df.columns:
@@ -514,6 +666,29 @@ class MainRecipe(StackedDamages, ABC):
             df.loc[(df.gcm == "ACCESS1-0") & (df.rcp == "rcp85"), "anomaly"] = np.nan
 
         return df
+
+    def _damage_function_points_xarray(self) -> pd.DataFrame:
+        """xarray-based implementation for geography support."""
+        ds = self.damages_dataset(geography=self.geography)
+
+        # Merge climate data using xarray
+        climate_vars = []
+        if "slr" in ds.coords:
+            gmsl = self.climate.gmsl.set_index(["slr", "year"]).to_xarray()
+            climate_vars.append(gmsl)
+        if "gcm" in ds.coords:
+            gmst = self.climate.gmst.set_index(["gcm", "rcp", "year"]).to_xarray()
+            climate_vars.append(gmst)
+
+        if climate_vars:
+            climate_ds = xr.merge(climate_vars)
+            ds = xr.merge([ds, climate_ds]).sel(year=ds.year)
+
+        # Filter illegal combinations
+        ds = self._filter_illegal_combinations_xr(ds)
+
+        # Convert to DataFrame at the boundary
+        return ds.to_dataframe().reset_index()
 
     def damage_function_calculation(self, damage_function_points, global_consumption):
         """The damage function model fit may be : (1) ssp specific, (2) ssp-model specific, (3) unique across ssp-model.
