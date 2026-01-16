@@ -16,3 +16,4 @@ impactlab-tools==0.6.0
 p_tqdm==1.4.2
 pyarrow==21.0.0
 numcodecs==0.15.1
+scipy==1.15.3
