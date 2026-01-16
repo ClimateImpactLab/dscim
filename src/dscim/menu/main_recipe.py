@@ -247,17 +247,17 @@ class MainRecipe(StackedDamages, ABC):
         self.logger = logging.getLogger(__name__)
 
         if self.quantreg_quantiles is not None:
-            assert len(self.quantreg_quantiles) == len(self.quantreg_weights), (
-                "Length of quantreg quantiles does not match length of weights."
-            )
+            assert len(self.quantreg_quantiles) == len(
+                self.quantreg_weights
+            ), "Length of quantreg quantiles does not match length of weights."
 
-        assert self.discounting_type in self.DISCOUNT_TYPES, (
-            f"Discount type not implemented. Try one of {self.DISCOUNT_TYPES}."
-        )
+        assert (
+            self.discounting_type in self.DISCOUNT_TYPES
+        ), f"Discount type not implemented. Try one of {self.DISCOUNT_TYPES}."
 
-        assert self.formula in self.FORMULAS, (
-            f"Formula not implemented. Try one of {self.FORMULAS}."
-        )
+        assert (
+            self.formula in self.FORMULAS
+        ), f"Formula not implemented. Try one of {self.FORMULAS}."
 
         # Set stream of discounts to None if discounting_type is 'constant'
         # 'constant_model_collapsed' should be here except that we allow
