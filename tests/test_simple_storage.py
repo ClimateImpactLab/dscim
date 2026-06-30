@@ -45,8 +45,12 @@ def test_adding_up_damages(stacked_damages):
         stacked_damages.adding_up_damages,
         (
             (
-                xr.open_zarr(f"{stacked_damages.ce_path}/adding_up_no_cc.zarr").no_cc
-                - xr.open_zarr(f"{stacked_damages.ce_path}/adding_up_cc.zarr").cc
+                xr.open_zarr(
+                    f"{stacked_damages.ce_path}/adding_up_no_cc_eta1.421158116.zarr"
+                ).no_cc
+                - xr.open_zarr(
+                    f"{stacked_damages.ce_path}/adding_up_cc_eta1.421158116.zarr"
+                ).cc
             )
             * stacked_damages.pop
         ).sum("region"),
@@ -818,8 +822,8 @@ def test_stackeddamages_adding_up_damages(tmp_path):
     # data sets to a temporary Zarr Store on disk.
     d = tmp_path / "stackeddamages"
     d.mkdir()
-    adding_up_cc_path = d / "adding_up_cc.zarr"
-    adding_up_no_cc_path = d / "adding_up_no_cc.zarr"
+    adding_up_cc_path = d / "adding_up_cc_eta1.421158116.zarr"
+    adding_up_no_cc_path = d / "adding_up_no_cc_eta1.421158116.zarr"
     # Fake damage data without climate change -- dump to zarr.
     input_no_cc = xr.Dataset(
         {
@@ -864,7 +868,7 @@ def test_stackeddamages_adding_up_damages(tmp_path):
         save_path="",
         econ_vars=fake_econvars,
         climate_vars=fake_climate,
-        eta=0,
+        eta=1.421158116,
         gdppc_bottom_code=0,
         subset_dict={},
         ce_path=str(d),  # This MUST be set.
