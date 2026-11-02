@@ -1,0 +1,11 @@
+[data-md-color-scheme="CILlight"] {
+  --md-primary-fg-color:        #4DC8D6;
+  --md-primary-fg-color--light: #BAE8E2;
+  --md-primary-fg-color--dark:  #3393B0;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #3393B0;
+  --md-primary-fg-color--light: #BAE8E2;
+  --md-primary-fg-color--dark:  #3393B0;
+}
