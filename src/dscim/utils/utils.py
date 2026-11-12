@@ -97,15 +97,15 @@ def modeler(df, formula, type_estimation, exog, quantiles=None):
                 q_params.append(params_quantile)
 
                 fitted = pd.DataFrame(dict(exog, y_hat=quant_mod.predict(exog=exog)))
-                #q_y_hat.append(fitted.assign(q=quant))
+                q_y_hat.append(fitted.assign(q=quant))
 
             params = pd.concat(q_params)
-            #y_hat = pd.DataFrame(pd.concat(q_y_hat))
+            y_hat = pd.DataFrame(pd.concat(q_y_hat))
 
     else:
         raise NotImplementedError(f"{type_estimation} is not valid option!")
 
-    return params, None#y_hat
+    return params, y_hat
 
 
 def get_weights(quantiles):
@@ -463,11 +463,11 @@ def model_outputs(
         ).squeeze()
 
         # Extrapolate by multiplying fixed params by ratios
-        #extrap_preds = y_hat_df.sel(year=fix_global_c) * global_c_factors
+        extrap_preds = y_hat_df.sel(year=fix_global_c) * global_c_factors
         extrap_params = param_df.sel(year=fix_global_c) * global_c_factors
 
         # concatenate extrapolation and pre-2100
-        #preds = xr.concat([y_hat_df, extrap_preds], dim="year")
+        preds = xr.concat([y_hat_df, extrap_preds], dim="year")
         parameters = xr.concat([param_df, extrap_params], dim="year")
 
         # For the local case we don't care about the time dimension, the
@@ -481,7 +481,7 @@ def model_outputs(
     # Return all results
     res = {
         "parameters": parameters,
-        "preds": None,
+        "preds": preds,
     }
 
     return res
