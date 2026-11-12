@@ -15,7 +15,7 @@ def fit_project(chunk_reg, formula, type_estimation, quantiles, index_dims):
     df_reg = chunk_reg.to_dataframe().reset_index()
 
     year_range = df_reg.year.values
-    
+
     df_tot = []
     for year in year_range:
         time_window = range(year - 2, year + 3)
@@ -35,7 +35,7 @@ def fit_project(chunk_reg, formula, type_estimation, quantiles, index_dims):
             params[dim] = chunk_reg[dim].values
         else:
             params[dim] = str(list(chunk_reg[dim].values))
-    
+
     print(params, flush=True)
 
     params = params.set_index(index_dims + ['year',])

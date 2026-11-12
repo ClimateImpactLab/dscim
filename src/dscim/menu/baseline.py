@@ -1,4 +1,3 @@
-import pandas as pd
 import xarray as xr
 from dscim.menu.main_recipe import MainRecipe
 import os
@@ -18,7 +17,7 @@ class Baseline(MainRecipe):
     def global_damages_calculation(self):
         """Call global damages"""
         return self.adding_up_damages.to_dataframe("damages").reset_index()
-    
+
     def damages_calculation(self, geography) -> xr.Dataset:
         """Aggregate damages to country level
 
@@ -26,13 +25,13 @@ class Baseline(MainRecipe):
         --------
             pd.DataFrame
         """
-        
-        self.logger.info(f"Calculating damages")
+
+        self.logger.info("Calculating damages")
         if self.individual_region:
             dams_collapse = self.calculated_damages * self.collapsed_pop.sel(region = self.individual_region, drop=True)
         else:
             dams_collapse = self.calculated_damages * self.collapsed_pop
-        
+
         if geography == "ir":
             pass
         elif geography == "country":
@@ -42,16 +41,16 @@ class Baseline(MainRecipe):
                 mapping_dict[row["ISO"]] = row["MatchedISO"]
                 if row["MatchedISO"] == "nan":
                     mapping_dict[row["ISO"]] = "nopop"
-                    
+
             for region in dams_collapse.region.values:
                     territories.append(mapping_dict[region[:3]])
-                    
+
             dams_collapse = (dams_collapse
                              .assign_coords({'region':territories})
                              .groupby('region')
                              .sum())
         elif geography == "globe":
-            dams_collapse = dams_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')   
+            dams_collapse = dams_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')
 
         if "gwr" in self.discounting_type:
             dams_collapse = dams_collapse.assign(
@@ -71,7 +70,7 @@ class Baseline(MainRecipe):
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
             damages = (
-                (xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc)
+                xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc
             )
         else:
             raise NotImplementedError(
@@ -113,7 +112,7 @@ class Baseline(MainRecipe):
         global_cons_no_cc.name = f"global_cons_{disc_type}"
 
         return global_cons_no_cc
-    
+
 #         def global_consumption_calculation(self, disc_type):
 #         """Calculate global consumption
 
