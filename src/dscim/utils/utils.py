@@ -10,6 +10,37 @@ from itertools import product
 logger = logging.getLogger(__name__)
 
 
+def fit_project(chunk_reg, formula, type_estimation, quantiles, index_dims):
+    # individual block's mapping function
+    df_reg = chunk_reg.to_dataframe().reset_index()
+
+    year_range = df_reg.year.values
+    
+    df_tot = []
+    for year in year_range:
+        time_window = range(year - 2, year + 3)
+        df = df_reg[df_reg.year.isin(time_window)]
+        params = modeler(
+                df=df,
+                formula=formula,
+                type_estimation=type_estimation,
+                quantiles=quantiles,
+            )
+        params.assign(year = year)
+        df_tot.append(params)
+
+    params = pd.concat(df_tot)
+    for dim in index_dims:
+        if chunk_reg[dim].size == 1:
+            params[dim] = chunk_reg[dim].values
+        else:
+            params[dim] = str(list(chunk_reg[dim].values))
+    
+    print(params, flush=True)
+
+    params = params.set_index(index_dims + ['year',])
+    return(params.to_xarray())
+
 def modeler(df, formula, type_estimation, exog, quantiles=None):
     """Wrapper function for statsmodels functions (OLS and quantiles)
 
@@ -66,15 +97,15 @@ def modeler(df, formula, type_estimation, exog, quantiles=None):
                 q_params.append(params_quantile)
 
                 fitted = pd.DataFrame(dict(exog, y_hat=quant_mod.predict(exog=exog)))
-                q_y_hat.append(fitted.assign(q=quant))
+                #q_y_hat.append(fitted.assign(q=quant))
 
             params = pd.concat(q_params)
-            y_hat = pd.DataFrame(pd.concat(q_y_hat))
+            #y_hat = pd.DataFrame(pd.concat(q_y_hat))
 
     else:
         raise NotImplementedError(f"{type_estimation} is not valid option!")
 
-    return params, y_hat
+    return params, None#y_hat
 
 
 def get_weights(quantiles):
@@ -432,11 +463,11 @@ def model_outputs(
         ).squeeze()
 
         # Extrapolate by multiplying fixed params by ratios
-        extrap_preds = y_hat_df.sel(year=fix_global_c) * global_c_factors
+        #extrap_preds = y_hat_df.sel(year=fix_global_c) * global_c_factors
         extrap_params = param_df.sel(year=fix_global_c) * global_c_factors
 
         # concatenate extrapolation and pre-2100
-        preds = xr.concat([y_hat_df, extrap_preds], dim="year")
+        #preds = xr.concat([y_hat_df, extrap_preds], dim="year")
         parameters = xr.concat([param_df, extrap_params], dim="year")
 
         # For the local case we don't care about the time dimension, the
@@ -450,11 +481,10 @@ def model_outputs(
     # Return all results
     res = {
         "parameters": parameters,
-        "preds": preds,
+        "preds": None,
     }
 
     return res
-
 
 def compute_damages(anomaly, betas, formula):
     """Calculate damages using FAIR anomalies (either control or pulse).
