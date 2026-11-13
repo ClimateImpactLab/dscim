@@ -193,3 +193,49 @@ def save_ssprff_econ(tmp_path):
 
     ssp_econ.to_zarr(d / "integration-econ-bc39.zarr")
     rff_econ.to_netcdf(d / "rff_global_socioeconomics.nc4")
+
+
+@pytest.fixture(scope="module")
+def menu_instance_with_geography(menu_class, discount_types, econ, climate):
+    """Menu instance with geography parameter."""
+    datadir = os.path.join(os.path.dirname(__file__), "data")
+    yield menu_class(
+        sector_path=[{"dummy_sector": os.path.join(datadir, "damages")}],
+        save_path=None,
+        discrete_discounting=True,
+        econ_vars=econ,
+        climate_vars=climate,
+        fit_type="ols",
+        variable=[{"dummy_sector": "damages"}],
+        sector="dummy_sector",
+        discounting_type=discount_types,
+        ext_method="global_c_ratio",
+        save_files=[
+            "damage_function_points",
+            "global_consumption",
+            "damage_function_coefficients",
+            "damage_function_fit",
+        ],
+        ce_path=os.path.join(datadir, "CEs"),
+        subset_dict={
+            "ssp": ["SSP2", "SSP3", "SSP4"],
+            "region": [
+                "IND.21.317.1249",
+                "CAN.2.33.913",
+                "USA.14.608",
+                "EGY.11",
+                "SDN.4.11.50.164",
+                "NGA.25.510",
+                "SAU.7",
+                "RUS.16.430.430",
+                "SOM.2.5",
+            ],
+        },
+        formula="damages ~ -1 + anomaly + np.power(anomaly, 2)",
+        extrap_formula=None,
+        fair_aggregation=["median_params", "ce", "mean"],
+        weitzman_parameter=[0.1],
+        geography="globe",
+        country_mapping_path=None,
+        individual_region=None,
+    )
