@@ -1,5 +1,6 @@
 import os
 import logging
+import warnings
 import subprocess
 from subprocess import CalledProcessError
 from abc import ABC, abstractmethod
@@ -230,6 +231,20 @@ class MainRecipe(StackedDamages, ABC):
         country_mapping_path = resolve_country_mapping_path(
             country_mapping_path, kwargs
         )
+        # Damages and consumption must sit at the same spatial scale. Under
+        # "globe" damages are summed over every region, so a single-region
+        # consumption series would silently mix scales. dscim <= 0.7.0 ignored
+        # the keyword (it fell into **kwargs); keep that result and say so.
+        if individual_region is not None and geography == "globe":
+            warnings.warn(
+                f"individual_region={individual_region!r} has no effect with "
+                "geography='globe' (the default) and is ignored, as in "
+                "dscim <= 0.7.0; pass geography='ir' to compute a single-region "
+                "result.",
+                UserWarning,
+                stacklevel=2,
+            )
+            individual_region = None
 
         super().__init__(
             sector_path=sector_path,

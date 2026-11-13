@@ -517,18 +517,84 @@ class TestIndividualRegion:
         ds = one.damages_dataset(geography="ir")
         assert "region" not in ds.dims
 
+    @pytest.mark.parametrize(
+        "menu_class, discounting_type",
+        [
+            (Baseline, "euler_ramsey"),
+            (Baseline, "constant_model_collapsed"),
+            (RiskAversionRecipe, "euler_ramsey"),
+            (RiskAversionRecipe, "constant_model_collapsed"),
+            (RiskAversionRecipe, "gwr_gwr"),
+        ],
+    )
     def test_damages_dataset_matches_that_slice_of_the_all_region_run(
-        self, geography_menu_factory
+        self, geography_menu_factory, menu_class, discounting_type
     ):
+        """Restricting to a region must not change that region's damages or
+        consumption, for the adding_up and risk_aversion recipes alike."""
         one = geography_menu_factory(
-            geography="ir", individual_region=INDIVIDUAL_REGION
+            menu_class=menu_class,
+            discounting_type=discounting_type,
+            geography="ir",
+            individual_region=INDIVIDUAL_REGION,
         )
-        every = geography_menu_factory(geography="ir")
+        every = geography_menu_factory(
+            menu_class=menu_class, discounting_type=discounting_type, geography="ir"
+        )
         actual = one.damages_dataset(geography="ir").damages
         expected = every.damages_dataset(geography="ir").damages.sel(
             region=INDIVIDUAL_REGION, drop=True
         )
         xr.testing.assert_allclose(actual, expected)
+        xr.testing.assert_allclose(
+            one.global_consumption,
+            every.global_consumption.sel(region=INDIVIDUAL_REGION, drop=True),
+        )
+
+    @pytest.mark.xfail(
+        strict=True,
+        raises=ValueError,
+        reason="Known limitation, present since the regional path was written: "
+        "Baseline keeps ssp/model dimensions under gwr discounting, so "
+        "damages_dataset cannot assign the pooled scalar ssp/model coordinates. "
+        "RiskAversionRecipe collapses them in its CE and is unaffected.",
+    )
+    def test_baseline_gwr_regional_path_known_limitation(self, geography_menu_factory):
+        geography_menu_factory(
+            discounting_type="gwr_gwr", geography="ir"
+        ).damages_dataset("ir")
+
+    def test_globe_geography_ignores_individual_region_with_a_warning(
+        self, geography_menu_factory
+    ):
+        """dscim <= 0.7.0 accepted the keyword and ignored it; keep that
+        result, but say so instead of mixing global damages with
+        single-region consumption."""
+        reference = geography_menu_factory()
+        with warnings.catch_warnings(record=True) as records:
+            warnings.simplefilter("always")
+            menu = geography_menu_factory(individual_region=INDIVIDUAL_REGION)
+        found = _dscim_warnings(records, "individual_region", "geography='ir'")
+        assert len(found) == 1
+        assert issubclass(found[0].category, UserWarning)
+        assert found[0].filename == geography_menu_factory.__code__.co_filename
+        assert menu.individual_region is None
+        pandas.testing.assert_frame_equal(
+            menu.damage_function_points,
+            reference.damage_function_points,
+            check_exact=True,
+        )
+        xr.testing.assert_identical(
+            menu.global_consumption, reference.global_consumption
+        )
+
+    def test_ir_geography_emits_no_individual_region_warning(
+        self, geography_menu_factory
+    ):
+        with warnings.catch_warnings(record=True) as records:
+            warnings.simplefilter("always")
+            geography_menu_factory(geography="ir", individual_region=INDIVIDUAL_REGION)
+        assert not _dscim_warnings(records, "individual_region")
 
     def test_damages_dataset_differs_from_other_regions(self, geography_menu_factory):
         one = geography_menu_factory(
