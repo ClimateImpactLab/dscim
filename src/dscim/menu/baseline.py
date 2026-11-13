@@ -2,6 +2,7 @@ import xarray as xr
 from dscim.menu.main_recipe import MainRecipe
 import os
 
+
 class Baseline(MainRecipe):
     """Adding up option"""
 
@@ -18,50 +19,14 @@ class Baseline(MainRecipe):
         """Call global damages"""
         return self.adding_up_damages.to_dataframe("damages").reset_index()
 
-    def damages_calculation(self, geography) -> xr.Dataset:
-        """Aggregate damages to country level
-
-        Returns
-        --------
-            pd.DataFrame
-        """
-
-        self.logger.info("Calculating damages")
-        if self.individual_region:
-            dams_collapse = self.calculated_damages * self.collapsed_pop.sel(region = self.individual_region, drop=True)
-        else:
-            dams_collapse = self.calculated_damages * self.collapsed_pop
-
-        if geography == "ir":
-            pass
-        elif geography == "country":
-            territories = []
-            mapping_dict = {}
-            for ii, row in self.countries_mapping.iterrows():
-                mapping_dict[row["ISO"]] = row["MatchedISO"]
-                if row["MatchedISO"] == "nan":
-                    mapping_dict[row["ISO"]] = "nopop"
-
-            for region in dams_collapse.region.values:
-                    territories.append(mapping_dict[region[:3]])
-
-            dams_collapse = (dams_collapse
-                             .assign_coords({'region':territories})
-                             .groupby('region')
-                             .sum())
-        elif geography == "globe":
-            dams_collapse = dams_collapse.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')
-
-        if "gwr" in self.discounting_type:
-            dams_collapse = dams_collapse.assign(
-                ssp=str(list(self.gdp.ssp.values)),
-                model=str(list(self.gdp.model.values)),
-            )
-
-        return dams_collapse.to_dataset(name = 'damages')
-
     @property
     def calculated_damages(self):
+        """IR-level adding-up damages (no_cc minus cc means), for the regional path.
+
+        Neither population-weighted nor summed over region: ``damages_dataset``
+        applies ``collapsed_pop`` and the geography aggregation itself. The
+        legacy path keeps using ``adding_up_damages`` (which does both).
+        """
         mean_cc = f"{self.ce_path}/adding_up_cc_eta{self.eta}.zarr"
         mean_no_cc = f"{self.ce_path}/adding_up_no_cc_eta{self.eta}.zarr"
 
@@ -69,15 +34,13 @@ class Baseline(MainRecipe):
             self.logger.info(
                 f"Adding up aggregated damages found at {mean_cc}, {mean_no_cc}. These are being loaded..."
             )
-            damages = (
-                xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc
-            )
+            damages = xr.open_zarr(mean_no_cc).no_cc - xr.open_zarr(mean_cc).cc
         else:
             raise NotImplementedError(
                 f"Adding up reduced damages not found: {mean_no_cc}, {mean_cc}. Please reduce damages for for `adding_up`."
             )
         if self.individual_region:
-            damages = damages.sel(region=self.individual_region,drop=True)
+            damages = damages.sel(region=self.individual_region, drop=True)
         return self.cut(damages)
 
     def ce_cc_calculation(self):
@@ -92,10 +55,10 @@ class Baseline(MainRecipe):
     def global_consumption_calculation(self, disc_type):
         """Calculate global consumption"""
 
-        if self.geography == 'ir':
+        if self.geography == "ir":
             gdp = self.gdp
-        elif self.geography == 'country':
-            #group gdp by some grouping and collapse
+        elif self.geography == "country":
+            # group gdp by some grouping and collapse
             gdp = self.gdp.sum(dim=["region"])
         else:
             gdp = self.gdp.sum(dim=["region"])
@@ -112,6 +75,7 @@ class Baseline(MainRecipe):
         global_cons_no_cc.name = f"global_cons_{disc_type}"
 
         return global_cons_no_cc
+
 
 #         def global_consumption_calculation(self, disc_type):
 #         """Calculate global consumption

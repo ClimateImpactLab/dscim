@@ -10,6 +10,31 @@ class EquityRecipe(MainRecipe):
 
     NAME = "equity"
     __doc__ = MainRecipe.__doc__
+    # The equity certainty equivalent collapses the region dimension, so only
+    # the globe geography is meaningful. MainRecipe.__init__ rejects the rest.
+    SUPPORTED_GEOGRAPHIES = ("globe",)
+
+    def damages_dataset(self, geography="globe") -> xr.Dataset:
+        """Equity damages as xarray (the ``damages_dataset`` counterpart of
+        ``global_damages_calculation``). Only ``"globe"`` is supported: the
+        equity CE has already aggregated over regions.
+        """
+        if geography != "globe":
+            raise NotImplementedError(
+                "EquityRecipe aggregates over regions inside the certainty "
+                f"equivalent; geography must be 'globe', got {geography!r}."
+            )
+
+        dams_collapse = self.calculated_damages * self.collapsed_pop.sum(dim="region")
+        ds = dams_collapse.expand_dims({"region": ["globe"]}).to_dataset(name="damages")
+
+        if "gwr" in self.discounting_type:
+            ds = ds.assign_coords(
+                ssp=str(list(self.gdp.ssp.values)),
+                model=str(list(self.gdp.model.values)),
+            )
+
+        return ds
 
     def ce_cc_calculation(self) -> xr.DataArray:
         if "gwr" in self.discounting_type:

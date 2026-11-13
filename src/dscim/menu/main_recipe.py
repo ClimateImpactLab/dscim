@@ -9,7 +9,11 @@ import xarray as xr
 from dscim.descriptors import cachedproperty
 from itertools import product
 from dscim.menu.decorators import save
-from dscim.menu.simple_storage import StackedDamages, normalize_geography
+from dscim.menu.simple_storage import (
+    GEOGRAPHIES,
+    StackedDamages,
+    normalize_geography,
+)
 from dscim.utils.utils import (
     model_outputs,
     compute_damages,
@@ -58,6 +62,9 @@ class MainRecipe(StackedDamages, ABC):
     """
 
     NAME = ""
+    # Geographies a recipe can compute at. EquityRecipe narrows this to
+    # ("globe",) because its certainty equivalent collapses the region dim.
+    SUPPORTED_GEOGRAPHIES = GEOGRAPHIES
     CONST_DISC_RATES = [0.01, 0.015, 0.02, 0.025, 0.03, 0.05]
     DISCOUNT_TYPES = [
         "constant",
@@ -228,7 +235,6 @@ class MainRecipe(StackedDamages, ABC):
             kwargs=kwargs,
         )
 
-
         self.rho = rho
         self.eta = eta
         self.fit_type = fit_type
@@ -261,6 +267,12 @@ class MainRecipe(StackedDamages, ABC):
         self.kwargs = kwargs
 
         self.logger = logging.getLogger(__name__)
+
+        if self.geography not in self.SUPPORTED_GEOGRAPHIES:
+            raise NotImplementedError(
+                f"{type(self).__name__} supports geography in "
+                f"{list(self.SUPPORTED_GEOGRAPHIES)}, got {self.geography!r}."
+            )
 
         if self.quantreg_quantiles is not None:
             assert len(self.quantreg_quantiles) == len(
@@ -471,7 +483,7 @@ class MainRecipe(StackedDamages, ABC):
         return meta
 
     @cachedproperty
-    def collapsed_pop(self, geography = None):
+    def collapsed_pop(self, geography=None):
         """Collapse population according to discount type."""
         if (self.discounting_type == "constant") or ("ramsey" in self.discounting_type):
             pop = self.pop
@@ -491,16 +503,115 @@ class MainRecipe(StackedDamages, ABC):
                     mapping_dict[row["ISO"]] = "nopop"
 
             for region in dams_collapse.region.values:
-                    territories.append(mapping_dict(region[:3]))
+                territories.append(mapping_dict(region[:3]))
 
-            pop = (pop
-                             .assign_coords({'region':territories})
-                             .groupby('region')
-                             .sum())
+            pop = pop.assign_coords({"region": territories}).groupby("region").sum()
         elif geography == "globe":
-            pop = pop.sum(dim="region").assign_coords({'region':'globe'}).expand_dims('region')
+            pop = (
+                pop.sum(dim="region")
+                .assign_coords({"region": "globe"})
+                .expand_dims("region")
+            )
 
         return pop
+
+    def _aggregate_by_geography(
+        self, data: xr.DataArray, geography: str
+    ) -> xr.DataArray:
+        """Aggregate a region-indexed array to ``geography``.
+
+        Single implementation shared by every recipe.
+
+        Parameters
+        ----------
+        data : xr.DataArray
+            Array with a ``region`` dimension.
+        geography : str
+            One of ``"ir"``, ``"country"``, ``"globe"`` (already normalised).
+
+        Returns
+        -------
+        xr.DataArray
+            ``data`` unchanged for ``"ir"``; summed to countries for
+            ``"country"``; summed to a single ``region="globe"`` for ``"globe"``.
+        """
+        if geography == "ir":
+            return data
+
+        elif geography == "country":
+            if getattr(self, "countries_mapping", None) is None:
+                raise ValueError(
+                    "geography='country' requires a country mapping; "
+                    "pass `country_ISOs` (path to the ISO mapping csv)."
+                )
+            return self._aggregate_to_country(data)
+
+        elif geography == "globe":
+            return (
+                data.sum(dim="region")
+                .assign_coords({"region": "globe"})
+                .expand_dims("region")
+            )
+
+        raise ValueError(
+            f"Unknown geography {geography!r}. Valid options: {list(GEOGRAPHIES)}."
+        )
+
+    def _aggregate_to_country(self, data: xr.DataArray) -> xr.DataArray:
+        """Sum impact regions to countries using ``self.countries_mapping``.
+
+        The mapping's ``ISO`` column is matched against the first three
+        characters of each region code. Regions whose ``MatchedISO`` is missing
+        are pooled under ``"nopop"``; regions with no mapping row under
+        ``"unknown"``.
+        """
+        mapping = {
+            row["ISO"]: row["MatchedISO"]
+            if str(row["MatchedISO"]) != "nan"
+            else "nopop"
+            for _, row in self.countries_mapping.iterrows()
+        }
+        territories = [mapping.get(str(r)[:3], "unknown") for r in data.region.values]
+        return data.assign_coords({"region": territories}).groupby("region").sum()
+
+    def damages_dataset(self, geography="globe") -> xr.Dataset:
+        """Population-weighted damages aggregated to ``geography``, as xarray.
+
+        Regional-path counterpart of ``global_damages_calculation`` (which
+        stays pandas and is what ``geography="globe"`` uses). One
+        implementation for Baseline and RiskAversionRecipe; EquityRecipe
+        overrides it because its damages have no ``region`` dimension.
+
+        Parameters
+        ----------
+        geography : str, optional
+            One of ``"ir"``, ``"country"``, ``"globe"``.
+
+        Returns
+        -------
+        xr.Dataset
+            Variable ``damages`` with a ``region`` dimension (absent when
+            ``individual_region`` is set).
+        """
+        damages = self.calculated_damages
+        pop = self.collapsed_pop
+
+        if self.individual_region is not None:
+            pop = pop.sel(region=self.individual_region, drop=True)
+            if "region" in damages.dims:
+                damages = damages.sel(region=self.individual_region, drop=True)
+
+        ds = self._aggregate_by_geography(damages * pop, geography).to_dataset(
+            name="damages"
+        )
+
+        if "gwr" in self.discounting_type:
+            ds = ds.assign_coords(
+                ssp=str(list(self.gdp.ssp.values)),
+                model=str(list(self.gdp.model.values)),
+            )
+
+        return ds
 
     @abstractmethod
     def ce_cc_calculation(self):
@@ -530,37 +641,93 @@ class MainRecipe(StackedDamages, ABC):
 
     @cachedproperty
     @save(name="damage_function_points")
-    def damage_function_points(self) -> pd.DataFrame:
-        """Global damages by RCP/GCM or SLR
+    def damage_function_points(self):
+        """Damages by RCP/GCM or SLR, merged with the climate variables.
+
+        Two implementations behind one name. With ``geography="globe"``
+        (the default) this is the pandas implementation of dscim <= 0.7.0,
+        unchanged, and returns a ``pd.DataFrame``. Any other geography uses
+        the xarray implementation and returns an ``xr.Dataset`` with a
+        ``region`` dimension.
 
         Returns
         --------
-            pd.DataFrame
+            pd.DataFrame when ``geography == "globe"``, otherwise xr.Dataset
         """
-        df = self.damages_calculation(geography = self.geography)
+        if self.geography != "globe":
+            return self._damage_function_points_xarray()
+        return self._damage_function_points_pandas()
 
-        climate_vars = []
-        if "slr" in df.coords:
-            climate_vars.append(self.climate.gmsl.set_index(['slr','year']).to_xarray())
-        if "gcm" in df.coords:
-            climate_vars.append(self.climate.gmst.set_index(['gcm','rcp','year']).to_xarray())
+    def _damage_function_points_pandas(self) -> pd.DataFrame:
+        """Legacy implementation (``geography="globe"``), as in dscim <= 0.7.0."""
+        df = self.global_damages_calculation()
 
-        climate_ds = xr.merge(climate_vars)
+        if "slr" in df.columns:
+            df = df.merge(self.climate.gmsl, on=["year", "slr"])
+        if "gcm" in df.columns:
+            df = df.merge(self.climate.gmst, on=["year", "gcm", "rcp"])
+
         # removing illegal combinations from estimation
-        if any([i in df.ssp.values for i in ["SSP1", "SSP5"]]):
+        if any([i in df.ssp.unique() for i in ["SSP1", "SSP5"]]):
             self.logger.info("Dropping illegal model combinations.")
-            xr.where(((df.ssp == "SSP1") & (df.rcp == "rcp85"))
-                | ((df.ssp == "SSP5") & (df.rcp == "rcp45")),np.nan,df)
+            for var in [i for i in df.columns if i in ["anomaly", "gmsl"]]:
+                df.loc[
+                    ((df.ssp == "SSP1") & (df.rcp == "rcp85"))
+                    | ((df.ssp == "SSP5") & (df.rcp == "rcp45")),
+                    var,
+                ] = np.nan
 
         # agriculture lacks ACCESS0-1/rcp85 combo
         if "agriculture" in self.sector:
             self.logger.info("Dropping illegal model combinations for agriculture.")
-            xr.where((climate_ds.gcm == "ACCESS1-0") & (climate_ds.rcp == "rcp85"), np.nan, climate_ds)
-
-        df = xr.merge([df, climate_ds]).sel(year = df.year)
+            df.loc[(df.gcm == "ACCESS1-0") & (df.rcp == "rcp85"), "anomaly"] = np.nan
 
         return df
 
+    def _damage_function_points_xarray(self) -> xr.Dataset:
+        """Regional implementation (``geography`` in ``"ir"``, ``"country"``).
+
+        Damages come from the shared ``damages_dataset`` and are merged with
+        the climate variables, keeping the ``region`` dimension.
+        """
+        ds = self.damages_dataset(geography=self.geography)
+
+        climate_vars = []
+        if "slr" in ds.coords:
+            climate_vars.append(
+                self.climate.gmsl.set_index(["slr", "year"]).to_xarray()
+            )
+        if "gcm" in ds.coords:
+            climate_vars.append(
+                self.climate.gmst.set_index(["gcm", "rcp", "year"]).to_xarray()
+            )
+
+        climate_ds = xr.merge(climate_vars)
+
+        # Kept exactly as PR #450 wrote it, for now: the two xr.where() results
+        # below are discarded, so illegal SSP/RCP and agriculture ACCESS1-0/rcp85
+        # combinations are NOT masked on this path. A later commit masks them
+        # with _filter_illegal_combinations_xr.
+        # removing illegal combinations from estimation
+        if any([i in ds.ssp.values for i in ["SSP1", "SSP5"]]):
+            self.logger.info("Dropping illegal model combinations.")
+            xr.where(
+                ((ds.ssp == "SSP1") & (ds.rcp == "rcp85"))
+                | ((ds.ssp == "SSP5") & (ds.rcp == "rcp45")),
+                np.nan,
+                ds,
+            )
+
+        # agriculture lacks ACCESS0-1/rcp85 combo
+        if "agriculture" in self.sector:
+            self.logger.info("Dropping illegal model combinations for agriculture.")
+            xr.where(
+                (climate_ds.gcm == "ACCESS1-0") & (climate_ds.rcp == "rcp85"),
+                np.nan,
+                climate_ds,
+            )
+
+        return xr.merge([ds, climate_ds]).sel(year=ds.year)
 
     def damage_function_calculation(self, damage_function_points, global_consumption):
         """The damage function model fit may be : (1) ssp specific, (2) ssp-model specific, (3) unique across ssp-model.
@@ -844,38 +1011,23 @@ class MainRecipe(StackedDamages, ABC):
 
     def global_consumption_per_capita(self, disc_type):
         """Global consumption per capita
-    
+
         Returns
         -------
             xr.DataArray
         """
 
         # Calculate global consumption per capita
-        array_pc = self.global_consumption_calculation(
-            disc_type
-        )
-
-        if self.geography == "ir":
-            array_pc = array_pc / self.collapsed_pop
-        elif self.geography == "country":
-            territories = []
-            mapping_dict = {}
-            for ii, row in self.countries_mapping.iterrows():
-                mapping_dict[row["ISO"]] = row["MatchedISO"]
-                if row["MatchedISO"] == "nan":
-                    mapping_dict[row["ISO"]] = "nopop"
-
-            for region in array_pc.region.values:
-                    territories.append(mapping_dict[region[:3]])
-
-            pop = (self.collapsed_pop
-                       .assign_coords({'region':territories})
-                       .groupby('region')
-                       .sum())
-
-            array_pc = (array_pc / pop)
-        elif self.geography == "globe":
-            array_pc = (array_pc / self.collapsed_pop.sum("region")).assign_coords({'region':'globe'}).expand_dims('region')
+        if self.geography == "globe":
+            # Legacy path: global population; no region dimension.
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self.collapsed_pop.sum("region")
+        else:
+            # Regional path: divide by population at the same geography.
+            array_pc = self.global_consumption_calculation(
+                disc_type
+            ) / self._aggregate_by_geography(self.collapsed_pop, self.geography)
 
         if self.NAME == "equity":
             # equity recipe's growth is capped to
@@ -913,7 +1065,9 @@ class MainRecipe(StackedDamages, ABC):
         if 2300 in self.gdp.year:
             self.logger.debug("Global consumption found up to 2300.")
             if individual_region is not None:
-                global_cons = self.gdp.sel(region = individual_region,drop=True).rename("global_consumption")
+                global_cons = self.gdp.sel(region=individual_region, drop=True).rename(
+                    "global_consumption"
+                )
             else:
                 global_cons = self.gdp.sum("region").rename("global_consumption")
         else:
@@ -921,30 +1075,25 @@ class MainRecipe(StackedDamages, ABC):
 
             # holding population constant
             # from 2100 to 2300 with 2099 values
-            if individual_region is None:
-                pop = self.collapsed_pop
-                if self.geography == "ir":
-                    pass
-                elif self.geography == "country":
-                    pass
-                elif self.geography == "globe":
-                    pop = pop.sum("region")
+            if individual_region is not None:
+                pop = self.collapsed_pop.sel(region=individual_region, drop=True)
+            elif self.geography == "globe":
+                # Legacy path: global population.
+                pop = self.collapsed_pop.sum("region")
             else:
-                pop = self.collapsed_pop.sel(region = individual_region, drop=True)
+                # Regional path: population at the same geography as
+                # global_consumption_per_capita.
+                pop = self._aggregate_by_geography(self.collapsed_pop, self.geography)
             pop = pop.reindex(
                 year=range(pop.year.min().values, self.ext_end_year + 1),
                 method="ffill",
             )
 
             # Calculate global consumption back by
-            if individual_region is None:
-                global_cons = (
-                    self.global_consumption_per_capita(self.discounting_type) * pop
-                )
-            else:
-                global_cons = (
-                    self.global_consumption_per_capita(self.discounting_type).sel(region = individual_region,drop=True) * pop
-                )
+            global_cons_pc = self.global_consumption_per_capita(self.discounting_type)
+            if individual_region is not None:
+                global_cons_pc = global_cons_pc.sel(region=individual_region, drop=True)
+            global_cons = global_cons_pc * pop
 
         # Add dimension
         # @TODO: remove this line altogether
@@ -1061,7 +1210,7 @@ class MainRecipe(StackedDamages, ABC):
         if individual_region is not None:
             damages = compute_damages(
                 fair_control,
-                betas=self.damage_function_coefficients.sel(region = individual_region),
+                betas=self.damage_function_coefficients.sel(region=individual_region),
                 formula=self.formula,
             )
         else:
@@ -1099,7 +1248,7 @@ class MainRecipe(StackedDamages, ABC):
         if individual_region is not None:
             damages = compute_damages(
                 fair_pulse,
-                betas=self.damage_function_coefficients.sel(region = individual_region),
+                betas=self.damage_function_coefficients.sel(region=individual_region),
                 formula=self.formula,
             )
         else:
