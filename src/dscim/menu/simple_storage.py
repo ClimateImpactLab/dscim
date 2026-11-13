@@ -1,11 +1,47 @@
 import logging
 import os
+import warnings
 import xarray as xr
 import numpy as np
 import pandas as pd
 from dscim.descriptors import cachedproperty
 
 logger = logging.getLogger(__name__)
+
+GEOGRAPHIES = ("globe", "ir", "country")
+
+
+def normalize_geography(geography):
+    """Return the canonical spelling of a ``geography`` argument.
+
+    ``None`` means ``"globe"``, which is the behaviour dscim had before the
+    parameter existed. ``"global"`` is accepted as a deprecated alias of
+    ``"globe"``. Anything else must be one of ``GEOGRAPHIES``.
+
+    Parameters
+    ----------
+    geography : str or None
+
+    Returns
+    -------
+    str
+        One of ``"globe"``, ``"ir"``, ``"country"``.
+    """
+    if geography is None:
+        return "globe"
+    if geography == "global":
+        warnings.warn(
+            "geography='global' is deprecated and will be removed in a future "
+            "release; use geography='globe'.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        return "globe"
+    if geography not in GEOGRAPHIES:
+        raise ValueError(
+            f"Unknown geography {geography!r}. Valid options: {list(GEOGRAPHIES)}."
+        )
+    return geography
 
 
 class Climate:
@@ -309,8 +345,7 @@ class StackedDamages:
         geography=None,
         **kwargs,
     ):
-        if geography is None:
-            geography = "global"
+        geography = normalize_geography(geography)
 
         self.sector_path = sector_path
         self.save_path = save_path
@@ -386,7 +421,7 @@ class StackedDamages:
                 .groupby("region")
                 .sum()
             )
-        elif self.geography == "global":
+        elif self.geography == "globe":
             pop_collapse = (
                 pop_collapse.sum(dim="region")
                 .assign_coords({"region": "globe"})

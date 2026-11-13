@@ -9,7 +9,7 @@ import xarray as xr
 from dscim.descriptors import cachedproperty
 from itertools import product
 from dscim.menu.decorators import save
-from dscim.menu.simple_storage import StackedDamages
+from dscim.menu.simple_storage import StackedDamages, normalize_geography
 from dscim.utils.utils import (
     model_outputs,
     compute_damages,
@@ -45,6 +45,16 @@ class MainRecipe(StackedDamages, ABC):
         Pure rate of time preference parameter
     fair_dims : list of str or None, optional
         List of dimensions over which the FAIR CE/mean/median options should be collapsed. Default value is ["simulation"], but lists such as ["simulation", "rcp", "ssp"] can be passed. Note: If dimensions other than 'simulation' are passed, 'median_params' fair aggregation cannot be passed.
+    geography : str or None, optional
+        Spatial resolution at which damage function points and consumption are
+        computed. ``"globe"`` (the default, also what ``None`` means) keeps the
+        behaviour dscim had before this parameter existed: damages are summed
+        over regions and ``damage_function_points`` is a ``pd.DataFrame``.
+        ``"ir"`` keeps impact regions and ``"country"`` aggregates to countries;
+        both return ``damage_function_points`` as an ``xr.Dataset`` with a
+        ``region`` dimension. ``"global"`` is a deprecated alias of ``"globe"``.
+    individual_region : str or None, optional
+        Impact region to restrict the calculation to when ``geography="ir"``.
     """
 
     NAME = ""
@@ -200,6 +210,10 @@ class MainRecipe(StackedDamages, ABC):
         if "country_ISOs" in kwargs:
             self.countries_mapping = pd.read_csv(kwargs["country_ISOs"])
             self.countries = self.countries_mapping.MatchedISO.dropna().unique()
+
+        # Normalise geography once, here, and hand the canonical value to
+        # StackedDamages so every branch below tests the same spelling.
+        geography = normalize_geography(geography)
 
         super().__init__(
             sector_path=sector_path,
