@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+This release integrates two long-running branches into `main`: `reduce_etas` ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert)) and `generalize_df_fit` ([PR #450](https://github.com/ClimateImpactLab/dscim/pull/450) / [PR #460](https://github.com/ClimateImpactLab/dscim/pull/460), [@JMGilbert](https://github.com/JMGilbert)), with the geography aggregation and regression tests first written for the earlier harmonisation attempt ([PR #476](https://github.com/ClimateImpactLab/dscim/pull/476), [@C1587S](https://github.com/C1587S)). Both branches' commits are preserved with their original authors. Default behaviour is unchanged from 0.7.0 except where a warning says so: with the default `geography="globe"` every menu output is identical to `main`'s, verified on the test fixtures for all three recipes and all seven discounting types.
+
+### Added
+
+- Per-region damage functions. `MainRecipe` (hence `Baseline`, `RiskAversionRecipe`, `EquityRecipe`) accepts `geography`, one of `"globe"` (default), `"ir"` (impact region) or `"country"`, and `individual_region`. With `"ir"` or `"country"`, `damage_function_points` returns an `xr.Dataset` with a `region` dimension instead of a `pd.DataFrame`, and `global_consumption` / `global_consumption_per_capita` are computed at that geography; `individual_region` restricts the adding-up calculation and the FAIR consumption paths to one impact region. `Baseline.calculated_damages` (unweighted IR-level adding-up damages) was added for this path. ([PR #450](https://github.com/ClimateImpactLab/dscim/pull/450), [@JMGilbert](https://github.com/JMGilbert); normalisation and the dual code path in the integration branch, [@C1587S](https://github.com/C1587S))
+- `country_mapping_path`: path to a csv with columns `ISO`, `MatchedISO` mapping impact-region ISO prefixes to countries, loaded into `self.country_mapping`; required for `geography="country"`. ([PR #476](https://github.com/ClimateImpactLab/dscim/pull/476), [@C1587S](https://github.com/C1587S); the original keyword was `country_ISOs`, [PR #450](https://github.com/ClimateImpactLab/dscim/pull/450), [@JMGilbert](https://github.com/JMGilbert))
+- `MainRecipe._aggregate_by_geography`, `_aggregate_to_country` and `damages_dataset`: one aggregation implementation shared by all recipes, replacing the per-recipe copies in `generalize_df_fit`. `EquityRecipe.damages_dataset` supports `"globe"` only, because the equity certainty equivalent already collapses the region dimension. ([PR #476](https://github.com/ClimateImpactLab/dscim/pull/476), [@C1587S](https://github.com/C1587S))
+- `normalize_geography()`, `GEOGRAPHIES`, `resolve_country_mapping_path()` and `adding_up_store()` in `dscim.menu.simple_storage`. ([@C1587S](https://github.com/C1587S))
+- `tests/test_geography.py`: regression tests for geography normalisation, the pandas/xarray dual path, illegal-combination masking, country aggregation, legacy adding-up stores, `individual_region`, and for every deprecation or legacy warning firing exactly where intended. ([PR #476](https://github.com/ClimateImpactLab/dscim/pull/476), [@C1587S](https://github.com/C1587S))
+
 ### Changed
 
 - Standardized eta handling across all damage reduction recipes. Previously, the `adding_up` recipe did not use eta parameters while `risk_aversion` did. Now all recipes require and use eta values consistently. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
@@ -16,15 +26,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored mortality damage preprocessing to support eta-aware damage loading. The `prep_mortality_damages()` function now accepts multiple eta values and merges damage data across the eta dimension. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
 - Added support for mortality version 9 with VLY (Value of a Life Year) valuation using EPA population-averaged scaling. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
 - Updated chunking strategy in `reduce_damages()` to handle eta as a mapped dimension alongside batch operations, improving consistency in batch dimension handling for both standard and quantile regression workflows. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- `Climate.gmsl` returns every variable of the GMSL store (`xr.open_zarr(path).to_dataframe()`) rather than only the `gmsl` variable. For the production coastal GMSL store, which holds only `gmsl`, this is a no-op. ([PR #450](https://github.com/ClimateImpactLab/dscim/pull/450), [@JMGilbert](https://github.com/JMGilbert))
+- `MainRecipe.__init__` normalises `geography` once (`None` means `"globe"`) and validates it against `{"globe", "ir", "country"}`; `StackedDamages` does the same, so the two classes no longer disagree on the default spelling. `EquityRecipe` raises `NotImplementedError` at construction for `"ir"` and `"country"`. ([@C1587S](https://github.com/C1587S))
+- `reduce_damages(recipe="adding_up", eta=None)` writes the pre-0.8 store name `adding_up_{reduction}.zarr` (not `..._etaNone.zarr`) and emits a `UserWarning` naming the legacy and eta-suffixed names. `StackedDamages.adding_up_damages` and `Baseline.calculated_damages` look for `adding_up_{reduction}_eta{eta}.zarr` first and fall back to the legacy store with a `UserWarning` naming both paths. Stores written by dscim <= 0.7.0 therefore stay readable. Note the residual behaviour this preserves: a run with, say, `eta=2.0` whose eta-suffixed adding-up stores are missing falls back to eta-less adding-up damages, exactly as 0.7.0 did; the warning makes it visible. ([@C1587S](https://github.com/C1587S))
+
+### Deprecated
+
+- `geography="global"`: use `geography="globe"`. Still accepted; emits a `DeprecationWarning`. ([@C1587S](https://github.com/C1587S))
+- `country_ISOs`: use `country_mapping_path`. Still accepted; emits a `DeprecationWarning`; both populate `self.country_mapping`. ([@C1587S](https://github.com/C1587S))
 
 ### Fixed
 
 - Pinned `scipy=1.15.3` to resolve `statsmodels==0.14.4` import issues. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
 - Updated all unit tests to work with eta-aware damage processing, including test fixtures for mortality damages and adding-up calculations. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Fixed the extrapolation of per-region consumption and the regional SCC calculation, and the double counting of population in the per-region damage function points, on the `generalize_df_fit` branch itself. ([PR #450](https://github.com/ClimateImpactLab/dscim/pull/450), [@JMGilbert](https://github.com/JMGilbert))
+- On the regional (`xr.Dataset`) path, the illegal SSP/RCP combinations (SSP1/rcp85, SSP5/rcp45) and, for agriculture sectors, ACCESS1-0/rcp85 are now masked before the damage function fit, as they always were on the global path; `generalize_df_fit` computed these masks but discarded the result. Runs restricted to SSP2-4 are unaffected. ([PR #476](https://github.com/ClimateImpactLab/dscim/pull/476), [@C1587S](https://github.com/C1587S))
+- Restored `preds` (the fitted damage function, saved as `damage_function_fit`), which `generalize_df_fit` had disabled in `modeler()` and `model_outputs()`. ([@C1587S](https://github.com/C1587S))
+- On the merged tree, `generalize_df_fit`'s `damage_function_points` returned xarray objects to pandas callers and left `EquityRecipe` without a `damages_calculation`; both are resolved by the dual path above. ([@C1587S](https://github.com/C1587S))
 
 ### Removed
 
 - Removed assertion preventing `adding_up` recipe from accepting eta arguments, as this recipe now processes damages with eta values like all other recipes. ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Removed the assertion that quantile regression is incompatible with the `risk_aversion` recipe (`reduce_damages(..., quantreg=True)` no longer raises for `recipe="risk_aversion"`). ([PR #417](https://github.com/ClimateImpactLab/dscim/pull/417), [@JMGilbert](https://github.com/JMGilbert))
+- Removed `utils.fit_project`, `StackedDamages.geography_collapsed_econ_vars` and the `geography` parameter of `MainRecipe.collapsed_pop`, all added by `generalize_df_fit` and never called; `collapsed_pop` is again the 0.7.0 method. ([@C1587S](https://github.com/C1587S))
+- Removed the `countries_mapping` and `countries` attributes introduced by `generalize_df_fit`; the mapping is `self.country_mapping`. ([@C1587S](https://github.com/C1587S))
+
+### Notes for users
+
+- `h5py` is not declared as a dependency; dscim reads netCDF through `h5netcdf`, which pulls `h5py` in under pip. Conda users must add `h5py` to their environment explicitly.
+- With `geography="globe"` (the default) outputs carry no `region` dimension, as in 0.7.0. Scripts written against `generalize_df_fit` that select `region="globe"` on `uncollapsed_discount_factors` must drop that selection.
 
 ## [0.7.0] - 2025-08-15
 
