@@ -10,7 +10,7 @@ on:
 jobs:
 
   codequality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.12"]
@@ -40,10 +40,18 @@ jobs:
           ruff check . --output-format=github
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.12"]
+    env:
+      # GitHub's hosted runners mix CPUs with and without AVX512. numpy 1.26 dispatches
+      # np.power to Intel SVML kernels on AVX512 hosts, and the certainty equivalent in
+      # dscim.utils.utils.c_equivalence amplifies that last-bit difference into a
+      # 1e-4 to 1e-2 relative change in damage_function_points for the equity and
+      # gwr risk-aversion recipes. Keep every host on the AVX2 path, which is the one
+      # the reference fixtures were generated with.
+      NPY_DISABLE_CPU_FEATURES: "AVX512F AVX512CD AVX512_KNL AVX512_KNM AVX512_SKX AVX512_CLX AVX512_CNL AVX512_ICL"
     defaults:
       run:
         shell: bash
