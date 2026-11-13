@@ -681,31 +681,35 @@ class MainRecipe(StackedDamages, ABC):
             )
 
         climate_ds = xr.merge(climate_vars)
+        ds = xr.merge([ds, climate_ds]).sel(year=ds.year)
 
-        # Kept exactly as PR #450 wrote it, for now: the two xr.where() results
-        # below are discarded, so illegal SSP/RCP and agriculture ACCESS1-0/rcp85
-        # combinations are NOT masked on this path. A later commit masks them
-        # with _filter_illegal_combinations_xr.
-        # removing illegal combinations from estimation
-        if any([i in ds.ssp.values for i in ["SSP1", "SSP5"]]):
+        return self._filter_illegal_combinations_xr(ds)
+
+    def _filter_illegal_combinations_xr(self, ds: xr.Dataset) -> xr.Dataset:
+        """Mask climate variables of SSP/RCP combinations that do not exist.
+
+        xarray counterpart of the ``.loc`` assignments in
+        ``_damage_function_points_pandas``: SSP1/rcp85 and SSP5/rcp45 get
+        NaN ``anomaly``/``gmsl``; agriculture sectors also NaN ``anomaly`` for
+        ACCESS1-0/rcp85. ``damages`` is never masked, as on the pandas path.
+        """
+        ssps = np.atleast_1d(ds.ssp.values) if "ssp" in ds.coords else []
+        if any(i in ssps for i in ["SSP1", "SSP5"]) and "rcp" in ds.coords:
             self.logger.info("Dropping illegal model combinations.")
-            xr.where(
-                ((ds.ssp == "SSP1") & (ds.rcp == "rcp85"))
-                | ((ds.ssp == "SSP5") & (ds.rcp == "rcp45")),
-                np.nan,
-                ds,
+            illegal = ((ds.ssp == "SSP1") & (ds.rcp == "rcp85")) | (
+                (ds.ssp == "SSP5") & (ds.rcp == "rcp45")
             )
+            for var in [i for i in ds.data_vars if i in ["anomaly", "gmsl"]]:
+                ds[var] = xr.where(illegal, np.nan, ds[var])
 
         # agriculture lacks ACCESS0-1/rcp85 combo
-        if "agriculture" in self.sector:
+        if "agriculture" in self.sector and "anomaly" in ds.data_vars:
             self.logger.info("Dropping illegal model combinations for agriculture.")
-            xr.where(
-                (climate_ds.gcm == "ACCESS1-0") & (climate_ds.rcp == "rcp85"),
-                np.nan,
-                climate_ds,
+            ds["anomaly"] = xr.where(
+                (ds.gcm == "ACCESS1-0") & (ds.rcp == "rcp85"), np.nan, ds["anomaly"]
             )
 
-        return xr.merge([ds, climate_ds]).sel(year=ds.year)
+        return ds
 
     def damage_function_calculation(self, damage_function_points, global_consumption):
         """The damage function model fit may be : (1) ssp specific, (2) ssp-model specific, (3) unique across ssp-model.
