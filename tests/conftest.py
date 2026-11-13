@@ -193,3 +193,140 @@ def save_ssprff_econ(tmp_path):
 
     ssp_econ.to_zarr(d / "integration-econ-bc39.zarr")
     rff_econ.to_netcdf(d / "rff_global_socioeconomics.nc4")
+
+
+# ---------------------------------------------------------------------------
+# Geography fixtures (tests/test_geography.py).
+# ---------------------------------------------------------------------------
+
+# Region subset shared by the geography tests. INDIVIDUAL_REGION is one of
+# them, so a single-region run has a counterpart inside the all-region run.
+GEOGRAPHY_REGIONS = [
+    "IND.21.317.1249",
+    "CAN.2.33.913",
+    "USA.14.608",
+    "EGY.11",
+    "SDN.4.11.50.164",
+    "NGA.25.510",
+    "SAU.7",
+    "RUS.16.430.430",
+    "SOM.2.5",
+]
+INDIVIDUAL_REGION = "USA.14.608"
+
+
+@pytest.fixture(scope="module")
+def menu_instance_with_geography(menu_class, discount_types, econ, climate):
+    """Menu instance built exactly like ``menu_instance`` with the geography
+    keywords spelled out at their defaults."""
+    datadir = os.path.join(os.path.dirname(__file__), "data")
+    yield menu_class(
+        sector_path=[{"dummy_sector": os.path.join(datadir, "damages")}],
+        save_path=None,
+        discrete_discounting=True,
+        econ_vars=econ,
+        climate_vars=climate,
+        fit_type="ols",
+        variable=[{"dummy_sector": "damages"}],
+        sector="dummy_sector",
+        discounting_type=discount_types,
+        ext_method="global_c_ratio",
+        save_files=[
+            "damage_function_points",
+            "global_consumption",
+            "damage_function_coefficients",
+            "damage_function_fit",
+        ],
+        ce_path=os.path.join(datadir, "CEs"),
+        subset_dict={"ssp": ["SSP2", "SSP3", "SSP4"], "region": GEOGRAPHY_REGIONS},
+        formula="damages ~ -1 + anomaly + np.power(anomaly, 2)",
+        extrap_formula=None,
+        fair_aggregation=["median_params", "ce", "mean"],
+        weitzman_parameter=[0.1],
+        geography="globe",
+        country_mapping_path=None,
+        individual_region=None,
+    )
+
+
+@pytest.fixture(scope="module")
+def geography_menu_factory(econ, climate):
+    """Build a menu with the standard test configuration and any overrides.
+
+    ``all_ssps=True`` drops the SSP subset so SSP1 and SSP5 are present, which
+    is what exercises the illegal-combination masking.
+    """
+    datadir = os.path.join(os.path.dirname(__file__), "data")
+
+    def _build(
+        menu_class=Baseline,
+        discounting_type="euler_ramsey",
+        all_ssps=False,
+        ce_path=None,
+        **overrides,
+    ):
+        subset = {"region": GEOGRAPHY_REGIONS}
+        if not all_ssps:
+            subset["ssp"] = ["SSP2", "SSP3", "SSP4"]
+        kwargs = dict(
+            sector_path=[{"dummy_sector": os.path.join(datadir, "damages")}],
+            save_path=None,
+            discrete_discounting=True,
+            econ_vars=econ,
+            climate_vars=climate,
+            fit_type="ols",
+            variable=[{"dummy_sector": "damages"}],
+            sector="dummy_sector",
+            discounting_type=discounting_type,
+            ext_method="global_c_ratio",
+            save_files=[],
+            ce_path=ce_path or os.path.join(datadir, "CEs"),
+            subset_dict=subset,
+            formula="damages ~ -1 + anomaly + np.power(anomaly, 2)",
+            extrap_formula=None,
+            fair_aggregation=["median_params", "ce", "mean"],
+            weitzman_parameter=[0.1],
+        )
+        kwargs.update(overrides)
+        return menu_class(**kwargs)
+
+    return _build
+
+
+@pytest.fixture(scope="module")
+def country_mapping_csv(tmp_path_factory):
+    """ISO -> MatchedISO csv for GEOGRAPHY_REGIONS; SOM has no MatchedISO so it
+    lands in the "nopop" bucket."""
+    path = tmp_path_factory.mktemp("country_mapping") / "matched_CIL_ISO.csv"
+    isos = ["IND", "CAN", "USA", "EGY", "SDN", "NGA", "SAU", "RUS", "SOM"]
+    pd.DataFrame(
+        {"ISO": isos, "MatchedISO": isos[:-1] + [np.nan]},
+    ).to_csv(path, index=False)
+    return str(path)
+
+
+@pytest.fixture(scope="module")
+def legacy_ce_paths(tmp_path_factory):
+    """Three ce_path directories built from tests/data/CEs:
+    ``legacy`` has only the unsuffixed adding_up stores (dscim <= 0.7.0 naming),
+    ``both`` has the unsuffixed and the eta-suffixed stores, ``empty`` has
+    neither."""
+    import shutil
+
+    src = os.path.join(os.path.dirname(__file__), "data", "CEs")
+    eta = 1.421158116
+    root = tmp_path_factory.mktemp("adding_up_stores")
+    legacy, both, empty = root / "legacy", root / "both", root / "empty"
+    for d in (legacy, both, empty):
+        d.mkdir()
+    for red in ("cc", "no_cc"):
+        suffixed = f"adding_up_{red}_eta{eta}.zarr"
+        shutil.copytree(os.path.join(src, suffixed), legacy / f"adding_up_{red}.zarr")
+        shutil.copytree(os.path.join(src, suffixed), both / f"adding_up_{red}.zarr")
+        shutil.copytree(os.path.join(src, suffixed), both / suffixed)
+    return {
+        "suffixed": src,
+        "legacy": str(legacy),
+        "both": str(both),
+        "empty": str(empty),
+    }
