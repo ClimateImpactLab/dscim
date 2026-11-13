@@ -343,14 +343,33 @@ def test_reduce_damages(tmp_path, recipe, eta):
         dummy_soecioeconomics_file, consolidated=True, mode="w"
     )
 
-    reduce_damages(
-        recipe,
-        "cc",
-        eta,
-        "dummy_sector1",
-        str(config_in),
-        str(dummy_soecioeconomics_file),
-    )
+    if eta is None:
+        # adding_up with eta=None keeps the legacy, unsuffixed store name
+        # (dscim <= 0.7.0) and warns, instead of writing "_etaNone".
+        with pytest.warns(UserWarning, match="legacy store"):
+            reduce_damages(
+                recipe,
+                "cc",
+                eta,
+                "dummy_sector1",
+                str(config_in),
+                str(dummy_soecioeconomics_file),
+            )
+        damages_reduced_actual_path = (
+            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc.zarr"
+        )
+    else:
+        reduce_damages(
+            recipe,
+            "cc",
+            eta,
+            "dummy_sector1",
+            str(config_in),
+            str(dummy_soecioeconomics_file),
+        )
+        damages_reduced_actual_path = (
+            f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
+        )
 
     damages_reduced_out_expected = (
         xr.Dataset(
@@ -379,10 +398,6 @@ def test_reduce_damages(tmp_path, recipe, eta):
             }
         )
         + 38.39265060424805  # Since the dummy data gets set to less than the bottom code, set the expected output equal to the bottom code
-    )
-
-    damages_reduced_actual_path = (
-        f"{reduced_damages_out}/dummy_sector1/{recipe}_cc_eta{eta}.zarr"
     )
 
     xr.testing.assert_equal(

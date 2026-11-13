@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import warnings
 
 USER = os.getenv("USER")
 import dask.array as da
@@ -165,8 +166,22 @@ def reduce_damages(
     out.attrs["filepath"] = str(damages)
 
     if recipe == "adding_up":
+        if eta is None:
+            # Keep the dscim <= 0.7.0 store name instead of writing "_etaNone",
+            # and say so. Readers fall back to this name with a warning.
+            store = f"{outpath}/{recipe}_{reduction}.zarr"
+            warnings.warn(
+                f"reduce_damages(recipe='adding_up', eta=None) writes the legacy "
+                f"store {store}. Pass eta explicitly to write "
+                f"{outpath}/{recipe}_{reduction}_eta<eta>.zarr; readers look for "
+                "the eta-suffixed store first and fall back to the legacy one "
+                "with a warning.",
+                stacklevel=2,
+            )
+        else:
+            store = f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr"
         out.to_zarr(
-            f"{outpath}/{recipe}_{reduction}_eta{eta}.zarr",
+            store,
             consolidated=True,
             mode="w",
         )

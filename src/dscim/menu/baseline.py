@@ -1,5 +1,6 @@
 import xarray as xr
 from dscim.menu.main_recipe import MainRecipe
+from dscim.menu.simple_storage import adding_up_store
 import os
 
 
@@ -27,8 +28,8 @@ class Baseline(MainRecipe):
         applies ``collapsed_pop`` and the geography aggregation itself. The
         legacy path keeps using ``adding_up_damages`` (which does both).
         """
-        mean_cc = f"{self.ce_path}/adding_up_cc_eta{self.eta}.zarr"
-        mean_no_cc = f"{self.ce_path}/adding_up_no_cc_eta{self.eta}.zarr"
+        mean_cc = adding_up_store(self.ce_path, "cc", self.eta)
+        mean_no_cc = adding_up_store(self.ce_path, "no_cc", self.eta)
 
         if os.path.exists(mean_cc) and os.path.exists(mean_no_cc):
             self.logger.info(

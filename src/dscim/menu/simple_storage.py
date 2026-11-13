@@ -66,6 +66,30 @@ def resolve_country_mapping_path(country_mapping_path=None, kwargs=None):
     return country_mapping_path
 
 
+def adding_up_store(ce_path, reduction, eta):
+    """Path of the adding_up reduced-damages store for ``reduction``.
+
+    Prefers ``{ce_path}/adding_up_{reduction}_eta{eta}.zarr``. If that store is
+    missing and the legacy ``{ce_path}/adding_up_{reduction}.zarr`` exists
+    (written by dscim <= 0.7.0, or by ``reduce_damages`` with ``eta=None``),
+    returns the legacy path and warns, naming both. If neither exists the
+    eta-suffixed path is returned and the caller reports it missing.
+    """
+    suffixed = f"{ce_path}/adding_up_{reduction}_eta{eta}.zarr"
+    legacy = f"{ce_path}/adding_up_{reduction}.zarr"
+    if os.path.exists(suffixed):
+        return suffixed
+    if os.path.exists(legacy):
+        warnings.warn(
+            f"{suffixed} not found; falling back to the legacy store {legacy}, "
+            "which carries no eta (dscim <= 0.7.0 naming). Re-run reduce_damages "
+            f"with eta={eta} to produce the eta-suffixed store.",
+            stacklevel=3,
+        )
+        return legacy
+    return suffixed
+
+
 class Climate:
     """
     This class wraps all climate data used in DSCIM.
@@ -458,8 +482,8 @@ class StackedDamages:
     def adding_up_damages(self):
         """This property calls pre-calculated adding-up IR-level 'mean' over batches."""
 
-        mean_cc = f"{self.ce_path}/adding_up_cc_eta{self.eta}.zarr"
-        mean_no_cc = f"{self.ce_path}/adding_up_no_cc_eta{self.eta}.zarr"
+        mean_cc = adding_up_store(self.ce_path, "cc", self.eta)
+        mean_no_cc = adding_up_store(self.ce_path, "no_cc", self.eta)
 
         if os.path.exists(mean_cc) and os.path.exists(mean_no_cc):
             self.logger.info(
