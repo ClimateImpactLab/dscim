@@ -23,6 +23,7 @@ dependencies = [
     "pyyaml",
     "p_tqdm",
     "requests",
+    "scipy",
     "statsmodels",
     "xarray",
     "zarr",
