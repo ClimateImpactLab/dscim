@@ -10,37 +10,6 @@ from itertools import product
 logger = logging.getLogger(__name__)
 
 
-def fit_project(chunk_reg, formula, type_estimation, quantiles, index_dims):
-    # individual block's mapping function
-    df_reg = chunk_reg.to_dataframe().reset_index()
-
-    year_range = df_reg.year.values
-
-    df_tot = []
-    for year in year_range:
-        time_window = range(year - 2, year + 3)
-        df = df_reg[df_reg.year.isin(time_window)]
-        params = modeler(
-                df=df,
-                formula=formula,
-                type_estimation=type_estimation,
-                quantiles=quantiles,
-            )
-        params.assign(year = year)
-        df_tot.append(params)
-
-    params = pd.concat(df_tot)
-    for dim in index_dims:
-        if chunk_reg[dim].size == 1:
-            params[dim] = chunk_reg[dim].values
-        else:
-            params[dim] = str(list(chunk_reg[dim].values))
-
-    print(params, flush=True)
-
-    params = params.set_index(index_dims + ['year',])
-    return(params.to_xarray())
-
 def modeler(df, formula, type_estimation, exog, quantiles=None):
     """Wrapper function for statsmodels functions (OLS and quantiles)
 
@@ -485,6 +454,7 @@ def model_outputs(
     }
 
     return res
+
 
 def compute_damages(anomaly, betas, formula):
     """Calculate damages using FAIR anomalies (either control or pulse).

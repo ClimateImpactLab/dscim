@@ -483,7 +483,7 @@ class MainRecipe(StackedDamages, ABC):
         return meta
 
     @cachedproperty
-    def collapsed_pop(self, geography=None):
+    def collapsed_pop(self):
         """Collapse population according to discount type."""
         if (self.discounting_type == "constant") or ("ramsey" in self.discounting_type):
             pop = self.pop
@@ -491,28 +491,6 @@ class MainRecipe(StackedDamages, ABC):
             pop = self.pop.mean("model")
         elif "gwr" in self.discounting_type:
             pop = self.pop.mean(["model", "ssp"])
-
-        if geography == "ir":
-            pass
-        elif geography == "country":
-            territories = []
-            mapping_dict = {}
-            for ii, row in self.countries_mapping.iterrows():
-                mapping_dict[row["ISO"]] = row["MatchedISO"]
-                if row["MatchedISO"] == "nan":
-                    mapping_dict[row["ISO"]] = "nopop"
-
-            for region in dams_collapse.region.values:
-                territories.append(mapping_dict(region[:3]))
-
-            pop = pop.assign_coords({"region": territories}).groupby("region").sum()
-        elif geography == "globe":
-            pop = (
-                pop.sum(dim="region")
-                .assign_coords({"region": "globe"})
-                .expand_dims("region")
-            )
-
         return pop
 
     def _aggregate_by_geography(

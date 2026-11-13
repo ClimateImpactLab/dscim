@@ -75,39 +75,3 @@ class Baseline(MainRecipe):
         global_cons_no_cc.name = f"global_cons_{disc_type}"
 
         return global_cons_no_cc
-
-
-#         def global_consumption_calculation(self, disc_type):
-#         """Calculate global consumption
-
-#         Returns
-#         -------
-#             xr.DataArray
-#         """
-
-#         if self.geography == 'ir':
-#             gdp = self.gdp
-#         elif self.geography == 'country':
-#             #group gdp by some grouping and collapse
-#             gdp = self.gdp.sum(dim=["region"])
-#         else:
-#             gdp = self.gdp.sum(dim=["region"])
-
-#         if (disc_type == "constant") or ("ramsey" in disc_type):
-#             global_cons_no_cc = gdp
-
-#         elif disc_type == "constant_model_collapsed":
-#             global_cons_no_cc = gdp.mean(dim=["model"])
-
-#         elif "gwr" in disc_type:
-#             ce_cons = self.ce(self.gdppc, dims=["ssp", "model"])
-#             global_cons_no_cc = (ce_cons * self.collapsed_pop).sum(dim=["region"])
-
-#         # Convert to array in case xarray becames temperamental. This is a hack
-#         # that need to be changed
-#         if isinstance(global_cons_no_cc, xr.Dataset):
-#             global_cons_no_cc = global_cons_no_cc.to_array()
-
-#         global_cons_no_cc.name = f"global_cons_{disc_type}"
-
-#         return global_cons_no_cc
