@@ -13,6 +13,7 @@ from dscim.menu.simple_storage import (
     GEOGRAPHIES,
     StackedDamages,
     normalize_geography,
+    resolve_country_mapping_path,
 )
 from dscim.utils.utils import (
     model_outputs,
@@ -59,6 +60,12 @@ class MainRecipe(StackedDamages, ABC):
         ``region`` dimension. ``"global"`` is a deprecated alias of ``"globe"``.
     individual_region : str or None, optional
         Impact region to restrict the calculation to when ``geography="ir"``.
+    country_mapping_path : str or None, optional
+        Path to the csv mapping impact-region ISO prefixes to countries
+        (columns ``ISO``, ``MatchedISO``); required for ``geography="country"``.
+        Loaded into ``self.country_mapping`` (a ``pd.DataFrame``). The old
+        keyword ``country_ISOs`` is still accepted and emits a
+        ``DeprecationWarning``.
     """
 
     NAME = ""
@@ -126,6 +133,7 @@ class MainRecipe(StackedDamages, ABC):
         save_files=None,
         geography=None,
         individual_region=None,
+        country_mapping_path=None,
         **kwargs,
     ):
         if scc_quantiles is None:
@@ -214,13 +222,14 @@ class MainRecipe(StackedDamages, ABC):
                 "global_consumption_no_pulse",
             ]
 
-        if "country_ISOs" in kwargs:
-            self.countries_mapping = pd.read_csv(kwargs["country_ISOs"])
-            self.countries = self.countries_mapping.MatchedISO.dropna().unique()
-
         # Normalise geography once, here, and hand the canonical value to
         # StackedDamages so every branch below tests the same spelling.
         geography = normalize_geography(geography)
+        # `country_ISOs` (deprecated) -> country_mapping_path; StackedDamages
+        # loads the csv into self.country_mapping.
+        country_mapping_path = resolve_country_mapping_path(
+            country_mapping_path, kwargs
+        )
 
         super().__init__(
             sector_path=sector_path,
@@ -232,6 +241,7 @@ class MainRecipe(StackedDamages, ABC):
             subset_dict=subset_dict,
             ce_path=ce_path,
             geography=geography,
+            country_mapping_path=country_mapping_path,
             kwargs=kwargs,
         )
 
@@ -517,10 +527,10 @@ class MainRecipe(StackedDamages, ABC):
             return data
 
         elif geography == "country":
-            if getattr(self, "countries_mapping", None) is None:
+            if self.country_mapping is None:
                 raise ValueError(
                     "geography='country' requires a country mapping; "
-                    "pass `country_ISOs` (path to the ISO mapping csv)."
+                    "pass `country_mapping_path` (csv with columns ISO, MatchedISO)."
                 )
             return self._aggregate_to_country(data)
 
@@ -536,7 +546,7 @@ class MainRecipe(StackedDamages, ABC):
         )
 
     def _aggregate_to_country(self, data: xr.DataArray) -> xr.DataArray:
-        """Sum impact regions to countries using ``self.countries_mapping``.
+        """Sum impact regions to countries using ``self.country_mapping``.
 
         The mapping's ``ISO`` column is matched against the first three
         characters of each region code. Regions whose ``MatchedISO`` is missing
@@ -547,7 +557,7 @@ class MainRecipe(StackedDamages, ABC):
             row["ISO"]: row["MatchedISO"]
             if str(row["MatchedISO"]) != "nan"
             else "nopop"
-            for _, row in self.countries_mapping.iterrows()
+            for _, row in self.country_mapping.iterrows()
         }
         territories = [mapping.get(str(r)[:3], "unknown") for r in data.region.values]
         return data.assign_coords({"region": territories}).groupby("region").sum()

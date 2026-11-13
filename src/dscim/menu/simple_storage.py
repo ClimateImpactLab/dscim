@@ -44,6 +44,28 @@ def normalize_geography(geography):
     return geography
 
 
+def resolve_country_mapping_path(country_mapping_path=None, kwargs=None):
+    """Return the path of the ISO -> MatchedISO csv, honouring the old name.
+
+    ``country_mapping_path`` is the public name. ``country_ISOs``, passed
+    through ``**kwargs``, is the older name; it is still accepted and emits a
+    DeprecationWarning that names both. If both are given,
+    ``country_mapping_path`` wins.
+    """
+    legacy = (kwargs or {}).get("country_ISOs")
+    if legacy is not None:
+        warnings.warn(
+            "`country_ISOs` is deprecated and will be removed in a future "
+            "release; pass the same csv as `country_mapping_path`. Until then "
+            "both populate `self.country_mapping`.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        if country_mapping_path is None:
+            country_mapping_path = legacy
+    return country_mapping_path
+
+
 class Climate:
     """
     This class wraps all climate data used in DSCIM.
@@ -343,9 +365,13 @@ class StackedDamages:
         ce_path=None,
         subset_dict=None,
         geography=None,
+        country_mapping_path=None,
         **kwargs,
     ):
         geography = normalize_geography(geography)
+        country_mapping_path = resolve_country_mapping_path(
+            country_mapping_path, kwargs
+        )
 
         self.sector_path = sector_path
         self.save_path = save_path
@@ -360,10 +386,11 @@ class StackedDamages:
         self.__dict__.update(**kwargs)
         self.geography = geography
         self.kwargs = kwargs
-
-        if "country_ISOs" in kwargs:
-            self.countries_mapping = pd.read_csv(kwargs["country_ISOs"])
-            self.countries = self.countries_mapping.MatchedISO.dropna().unique()
+        self.country_mapping_path = country_mapping_path
+        if country_mapping_path is not None:
+            self.country_mapping = pd.read_csv(country_mapping_path)
+        else:
+            self.country_mapping = None
 
         self.logger = logging.getLogger(__name__)
 
