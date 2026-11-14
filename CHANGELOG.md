@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- CI tests no longer fail intermittently on runners with AVX512 CPUs: numpy's AVX512 dispatch is disabled in the test job and checked before pytest, and the runner image is pinned to `ubuntu-24.04` ([PR #488](https://github.com/ClimateImpactLab/dscim/pull/488), [@C1587S](https://github.com/C1587S)).
+
 
 ## [0.7.0] - 2025-08-15
 
