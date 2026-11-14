@@ -10,7 +10,7 @@ on:
 jobs:
 
   codequality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.12"]
@@ -40,10 +40,18 @@ jobs:
           ruff check . --output-format=github
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         python-version: ["3.12"]
+    env:
+      # GitHub's hosted runners mix CPUs with and without AVX512. numpy 1.26 dispatches
+      # np.power to Intel SVML kernels on AVX512 hosts, and the certainty equivalent in
+      # dscim.utils.utils.c_equivalence amplifies that last-bit difference into a
+      # 1e-4 to 1e-2 relative change in damage_function_points for the equity and
+      # gwr risk-aversion recipes. Keep every host on the AVX2 path, which is the one
+      # the reference fixtures were generated with.
+      NPY_DISABLE_CPU_FEATURES: "AVX512F AVX512CD AVX512_KNL AVX512_KNM AVX512_SKX AVX512_CLX AVX512_CNL AVX512_ICL"
     defaults:
       run:
         shell: bash
@@ -62,6 +70,32 @@ jobs:
       - name: Install package
         run: |
           pip install .
+      - name: Check that numpy dispatch stays below AVX512
+        run: |
+          python - <<'PY'
+          import os, sys
+          import numpy as np
+          try:
+              from numpy._core._multiarray_umath import __cpu_dispatch__ as dispatch, __cpu_features__ as features
+          except ImportError:  # numpy < 2.0
+              from numpy.core._multiarray_umath import __cpu_dispatch__ as dispatch, __cpu_features__ as features
+          enabled = [t for t in dispatch if features.get(t)]
+          avx512_class = [t for t in enabled if t.startswith("AVX512") or t == "X86_V4"]
+          cpu = next((l.split(":", 1)[1].strip() for l in open("/proc/cpuinfo") if l.startswith("model name")), "unknown")
+          print(f"host CPU: {cpu}")
+          print(f"numpy {np.__version__}: dispatch targets {dispatch}")
+          print(f"enabled targets: {enabled}")
+          if avx512_class:
+              sys.exit(
+                  f"ERROR: numpy still dispatches AVX512-class targets {avx512_class} on this host. "
+                  f"NPY_DISABLE_CPU_FEATURES is set to [{os.environ.get('NPY_DISABLE_CPU_FEATURES', '')}], "
+                  f"but that list does not match the target names of the installed numpy {np.__version__}: {dispatch}. "
+                  "Update the list in .github/workflows/pythonpackage.yaml to the AVX512-class names above "
+                  "(for numpy 2.4 and later: X86_V4 AVX512_ICL AVX512_SPR). Without it the equity and gwr "
+                  "risk-aversion tests give different damage_function_points on AVX512 hosts."
+              )
+          print("OK: numpy dispatch stays below AVX512 on this host.")
+          PY
       - name: Test with pytest
         run: |
           pytest -v --cov dscim --cov-report term-missing --cov-report xml
